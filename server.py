@@ -2,6 +2,8 @@
 import json
 import os
 import re
+import threading
+import time
 import webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -61,6 +63,8 @@ class Handler(SimpleHTTPRequestHandler):
         if name == "status":
             return {"provider": provider.name, "latency": provider.latency,
                     "capabilities": provider.capabilities}
+        if name == "version":
+            return {"web": (ROOT / "web" / "index.html").stat().st_mtime_ns}
         if name == "market":
             return provider.market()
         if name == "indices":
@@ -84,7 +88,18 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
+def auto_update():
+    import update
+    while True:
+        time.sleep(300)
+        try:
+            update.main()
+        except Exception:
+            pass
+
+
 def main():
+    threading.Thread(target=auto_update, daemon=True).start()
     port = int(os.environ.get("PORT", "8765"))
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     print(f"ASX Neon Terminal 已启动: http://127.0.0.1:{port}  (关闭此窗口即停止)")
