@@ -37,6 +37,10 @@ class Handler(SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def send_json(self, body, status=200):
         data = json.dumps(body, ensure_ascii=False).encode()
         self.send_response(status)
