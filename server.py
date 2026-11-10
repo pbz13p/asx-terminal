@@ -42,8 +42,11 @@ class Handler(SimpleHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(data)))
-        self.end_headers()
-        self.wfile.write(data)
+        try:
+            self.end_headers()
+            self.wfile.write(data)
+        except (ConnectionError, OSError):
+            pass  # the page was closed or refreshed mid-request
 
     def do_GET(self):
         url = urlparse(self.path)
@@ -56,7 +59,8 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_json({"ok": False, "error": str(e) or "暂不可用"})
         except ValueError as e:
             self.send_json({"ok": False, "error": str(e)}, 400)
-        except Exception:  # never expose internals or the key to the page
+        except Exception as e:  # never expose internals or the key to the page
+            print(f"[{url.path}] {type(e).__name__}")
             self.send_json({"ok": False, "error": "服务器内部错误"}, 500)
 
     def route(self, name, q):
