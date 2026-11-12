@@ -224,7 +224,7 @@ def insight(code, provider):
             if fut:
                 days_to = (date.fromisoformat(fut[0]["date"]) - date.today()).days
                 if 0 < days_to <= 28:
-                    S.append(sig("up", f"{days_to} 天后除息", f"除息日 {fut[0]['date']}。大中盘股在除息前 20 个交易日平均跑赢大盘约 1.1%（两段时间都成立，54% 的情况上涨）；除息日股价通常下跌约等于现金股息。"))
+                    S.append(sig("info", f"{days_to} 天后除息", f"除息日 {fut[0]['date']}。除息前 10 天平均只跑赢大盘约 0.4%，扣成本后为 0，2022 年后更弱，不值得专门为此买卖；除息日股价通常下跌约等于现金股息。"))
     except Exception:
         pass
     # ---- market (ASX 200) signals
