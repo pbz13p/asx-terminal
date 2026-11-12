@@ -304,6 +304,7 @@ h+='<div class="sec"><h4>商品联动（z&lt;−1 = 股票落后于商品；只�
 h+='<div class="sec"><h4>放量突破 52 周新高（近 5 天）</h4>'+tb(d.breakouts.slice(0,25),[['代码',function(x){return lk(x.code);}],['日期',function(x){return x.date.slice(5);}],['量比',function(x){return x.vol_x+'×';}],['之后',function(x){return pc(x.since);}],['日成交',function(x){return '$'+(x.turnover/1e6).toFixed(1)+'M';}]])+'</div>';
 h+='<div class="sec"><h4>业绩季跳涨站稳（近 5 天，历史上之后 5 天偏强）</h4>'+tb(d.season_gap_up,[['代码',function(x){return lk(x.code);}],['日期',function(x){return x.date.slice(5);}],['高开',function(x){return pc(x.gap);}],['当天',function(x){return pc(x.day);}],['之后',function(x){return pc(x.since);}]])+'</div>';
 h+='<div class="sec"><h4>业绩季跳空大跌（近 5 天，别急抄底）</h4>'+tb(d.season_gap_down,[['代码',function(x){return lk(x.code);}],['日期',function(x){return x.date.slice(5);}],['低开',function(x){return pc(x.gap);}],['之后',function(x){return pc(x.since);}]])+'</div>';
+h+='<div class="sec"><h4>停牌复牌后大跌（近 5 天，多为配股，别急着接）</h4>'+tb(d.halt_reopen_down||[],[['代码',function(x){return lk(x.code);}],['复牌',function(x){return x.date.slice(5);}],['停牌天数',function(x){return x.halted;}],['低开',function(x){return pc(x.gap);}],['之后',function(x){return pc(x.since);}]])+'</div>';
 h+='<div class="ft">点代码看方向面板。名单只说明符合历史规律的条件，不是买卖建议。</div>';c.innerHTML=h;
 c.querySelectorAll('a[data-c]').forEach(function(a){a.onclick=function(e){e.preventDefault();openInsight(a.getAttribute('data-c'));};});
 }catch(e){c.innerHTML='<div class="nm" style="margin-top:60px">'+e.message+'</div>';}}

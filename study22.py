@@ -66,7 +66,8 @@ def main():
     study.download(["AXJO.INDX", "AUDUSD.FOREX"] + [t[0] for t in THEMES.values()])
     xj = study.load("AXJO.INDX")
     last_day = xj[-1][0]
-    breakouts, gap_up, gap_dn = [], [], []
+    breakouts, gap_up, gap_dn, halts = [], [], [], []
+    xidx = {r[0]: k for k, r in enumerate(xj)}
     for f in study.CACHE.glob("*.AU.json"):
         rows = study.load(f.name[:-5])
         if len(rows) < 260 or rows[-1][0] < (date.fromisoformat(last_day) - timedelta(days=4)).isoformat():
@@ -88,6 +89,11 @@ def main():
                 breakouts.append({"code": code, "date": d, "close": raw, "vol_x": round(vx, 1), "turnover": round(turn),
                                   "since": round(100 * (cl[-1] / c - 1), 1)})
             pc = rows[i - 1][4]
+            pd_ = rows[i - 1][0]
+            missed = (xidx[d] - xidx[pd_] - 1) if d in xidx and pd_ in xidx else 0
+            if 1 <= missed <= 5 and pc > 0 and o > 0 and o / pc - 1 <= -.05 and vx >= 3:
+                halts.append({"code": code, "date": d, "gap": round(100 * (o / pc - 1), 1), "halted": missed,
+                              "close": raw, "turnover": round(turn), "since": round(100 * (cl[-1] / c - 1), 1)})
             if pc > 0 and o > 0 and vx >= 3 and study10.season(d):
                 gap = o / pc - 1
                 item = {"code": code, "date": d, "gap": round(100 * gap, 1), "day": round(100 * (c / o - 1), 1),
@@ -136,6 +142,7 @@ def main():
            "xjo_down_days": downs, "breakouts": sorted(breakouts, key=lambda x: -x["turnover"])[:40],
            "season_gap_up": sorted(gap_up, key=lambda x: -x["turnover"])[:30],
            "season_gap_down": sorted(gap_dn, key=lambda x: -x["turnover"])[:30], "themes": themes,
+           "halt_reopen_down": sorted(halts, key=lambda x: -x["turnover"])[:30],
            "seconds": round(time.time() - t0)}
     p = Path(os.environ.get("STUDY22_OUT", study.DATA / "scan.json"))
     p.parent.mkdir(parents=True, exist_ok=True)
