@@ -72,7 +72,12 @@ class Handler(SimpleHTTPRequestHandler):
             return {"provider": provider.name, "latency": provider.latency,
                     "capabilities": provider.capabilities}
         if name == "version":
-            return {"web": (ROOT / "web" / "index.html").stat().st_mtime_ns}
+            return {"web": max(f.stat().st_mtime_ns for f in (ROOT / "web").glob("*") if f.is_file())}
+        if name == "update":
+            changed = do_update()
+            if changed:  # restart a moment after answering, so the new code takes over
+                threading.Timer(1.0, restart).start()
+            return {"code_changed": changed}
         if name == "study":
             f = ROOT / "data" / "study_results.json"
             if f.exists():
@@ -135,21 +140,34 @@ def _stamp():
     return {f: (ROOT / f).stat().st_mtime_ns for f in CODE_FILES if (ROOT / f).exists()}
 
 
-def auto_update():
+_update_lock = threading.Lock()
+
+
+def do_update():
+    """Pull the latest files from GitHub now. Returns True when program code (not just pages) changed."""
     import importlib
-    import sys
     import update
-    while True:
-        time.sleep(300)
+    with _update_lock:
         before = _stamp()
         try:
             importlib.reload(update).main()
         except Exception:
             pass
-        if _stamp() != before:  # program code changed: restart in place so new features work
-            print("Program updated, restarting...")
-            os.environ["ASX_DESK_RESTART"] = "1"
-            os.execv(sys.executable, [sys.executable] + sys.argv)
+        return _stamp() != before
+
+
+def restart():
+    import sys
+    print("Program updated, restarting...")
+    os.environ["ASX_DESK_RESTART"] = "1"
+    os.execv(sys.executable, [sys.executable] + sys.argv)
+
+
+def auto_update():
+    while True:
+        time.sleep(60)
+        if do_update():  # program code changed: restart in place so new features work
+            restart()
 
 
 def main():

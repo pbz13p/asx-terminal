@@ -57,7 +57,7 @@ td:first-child{min-width:150px}
 
 </style>
 </head>
-<body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
+<body><div class="wrap"><div style="display:flex;gap:16px;align-items:center;font-size:14px"><a href="/" style="color:#29E7FF;text-decoration:none">← 返回行情</a><a href="#" id="updb" style="color:#FFC83D;text-decoration:none">🔄 更新</a></div>
 
 <h1>ASX 量化研究报告</h1>
 <div class="sub">第 1–59 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
@@ -908,5 +908,9 @@ bars('secbars',[["消费服务", 11.4], ["汽车", 8.8], ["房地产信托", 8.2
 document.querySelectorAll('.wrap h2').forEach(function(h,i){h.id='s'+i;var a=document.createElement('a');a.href='#s'+i;a.textContent=h.textContent.replace(/^[⭐📚\s]+/,'');t.appendChild(a);});
 w.insertBefore(t,w.firstChild);
 var links=[].slice.call(t.querySelectorAll('a'));window.addEventListener('scroll',function(){var cur=0;document.querySelectorAll('.wrap h2').forEach(function(h,i){if(h.getBoundingClientRect().top<120)cur=i;});links.forEach(function(a,i){a.classList.toggle('on',i===cur);});});})();
+</script>
+<script>
+(function(){var ver=null;setInterval(function(){fetch('/api/version').then(function(r){return r.json();}).then(function(j){var v=j.data.web;if(ver!==null&&v!==ver)location.reload();ver=v;}).catch(function(){});},15000);
+var b=document.getElementById('updb');if(b)b.onclick=function(e){e.preventDefault();b.textContent='⏳ 更新中…';fetch('/api/update').then(function(r){return r.json();}).then(function(j){b.textContent=j.ok&&j.data.code_changed?'♻ 重启中…':'✓ 已是最新';}).catch(function(){});setTimeout(function w(){fetch('/api/version').then(function(){location.reload();}).catch(function(){setTimeout(w,1500);});},2500);};})();
 </script>
 </body></html>

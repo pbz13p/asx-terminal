@@ -98,7 +98,7 @@ canvas{display:block}
 <div class="app" id="app">
 <header><div class="brand"><span class="logo" aria-hidden="true"></span><div><h1>ASX <b>DESK</b></h1><div class="sub">SIX SECTORS · ONE BOARD · AUSTRALIA</div></div></div>
 <nav aria-label="分区"><span>SYNAPSE</span><span>TAPE</span><span>BOOK</span></nav><span class="demo" id="src">连接中…</span>
-<form id="sf" class="sf" role="search"><label for="si" style="position:absolute;left:-9999px">查股票代码</label><input id="si" placeholder="⌕ 输入代码查股票，如 BHP" maxlength="6" autocomplete="off"><span id="sm" aria-live="polite"></span></form><a class="rpt rpt2" href="#" id="insb">📡 方向面板</a><a class="rpt rpt2" href="#" id="scanb" style="border-color:#19FF9C;box-shadow:0 0 14px rgba(25,255,156,.45)">📈 今日扫描</a><a class="rpt" href="/report.html">📊 研究报告</a><div class="hs"><div><b id="h1v" class="num"></b><span>当日成交额</span></div><div><b id="h2v" class="up num"></b><span>上涨</span></div><div><b id="h3v" class="dn num"></b><span>下跌</span></div><span class="clock num" id="clock"></span><span class="fl" style="font-size:12.5px;line-height:11px">AEDT<br>MELBOURNE</span><span class="online"><span id="mode">CONNECTING</span></span></div></header>
+<form id="sf" class="sf" role="search"><label for="si" style="position:absolute;left:-9999px">查股票代码</label><input id="si" placeholder="⌕ 输入代码查股票，如 BHP" maxlength="6" autocomplete="off"><span id="sm" aria-live="polite"></span></form><a class="rpt rpt2" href="#" id="insb">📡 方向面板</a><a class="rpt rpt2" href="#" id="scanb" style="border-color:#19FF9C;box-shadow:0 0 14px rgba(25,255,156,.45)">📈 今日扫描</a><a class="rpt" href="/report.html">📊 研究报告</a><a class="rpt" href="#" id="updb" title="立即从 GitHub 取最新版本" style="border-color:#FFC83D;box-shadow:0 0 14px rgba(255,200,61,.45)">🔄 更新</a><div class="hs"><div><b id="h1v" class="num"></b><span>当日成交额</span></div><div><b id="h2v" class="up num"></b><span>上涨</span></div><div><b id="h3v" class="dn num"></b><span>下跌</span></div><span class="clock num" id="clock"></span><span class="fl" style="font-size:12.5px;line-height:11px">AEDT<br>MELBOURNE</span><span class="online"><span id="mode">CONNECTING</span></span></div></header>
 <div class="s2"><span class="g">● ASX</span><span id="s2"></span></div>
 <div class="wire"><span class="wl">LIVE WIRE</span><div class="wt" id="wt"></div></div>
 <div class="r1">
@@ -247,7 +247,7 @@ function setErr(m){$('src').textContent=m;$('mode').textContent='CHECK';}
 async function loadMarket(){try{var d=await api('market');asof=d.asof;S=d.stocks;S.forEach(function(s){var o=M[s.code];if(o&&o.quoted){o.name=s.name;}else{s.vol=s.volume;M[s.code]=s;}});ranks();wire();pHeat();pBlobs(2);heads();}catch(e){setErr(e.message);}}
 async function loadIdx(){try{var d=await api('indices');IDX=d.main.map(function(o){return {c:o.code,n:o.label,v:o.last,prev:o.prev,h:o.history,history:o.history};});var prev=SD;SD=SEC.map(function(s){var f=d.sectors.filter(function(x){return x.label===s.id;})[0];return f||null;});SD.forEach(function(s,i){if(s&&prev[i]&&Math.abs(pct(s)-pct(prev[i]))>.02&&B)B.N[i].fire=1;});pRRG();pStk();pSr();pCur();heads();drawCore();$('src').textContent=latency;$('mode').textContent='ONLINE';}catch(e){setErr(e.message);}}
 async function loadQuotes(){var codes=st.watch.slice();if(st.sel&&codes.indexOf(st.sel)<0)codes.push(st.sel);if(!codes.length)return;try{merge(await api('quotes?codes='+codes.join(',')));wtick();quote();var c=M[st.sel],b=bars[bars.length-1];if(c&&b&&st.tf==='1D'){b.c=c.last;b.h=Math.max(b.h,c.last);b.l=Math.min(b.l,c.last);}tape();heads();ranks();}catch(e){setErr(e.message);}}
-async function boot(){try{var s=await api('status');caps=s.capabilities;latency=s.latency+' · '+s.provider.toUpperCase();$('f1').textContent='数据来源 '+latency;}catch(e){setErr('连接本地服务失败');}trace();await Promise.all([loadQuotes(),loadIdx()]);if(!st.sel&&st.watch[0])select(st.watch[0]);await loadMarket();wcards();await loadQuotes();setInterval(loadQuotes,60000);setInterval(loadIdx,60000);setInterval(loadMarket,1800000);var ver=null;setInterval(async function(){try{var v=(await api('version')).web;if(ver!==null&&v!==ver)location.reload();ver=v;}catch(e){}},60000);}
+async function boot(){try{var s=await api('status');caps=s.capabilities;latency=s.latency+' · '+s.provider.toUpperCase();$('f1').textContent='数据来源 '+latency;}catch(e){setErr('连接本地服务失败');}trace();await Promise.all([loadQuotes(),loadIdx()]);if(!st.sel&&st.watch[0])select(st.watch[0]);await loadMarket();wcards();await loadQuotes();setInterval(loadQuotes,60000);setInterval(loadIdx,60000);setInterval(loadMarket,1800000);var ver=null;setInterval(async function(){try{var v=(await api('version')).web;if(ver!==null&&v!==ver)location.reload();ver=v;}catch(e){}},15000);}
 var still=matchMedia('(prefers-reduced-motion: reduce)').matches,last=0,lastP=0;
 function loop(ms){requestAnimationFrame(loop);if(ms-last<33)return;last=ms;frame(ms);if(ms-lastP>90){lastP=ms;panels(ms/1000);}}
 wcards();clock();setInterval(clock,1000);buildB();frame(2600);panels(2.6);
@@ -316,6 +316,12 @@ c.querySelectorAll('a[data-c]').forEach(function(a){a.onclick=function(e){e.prev
 }catch(e){c.innerHTML='<div class="nm" style="margin-top:60px">'+e.message+'</div>';}}
 document.getElementById('scanb').onclick=function(e){e.preventDefault();openScan();};
 })();
+</script>
+
+<script>
+document.getElementById('updb').onclick=async function(e){e.preventDefault();var b=this;b.textContent='⏳ 更新中…';
+try{var r=await fetch('/api/update');var j=await r.json();b.textContent=j.ok&&j.data.code_changed?'♻ 重启中…':'✓ 已是最新';}catch(x){b.textContent='♻ 重启中…';}
+setTimeout(function wait(){fetch('/api/version').then(function(){location.reload(true);}).catch(function(){setTimeout(wait,1500);});},2500);};
 </script>
 </body>
 </html>
