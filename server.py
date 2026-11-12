@@ -96,6 +96,9 @@ class Handler(SimpleHTTPRequestHandler):
         code = q.get("code", "").upper()
         if not CODE.match(code):
             raise ValueError("股票代码不正确")
+        if name == "insight":
+            from insight import insight
+            return insight(code, provider)
         if name == "vol":
             from research import analyse
             years = max(3, min(30, int(q.get("years", "20"))))
