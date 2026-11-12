@@ -357,6 +357,21 @@ def insight(code, provider):
     try:
         xh = provider.history("XJO", 3)
         xc = [float(r["close"]) for r in xh]
+        # halt then reopen lower (round 28): sessions missing from the stock's history in the last 15 days
+        xd = [r["date"] for r in xh][-16:]
+        have = set(ds[-40:])
+        for t in range(1, len(xd)):
+            if xd[t] in have and xd[t - 1] not in have:
+                k0 = t - 1
+                while k0 >= 0 and xd[k0] not in have:
+                    k0 -= 1
+                if k0 >= 0 and 1 <= t - 1 - k0 <= 5:
+                    a_, b_ = ds.index(xd[k0]), ds.index(xd[t])
+                    move = 100 * (px[b_] / px[a_] - 1)
+                    if move <= -5:
+                        S.append(sig("down", "停牌复牌后大跌（多为配股融资）", f"{xd[t]} 停牌后复牌，较停牌前 {move:.1f}%。这类股票（多为折价配股）复牌后 5 天平均再跑输一般股票约 3%（t≈−5，两段时间都成立），别急着接。"))
+    
+
         downs = 0
         while downs < len(xc) - 1 and xc[-1 - downs] < xc[-2 - downs]:
             downs += 1

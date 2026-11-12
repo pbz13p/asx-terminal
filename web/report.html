@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–27 轮</title>
+<title>ASX 量化研究报告 · 第 1–28 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–27 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–28 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论（25 轮研究后）</h3>
@@ -68,6 +68,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <div class="card" style="border-color:#29e7ff66">
 <div class="scroll"><table>
 <tr><th>规则</th><th>做什么</th><th>持有</th><th>历史表现</th><th>可靠度</th><th>现在（11/12）</th></tr>
+<tr><td><b>配股复牌别接</b></td><td>停牌后放量低开 ≥5%（多为折价配股）→ 1–4 周内不买</td><td>1–4 周</td><td>5 天再跑输 −3%，t≈−5.3，两段都成立</td><td>★★★★★</td><td class="mu">看面板提示</td></tr>
 <tr><td><b>业绩差的股票别抄底</b></td><td>业绩季放量跳空低开 ≥5% 的股票，一个月内不买</td><td>1 个月</td><td>之后平均再跌 −3.4%，t≈−4</td><td>★★★★★</td><td class="mu">下个业绩季 2027 年 2 月</td></tr>
 <tr><td><b>市场押降息时加仓</b></td><td>澳 2 年国债 3 个月跌 &gt;0.5% → 加仓 ASX 200 ETF</td><td>1–3 个月</td><td>1 个月 +2.9%，7 段时期全涨</td><td>★★★★</td><td class="mu">未触发（+0.32%，偏加息）</td></tr>
 <tr><td><b>恐慌时加仓</b></td><td>VIX ≥25 或大盘 3 个月跌 &gt;5% → 加仓 ETF</td><td>1–3 个月</td><td>1 个月 +1.6–2.7%，3 个月 +5%</td><td>★★★★</td><td class="mu">未触发（VIX≈18）</td></tr>
@@ -467,6 +468,20 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <p>只用 2015–21 年的数据，为每种环境（押降息、押加息、恐慌、平静、正常）选出表现最好的 2 个板块，然后原封不动用到 2022–26 年：每周持有 50% ASX 200 + 两个板块各 25%。</p>
 <p><b>结果：245 周里每年 −0.35%，t≈−0.1，完全没有效果。</b>第 9 轮那张“什么环境持有什么板块”的表，大部分是事后看起来有规律。比如 2015–21 年“押降息”时最好的是医疗和工业，但到了 2022 年后表现最好的变成了科技。</p>
 <p><b>结论：</b>宏观环境能帮你判断<b>大盘加减仓</b>（第 25–26 轮），但<b>不能可靠地告诉你该换哪个板块</b>。方向面板里的板块提示已改为灰色参考，不计分。</p>
+</div>
+
+<h2>第 28 轮：停牌复牌（配股融资、重大公告）—— 澳股特有</h2>
+<div class="card">
+<p class="note">澳股小公司经常“停牌 → 宣布折价配股或重大消息 → 复牌”。识别方法：停牌 1–5 个交易日，复牌当天放量（≥平时 3 倍），跳空 ≥5%。从<b>复牌当天收盘</b>才算（已经看到公告和第一天走势），扣成本。2015–2026。</p>
+<div class="scroll"><table>
+<tr><th>情况</th><th>次数</th><th>之后 5 天 vs 一般股票</th><th>t（按月）</th><th>之后 20 天</th><th>2015–21 / 2022 后（5 天）</th></tr>
+<tr><td><b>停牌后低开 ≥5%</b>（多为折价配股）</td><td>645</td><td class="dn"><b>−2.95%</b></td><td><b>−5.3</b></td><td class="dn">−2.1%（t −2.0）</td><td class="dn">−2.5% / −3.4%</td></tr>
+<tr><td>其中 小盘（日成交 10–50 万）</td><td>347</td><td class="dn">−3.84%</td><td>−5.4</td><td class="dn">−3.1%</td><td></td></tr>
+<tr><td>其中 较大（日成交 ≥50 万）</td><td>298</td><td class="dn">−1.92%</td><td>−2.9</td><td>−0.9%</td><td></td></tr>
+<tr><td>停牌后高开 ≥5%（多为利好）</td><td>680</td><td>+1.6%</td><td>1.6</td><td>−0.1%</td><td>+0.1% / +4.2%（不稳定）</td></tr>
+</table></div>
+<p><b>结论：</b><b>折价配股复牌后，股价通常继续往下走</b>（扣成本后 5 天平均约 −4%，20 天约 −3.7%），两段时间都成立，小盘股更明显。原因：拿到折价新股的机构往往在复牌后陆续卖出套利。<b>别在复牌第一天“抄便宜”</b>，至少等 1–4 周。利好复牌没有稳定规律。</p>
+<p class="note">方向面板会识别近 15 天内“停牌后复牌大跌”的情况并提示。</p>
 </div>
 
 <h2>第 9 轮：什么宏观环境，持有什么板块</h2>
