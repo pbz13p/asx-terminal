@@ -163,7 +163,7 @@ THEMES = {
     "锂": ("LIT.US", ["PLS", "MIN", "IGO", "LTR", "CXO", "SYA", "LKE", "VUL", "GL1", "INR"]),
     "铀": ("URA.US", ["PDN", "BOE", "DYL", "LOT", "BMN", "PEN", "AGE", "DEV", "NXG"]),
 }
-THEME_TEXT = {  # round 17: residual 20-day catch-up when the basket lags (z<-1), and overnight behaviour
+THEME_TEXT = {  # round 17/23: overnight behaviour (catch-up only robust for gold)
     "黄金": ("+3.5%", "金价隔夜涨跌开盘就反映完，别开盘追。金价 20 天涨超 5% 时，金矿股之后 20 天平均跑赢大盘约 5%。"),
     "石油天然气": ("+2.0%", "油价隔夜涨跌基本在开盘反映完。"),
     "铜": ("+1.5%", "铜价隔夜大涨后，铜矿股开盘后平均还会多走约 0.6%。"),
@@ -326,8 +326,10 @@ def insight(code, provider):
             tinfo["theme"] = theme
             z = tinfo["z"]
             catch, note = THEME_TEXT[theme]
-            if z < -1:
-                S.append(sig("up", f"{theme}股落后于商品", f"{theme}股篮子近 20 天相对大盘 {tinfo['basket_20d']:+.1f}%，商品 {tinfo['commodity_20d']:+.1f}%，明显落后（z={z:.1f}）。历史上这种情况之后 20 天平均补涨 {catch}，两段时间都成立。"))
+            if z < -1 and theme == "黄金":
+                S.append(sig("up", "金矿股落后于金价", f"金矿股篮子近 20 天相对大盘 {tinfo['basket_20d']:+.1f}%，金价 {tinfo['commodity_20d']:+.1f}%，明显落后（z={z:.1f}）。2015 年以来 28 次独立出现，之后 20 天平均补涨约 5%（中位数 3.7%，68% 的情况为正）。"))
+            elif z < -1:
+                S.append(sig("info", f"{theme}股落后于商品", f"{theme}股近 20 天落后于自己的商品（z={z:.1f}）。按独立事件检验，{theme}股的“补涨”在统计上不显著，只作参考。"))
             elif z > 1:
                 S.append(sig("info", f"{theme}股跑在商品前面", f"{theme}股篮子近 20 天跑赢自己的商品（z={z:.1f}），之后补涨优势消失，2022 年后略偏弱。"))
             if theme == "黄金" and tinfo["commodity_20d"] > 5:
