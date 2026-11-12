@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–28 轮</title>
+<title>ASX 量化研究报告 · 第 1–29 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,12 +41,12 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–28 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–29 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论（25 轮研究后）</h3>
 <ul>
-<li><b>最难打败的是“买 ASX 200 ETF 长期持有”</b>（含股息年化约 8.7%）。只靠价格、成交量这类技术指标选个股做短线，扣完成本后都没赢过它，包括“新高突破”组合。</li>
+<li><b>最难打败的是“买 ASX 200 ETF 长期持有”</b>（含股息年化约 8.7%）。只靠价格、成交量这类技术指标选个股做短线，扣完成本后都没赢过它，包括“新高突破”组合和动量、低波动等因子组合（2022 年后全部跑输）。</li>
 <li><b>真正有用的是大盘层面的择时和风控</b>：
 <ul>
 <li>澳联储决议比预期鹰派（2 年国债收益率当天涨 ≥6bp）后，减半仓一周</li>
@@ -482,6 +482,27 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 </table></div>
 <p><b>结论：</b><b>折价配股复牌后，股价通常继续往下走</b>（扣成本后 5 天平均约 −4%，20 天约 −3.7%），两段时间都成立，小盘股更明显。原因：拿到折价新股的机构往往在复牌后陆续卖出套利。<b>别在复牌第一天“抄便宜”</b>，至少等 1–4 周。利好复牌没有稳定规律。</p>
 <p class="note">方向面板会识别近 15 天内“停牌后复牌大跌”的情况并提示。</p>
+</div>
+
+<h2>第 29 轮：大盘股因子组合 vs ASX 200（按真实组合衡量）</h2>
+<div class="card">
+<p class="note">每月末从流动性好的股票（日成交 ≥$500 万、股价 ≥$1，约等于 ASX 200）中，按因子分成 5 组等权持有一个月，扣换仓成本，含股息，对比 ASX 200 全收益指数。2015–2026 年共 141 个月。</p>
+<div class="scroll"><table>
+<tr><th>组合（年化）</th><th>全期</th><th>2015–21</th><th>2022 后</th><th>最大回撤</th></tr>
+<tr><td><b>ASX 200 全收益（基准）</b></td><td><b>8.3%</b></td><td>8.6%</td><td><b>7.8%</b></td><td>−27%</td></tr>
+<tr><td>过去一年最强的 20%（动量最高）</td><td class="up">11.0%</td><td class="up">14.7%</td><td class="dn">5.9%</td><td>−32%</td></tr>
+<tr><td>过去一年最弱的 20%</td><td class="dn">3.4%</td><td>7.1%</td><td class="dn"><b>−1.6%</b></td><td>−34%</td></tr>
+<tr><td>最靠近 52 周高点的 20%</td><td class="dn">5.2%</td><td>6.5%</td><td class="dn">3.4%</td><td>−26%</td></tr>
+<tr><td>离 52 周高点最远的 20%</td><td class="dn">4.5%</td><td>10.8%</td><td class="dn"><b>−3.9%</b></td><td>−39%</td></tr>
+<tr><td>波动最低的 20%</td><td class="dn">5.7%</td><td>5.6%</td><td class="dn">5.8%</td><td>−27%</td></tr>
+<tr><td>波动最高的 20%</td><td>10.7%</td><td class="up">18.2%</td><td class="dn">0.9%</td><td>−43%</td></tr>
+</table></div>
+<p><b>结论：</b></p>
+<ul>
+<li><b>2022 年以后，没有一个因子组合跑赢 ASX 200。</b>动量最强组在 2015–21 年很好（14.7%），之后掉到 5.9%。大盘被 CBA 等超大市值股推高，等权的“聪明选股”很难追上。</li>
+<li><b>最稳定的是避坑</b>：过去一年最弱、离高点最远的大盘股，2022 年后每年 −1.6% 和 −3.9%。<b>别买“跌了很多看起来便宜”的大盘股</b>，除非有明确的基本面理由。</li>
+<li>“低波动股票更稳更好”在澳股不成立。</li>
+</ul>
 </div>
 
 <h2>第 9 轮：什么宏观环境，持有什么板块</h2>
