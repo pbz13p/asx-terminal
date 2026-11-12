@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASX 量化研究报告 · 第 1–10 轮</title>
+<style>
+:root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 600px at 80% -10%,#1a0f3a 0,transparent 60%),radial-gradient(900px 500px at -10% 20%,#062a33 0,transparent 55%),var(--bg);color:var(--tx);font:16px/1.65 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+.wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:26px;margin:8px 0 4px;background:linear-gradient(90deg,var(--cy),var(--vi),var(--dn));-webkit-background-clip:text;color:transparent}
+.sub{color:var(--mu);font-size:13px}
+h2{font-size:20px;margin:34px 0 10px;padding-left:10px;border-left:3px solid var(--cy)}
+h3{font-size:16px;margin:0 0 6px}
+.card{background:linear-gradient(180deg,#0e1120,#090b14);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 0 0 1px #ffffff05,0 10px 30px #0008}
+.tldr{border-color:#2b3f7a;box-shadow:0 0 30px #29e7ff22}
+.tldr li{margin:6px 0}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;margin-right:6px;font-weight:600}
+.g{background:#19ff9c1f;color:var(--up)}.r{background:#ff2e741f;color:var(--dn)}.y{background:#ffc83d1f;color:var(--am)}.c{background:#29e7ff1f;color:var(--cy)}
+.up{color:var(--up)}.dn{color:var(--dn)}.mu{color:var(--mu)}.am{color:var(--am)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{color:var(--mu);font-weight:500;font-size:12px}
+.scroll{overflow-x:auto}
+.bar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:14px}
+.bar .lb{width:118px;flex:none}
+.bar .tr{flex:1;height:14px;background:#141832;border-radius:8px;position:relative;overflow:hidden}
+.bar .fl{position:absolute;top:0;bottom:0;border-radius:8px}
+.bar .v{width:64px;text-align:right;flex:none;font-variant-numeric:tabular-nums}
+.big{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.kpi{background:#0f1326;border:1px solid var(--line);border-radius:12px;padding:12px}
+.kpi .l{color:var(--mu);font-size:12px}
+.note{font-size:13px;color:var(--mu)}
+.chips span{display:inline-block;background:#141832;border:1px solid var(--line);border-radius:8px;padding:2px 8px;margin:3px 3px 0 0;font-size:13px}
+footer{margin-top:40px;font-size:12px;color:var(--mu)}
+</style>
+</head>
+<body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
+
+<h1>ASX 量化研究报告</h1>
+<div class="sub">第 1–10 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+
+<div class="card tldr">
+<h3>一句话结论</h3>
+<ul>
+<li><b>挑个股做短线，扣完成本后没有找到稳定赚钱的方法。</b>模型能排出强弱（预测力在统计上很显著），但可交易股票一买一卖平均成本约 <b>0.75%</b>，把优势全部吃掉了。</li>
+<li><b>最可靠的规律都在“大盘”层面，而且都是“恐慌之后买”：</b>VIX≥25、美股或澳股 3 个月跌超 5% 之后，ASX 200 接下来 1 个月平均 <span class="up">+1.6% 到 +2.7%</span>，3 个月平均 <span class="up">+4.6% 到 +5.8%</span>，上涨概率 71–78%。正常时期 1 个月平均只有约 +0.4%。两段时间都成立。</li>
+<li><b>宏观数据公布日波动会变大，但方向猜不出来。</b>美联储决议后的澳股交易日，波动比平时大 30%；澳联储决议日和美国非农公布后大 21%；澳洲季度 CPI 日反而不比平时大。</li>
+<li><b>债券市场是最好的宏观“翻译器”：</b>澳 2 年收益率 3 个月跌超 0.5%（市场押降息）后，澳股 1 个月平均 <span class="up">+2.9%</span>，上涨概率 85%；澳联储决议出现鹰派意外后，接下来一周平均 <span class="dn">−0.7%</span>。两段时间都成立。</li>
+<li><b>现在：</b>市场处于“正常”状态（VIX 17.5），预测下周和下个月的波动都在历史中位数附近（年化约 10–12%）。接下来值得注意的是 <b>12 月 8 日澳联储</b>和 <b>12 月 10 日（美联储后）</b>。</li>
+</ul>
+</div>
+
+<h2>能用的发现（按可靠程度排序）</h2>
+
+<div class="card">
+<h3><span class="tag g">最强</span>恐慌之后买大盘（1 个月 / 3 个月）</h3>
+<p class="note">每 5 个交易日取一个样本，看当时的宏观状态，再看之后 ASX 200 的涨跌。“独立次数”是相隔 3 个月以上才算一次新的恐慌，样本其实不多，要谨慎。</p>
+<div class="scroll"><table>
+<tr><th>当时的状态</th><th>独立次数</th><th>之后 1 个月</th><th>之后 3 个月</th><th>1 个月上涨概率</th><th>2015–21</th><th>2022 后</th></tr>
+<tr><td>美股 3 个月跌超 5%</td><td>9</td><td class="up">+2.65%</td><td class="up">+5.84%</td><td>78%</td><td class="up">+3.20%</td><td class="up">+2.12%</td></tr>
+<tr><td>VIX ≥ 25（恐慌）</td><td>10</td><td class="up">+1.69%</td><td class="up">+5.03%</td><td>76%</td><td class="up">+1.71%</td><td class="up">+1.66%</td></tr>
+<tr><td>ASX 200 3 个月跌超 5%</td><td>11</td><td class="up">+1.64%</td><td class="up">+4.60%</td><td>71%</td><td class="up">+1.25%</td><td class="up">+2.75%</td></tr>
+<tr><td class="mu">对比：大盘平稳时</td><td class="mu">—</td><td class="mu">+0.35%</td><td class="mu">+0.63%</td><td class="mu">57%</td><td class="mu">+0.38%</td><td class="mu">+0.30%</td></tr>
+<tr><td class="mu">对比：大盘 3 个月涨超 5%</td><td class="mu">—</td><td class="mu">+0.02%</td><td class="mu">+0.60%</td><td class="mu">57%</td><td class="mu">+0.07%</td><td class="mu">−0.08%</td></tr>
+</table></div>
+<p class="note">注意：这是价格指数，不含约 4%/年 的股息。恐慌期间波动接近平时的 2 倍（年化约 21% 对 12%），买进去之后可能先继续跌。更适合用来决定“什么时候加仓 ETF（如 IOZ/STW）”，而不是做短线。</p>
+</div>
+
+<div class="card">
+<h3><span class="tag g">稳定</span>大盘连跌 3 天后买（1 周 / 2 周）</h3>
+<p>ASX 200 连跌 3 天后买入：之后 5 天平均 <span class="up">+0.40%</span>（t=2.6，两段都成立），10 天 <span class="up">+0.60%</span>。</p>
+<p>做成策略回测：年化 3.2–3.9%，一直持有是 4.5%（都是价格指数）；但最大回撤只有 −13% 到 −18%，一直持有是 −33%。<b>收益没有更高，但风险小很多。</b></p>
+</div>
+
+<div class="card">
+<h3><span class="tag r">已基本失效（第 6 轮）</span>隔夜效应：收盘竞价买、开盘竞价卖</h3>
+<p>大涨之后的第二天，<b>隔夜段（收盘→开盘）继续涨，盘中段（开盘→收盘）回吐</b>：</p>
+<div class="bar"><span class="lb">涨 10–20% 后·隔夜</span><span class="tr"><span class="fl" style="left:50%;width:14.5%;background:var(--up)"></span></span><span class="v up">+0.63%</span></div>
+<div class="bar"><span class="lb">涨 10–20% 后·盘中</span><span class="tr"><span class="fl" style="right:50%;width:18.4%;background:var(--dn)"></span></span><span class="v dn">−0.80%</span></div>
+<div class="bar"><span class="lb">涨 ≥20% 后·隔夜</span><span class="tr"><span class="fl" style="left:50%;width:29.8%;background:var(--up)"></span></span><span class="v up">+1.30%</span></div>
+<div class="bar"><span class="lb">涨 ≥20% 后·盘中</span><span class="tr"><span class="fl" style="right:50%;width:50%;background:var(--dn)"></span></span><span class="v dn">−2.18%</span></div>
+<p>中盘股在每个星期几都是“隔夜涨、盘中跌”（隔夜 +0.12% 到 +0.22%）。如果在<b>收盘竞价买、第二天开盘竞价卖</b>，不用付买卖价差，只付约 0.16% 佣金，理论上有利可图。<b>但 2022 年以后变弱了</b>，而且需要验证竞价成交量够不够大。这是下一步最值得深挖的方向。</p>
+<p class="note">隔夜漂移在两段时间都稳定的股票（78 只里的一部分）：</p>
+<div class="chips"><span>WAM</span><span>ARG</span><span>MSB</span><span>RFF</span><span>AFI</span><span>VUL</span><span>MFF</span><span>SYR</span><span>SPK</span><span>EOS</span><span>NVX</span><span>SOL</span><span>HLO</span><span>COF</span><span>MXT</span></div>
+</div>
+
+<div class="card">
+<h3><span class="tag r">要避免</span>追大涨 / 用美股信号抢开盘</h3>
+<ul>
+<li><b>不要第二天开盘追大涨股</b>：开盘后普遍回吐，两段时间都成立。</li>
+<li><b>美股隔夜的涨跌在澳股开盘那一刻就已经反映完了</b>：美股涨 1–2% → 澳股个股平均高开 0.79%，之后盘中几乎为 0。看到美股大涨再去买，已经晚了。</li>
+</ul>
+</div>
+
+<h2>宏观数据公布日：波动有多大？</h2>
+<div class="card">
+<p class="note">ASX 200 在公布后第一个能反应的交易日的平均绝对涨跌幅，跟平时（0.64%）比的倍数。美国数据在悉尼的夜里公布，所以看的是第二天的澳股。</p>
+<div id="evbars"></div>
+<div class="scroll" style="margin-top:12px"><table>
+<tr><th>事件</th><th>次数</th><th>当天平均</th><th>之后 1 周</th><th>之后 1 个月</th><th>当天上涨概率</th></tr>
+<tr><td>美联储 利率决议</td><td>95</td><td class="dn">−0.17%</td><td class="dn">−0.18%</td><td class="up">+0.61%</td><td>46%</td></tr>
+<tr><td>　其中 加息</td><td>20</td><td class="dn">−0.20%</td><td class="dn">−0.10%</td><td class="up">+0.53%</td><td></td></tr>
+<tr><td>　其中 降息</td><td>11</td><td class="dn">−1.18%</td><td class="dn">−3.00%</td><td class="dn">−1.21%</td><td></td></tr>
+<tr><td>　其中 不变</td><td>58</td><td class="up">+0.06%</td><td class="up">+0.30%</td><td class="up">+0.97%</td><td></td></tr>
+<tr><td>澳联储 利率决议</td><td>122</td><td class="up">+0.06%</td><td class="up">+0.04%</td><td class="up">+0.52%</td><td>54%</td></tr>
+<tr><td>　其中 加息</td><td>13</td><td class="up">+0.04%</td><td class="dn">−1.11%</td><td class="up">+0.15%</td><td></td></tr>
+<tr><td>　其中 降息</td><td>13</td><td class="up">+0.25%</td><td class="up">+0.42%</td><td class="up">+0.39%</td><td></td></tr>
+<tr><td>美国 非农就业</td><td>142</td><td class="up">+0.08%</td><td class="up">+0.12%</td><td class="up">+0.48%</td><td>59%</td></tr>
+<tr><td>澳洲 就业数据</td><td>142</td><td class="up">+0.04%</td><td class="up">+0.12%</td><td class="up">+0.40%</td><td>57%</td></tr>
+<tr><td>澳洲 季度 CPI</td><td>47</td><td class="up">+0.01%</td><td class="up">+0.01%</td><td class="up">+0.71%</td><td>53%</td></tr>
+</table></div>
+<p><b>怎么解读：</b></p>
+<ul>
+<li>美联储降息后澳股大跌，<b>不是降息导致下跌</b>：样本里的降息大多是危机时的紧急降息（2019 年贸易战、2020 年疫情）。原因和结果是反过来的。</li>
+<li>澳联储加息当天几乎没影响，但之后 1 周平均 −1.1%，<b>地产信托（REITs）加息当天 −0.47%</b>，是对利率最敏感的板块。降息日医疗、矿业表现较好。样本只有 13 次，参考即可。</li>
+<li>没有一个事件的“当天方向”稳定到可以交易。能确定的只有：<b>这些日子波动会更大</b>，适合减仓位或避开，而不是押方向。</li>
+</ul>
+<p class="note">局限：我们的 EODHD 套餐没有经济日历（预期值 vs 实际值），也没有债券收益率数据，所以 CPI“超预期 / 低于预期”还没法分开测。日期按官方日历和惯例整理，澳洲就业数据日期为近似值。美国 CPI 暂未纳入。</p>
+</div>
+
+<h2>波动预测：下周和下个月</h2>
+<div class="card">
+<div class="grid">
+<div class="kpi"><div class="l">下 5 个交易日 预测波动（年化）</div><div class="big">10.2%</div><div class="note">历史第 48 百分位 · 正常</div></div>
+<div class="kpi"><div class="l">下 20 个交易日 预测波动（年化）</div><div class="big">11.7%</div><div class="note">历史第 53 百分位 · 正常</div></div>
+<div class="kpi"><div class="l">VIX（美股恐慌指数）</div><div class="big">17.5</div><div class="note">15–25 正常区间</div></div>
+<div class="kpi"><div class="l">最近 22 天实际波动</div><div class="big">11.4%</div><div class="note">截至 2026-11-12</div></div>
+</div>
+<p style="margin-top:12px">换成每天的幅度：年化 10–12% 约等于 <b>ASX 200 每天平均涨跌 0.6–0.7%</b>，一周大约 ±1.5%。</p>
+<p><b>预测准不准（2018 年起逐年“只用过去预测未来”检验）：</b></p>
+<div class="scroll"><table>
+<tr><th>方法</th><th>下 1 周 解释力 R²</th><th>下 1 个月 解释力 R²</th></tr>
+<tr><td>照搬上一期的波动</td><td>0.26</td><td class="dn">−0.06</td></tr>
+<tr><td>近期波动加权（HAR 模型）</td><td>0.35</td><td class="up">0.24</td></tr>
+<tr><td>+ VIX</td><td class="up">0.40</td><td>0.23</td></tr>
+<tr><td>+ VIX + 期内宏观事件数</td><td class="up">0.40</td><td>0.22</td></tr>
+</table></div>
+<p class="note">结论：预测<b>波动大小</b>比预测<b>涨跌方向</b>可靠得多。VIX 对预测下一周的澳股波动很有用；宏观事件日历几乎不增加额外信息（因为 VIX 已经提前反映了）。</p>
+<p><b>接下来的宏观事件：</b></p>
+<div class="scroll"><table>
+<tr><th>事件</th><th>公布日</th><th>澳股反应日</th></tr>
+<tr><td>澳洲 就业数据（约）</td><td>11 月 19 日（四）</td><td>当天</td></tr>
+<tr><td>美国 非农就业</td><td>12 月 4 日（五）</td><td>12 月 7 日（一）</td></tr>
+<tr><td>澳联储 利率决议</td><td>12 月 8 日（二）</td><td>当天下午 2:30</td></tr>
+<tr><td>美联储 利率决议</td><td>12 月 9 日（三，美东）</td><td>12 月 10 日（四）</td></tr>
+</table></div>
+</div>
+
+<h2>板块</h2>
+<div class="card">
+<p><b>板块轮动策略（每月买最近最强的板块）已经失效：</b>2022 年前每月超额 +0.96%，2022 年后只剩 +0.10%。</p>
+<p><b>最近 20 天板块动量</b>（只描述现状，不代表会延续）：</p>
+<div id="secbars"></div>
+<p class="note">生物科技、半导体、科技硬件的隔夜漂移最大，但交易成本也最高。</p>
+</div>
+
+<h2>选股模型：为什么不赚钱</h2>
+<div class="card">
+<p>用 12 个特征（过去 1/5/20/60 天涨幅、波动、成交量放大、离 52 周高点的距离、隔夜/盘中、板块动量、大盘）训练模型，2018 年起每年只用过去的数据，预测未来。</p>
+<div class="scroll"><table>
+<tr><th>持有期</th><th>预测力 IC</th><th>t 值</th><th>前 10% 扣成本后</th></tr>
+<tr><td>1 天</td><td>0.062</td><td>20.7</td><td class="dn">−0.40% / 天</td></tr>
+<tr><td>1 周</td><td>0.036</td><td>—</td><td class="dn">−0.35% / 周</td></tr>
+<tr><td>1 个月</td><td>0.015</td><td>—</td><td class="dn">跑输全市场</td></tr>
+</table></div>
+<p>最有用的信号：<b>离 52 周高点越近，后面越强</b>；<b>昨晚跳空高开和最近 5 天涨太多，后面越弱</b>（短期反转）。</p>
+<p class="note">模型最新排名靠前（仅作研究记录，不是买入建议）：1 周 → ALL、CTD、FLT、BVS、CWY；1 个月 → CTD、CMM、CWY、GMD、GQG。</p>
+</div>
+
+<h2>第 7 轮：用债券市场衡量“意外”（官方免费数据）</h2>
+<div class="card">
+<p class="note">没有付费的“市场预期值”也能测意外：数据公布当天，<b>2 年期国债收益率</b>涨得多 = 比预期鹰派（偏加息），跌得多 = 比预期鸽派（偏降息）。澳洲用 RBA 官方 F2 表，美国用美联储 FRED。每类事件按收益率变化分成三等份。</p>
+<h3>⭐ 澳联储决议：鹰派意外之后，接下来一周偏弱</h3>
+<div class="scroll"><table>
+<tr><th>澳联储决议当天</th><th>次数</th><th>2 年收益率</th><th>当天</th><th>之后 1 周</th><th>之后 1 个月</th><th>1 周上涨概率</th><th>1 周·2015–21</th><th>1 周·2022 后</th></tr>
+<tr><td>鸽派意外</td><td>40</td><td>−6.3bp</td><td class="up">+0.17%</td><td class="up">+0.53%</td><td class="up">+1.43%</td><td>62%</td><td class="up">+1.03%</td><td class="dn">−0.16%</td></tr>
+<tr><td>符合预期</td><td>42</td><td>+0.2bp</td><td class="up">+0.10%</td><td class="up">+0.12%</td><td class="up">+0.48%</td><td>62%</td><td class="up">+0.27%</td><td class="dn">−0.51%</td></tr>
+<tr><td><b>鹰派意外</b></td><td>40</td><td>+6.5bp</td><td class="dn">−0.09%</td><td class="dn"><b>−0.70%</b></td><td class="dn">−0.53%</td><td>45%</td><td class="dn">−0.61%</td><td class="dn">−0.81%</td></tr>
+</table></div>
+<p>鹰派意外之后一周，<b>所有板块都跌</b>，地产信托（−0.88%）、矿业和科技（−0.77%）最弱。两段时间都成立，但每段只有约 20 次，属于“值得关注”而不是“确定”。</p>
+<p><b>怎么用：</b>澳联储决议当天下午 2:30 后，看澳洲 3 年期国债期货（或 ASX RBA Rate Tracker）。如果收益率明显上升（市场觉得更鹰），接下来一周不急着加仓，利率敏感的 REITs 尤其小心。</p>
+<p class="note">澳洲 CPI、就业数据、美联储决议、美国非农、<b>美国 CPI</b>（已用 ALFRED 官方历史公布日期，146 次）：意外方向对之后一周/一个月<b>没有稳定影响</b>。美国 CPI 只影响第二天的澳股板块：鸽派意外时科技 +0.78%、REITs +0.49%；鹰派时科技 −0.43%、REITs −0.35%，之后就没有规律了。CPI 鸽派意外当天涨（+0.43%）、鹰派当天跌，但第二天起就没有规律了，说明市场当天就消化完了。</p>
+<h3 style="margin-top:16px">⭐ 债券市场状态 → 之后 1 个月 / 3 个月</h3>
+<div class="scroll"><table>
+<tr><th>状态（每周取样）</th><th>样本</th><th>之后 1 个月</th><th>之后 3 个月</th><th>上涨概率</th><th>2015–21</th><th>2022 后</th></tr>
+<tr><td><b>澳 2 年收益率 3 个月内跌超 0.5%</b>（市场开始押降息）</td><td>33</td><td class="up"><b>+2.87%</b></td><td class="up">+4.23%</td><td>85%</td><td class="up">+2.80%</td><td class="up">+2.98%</td></tr>
+<tr><td>美 10 年收益率 3 个月内跌超 0.5%</td><td>47</td><td class="up">+1.98%</td><td class="up">+4.68%</td><td>83%</td><td class="up">+2.67%</td><td class="up">+0.87%</td></tr>
+<tr><td>澳 2 年收益率 3 个月内涨超 0.5%（押加息）</td><td>68</td><td>+0.25%</td><td class="dn">−0.87%</td><td>60%</td><td>+0.14%</td><td>+0.26%</td></tr>
+<tr><td class="mu">对比：收益率基本不变</td><td class="mu">488</td><td class="mu">+0.28%</td><td class="mu">+1.16%</td><td class="mu">57%</td><td class="mu">+0.28%</td><td class="mu">+0.29%</td></tr>
+</table></div>
+<p>这和“恐慌后买”是同一件事的两面：<b>市场开始押注降息时，澳股之后往往表现好</b>；押注加息时，之后 3 个月偏弱。样本集中在少数几段时期（如 2019、2020），要谨慎。</p>
+<p><b>现在（11 月初）：</b>澳 2 年 4.83%、10 年 5.08%，3 个月内基本不变；美 10 年 4.88%，美债利差 +0.25%（平坦）。<b>两个信号都没有触发。</b></p>
+</div>
+
+<div class="card" style="border-color:#19ff9c55">
+<h3><span class="tag g">第 8 轮复核</span>这两个信号经得起检验吗？</h3>
+<ul>
+<li><b>澳联储鹰派 vs 鸽派意外</b>：之后 1 周相差 <b>1.23 个百分点</b>。把“鹰/鸽”标签随机打乱 5000 次，只有 0.6% 的情况能达到这么大的差距（p≈0.006）；10 天 p≈0.03，2 天 p≈0.08。<b>1 周是最清楚的窗口。</b></li>
+<li><b>澳 2 年收益率 3 个月跌超 0.5%</b>：一共只有 <b>7 段独立时期</b>（2015 初、2019 中、2020 疫情、2023-03、2024 初、2024 秋、2025 年 4–6 月），<b>7 段之后全部上涨</b>（+0.2% 到 +6.8%）。去掉任何一段，平均值仍在 +2.0% 到 +3.4%。最大贡献来自 2020 和 2025 两次大跌后的反弹。</li>
+</ul>
+<p class="note">结论：这两个信号是目前研究里最可信的宏观规律。但 7 段、40 次都不算多，适合当作“加减仓的参考”，不适合重仓押注。</p>
+</div>
+
+<h2>第 10 轮：业绩季跳空之后（2 月 / 8 月）</h2>
+<div class="card">
+<p class="note">业绩季（2/5–3/5、8/5–9/5）里，开盘跳空 ≥5% 且成交量 ≥ 平时 3 倍，基本就是业绩公布的反应。<b>第二天开盘才进场</b>（业绩已知），扣除价差和佣金。可交易股票，2014–2026。</p>
+<div class="scroll"><table>
+<tr><th>情况</th><th>次数</th><th>持有 5 天（扣成本）</th><th>持有 20 天（扣成本）</th><th>2015–21 / 2022 后（5 天）</th></tr>
+<tr><td><b>业绩季 高开 ≥5%，当天收盘仍高于开盘</b> → 买入</td><td>489</td><td class="up"><b>+1.37%</b></td><td class="up">+0.68%（不稳定）</td><td class="up">+1.49% / +1.25%</td></tr>
+<tr><td>业绩季 高开 ≥5%（全部）→ 买入</td><td>838</td><td class="up">+1.03%</td><td>−0.06%</td><td class="up">+0.84% / +1.27%</td></tr>
+<tr><td><b>业绩季 低开 ≥5%</b> → 之后继续跌</td><td>725</td><td>股价约 −0.7%</td><td class="dn"><b>股价约 −2.0%</b>（59% 的情况继续跌）</td><td>20 天：−2.8% / −1.1%</td></tr>
+<tr><td class="mu">对比：非业绩季 高开 ≥5% → 买入</td><td class="mu">1934</td><td class="dn">−0.89%</td><td class="mu">0.0%</td><td class="mu">−1.07% / −0.65%</td></tr>
+<tr><td class="mu">对比：非业绩季 低开 ≥5%</td><td class="mu">1601</td><td class="mu">之后反弹</td><td class="mu">反弹约 +0.8%</td><td class="mu"></td></tr>
+</table></div>
+<p><b>结论（两段时间都成立）：</b></p>
+<ul>
+<li><b>业绩好、跳空高开、当天还站稳的股票，买入持有约 1 周</b>，扣成本平均 +1.4%。这和“平时不要追大涨”正好相反：<b>有业绩支撑的跳涨会延续，没有业绩的跳涨会回吐。</b></li>
+<li><b>业绩差、跳空低开的股票，不要急着抄底</b>：之后一个月平均再跌约 2%。没有业绩原因的大跌反而会反弹。</li>
+<li>胜率只有约 50%，平均值靠一部分大涨撑起来，要分散买多只，不要单押。</li>
+</ul>
+<p class="note">注意：比较对象 ASX 200 是价格指数，不含股息；业绩季也是除息季，所以我只看扣成本后的绝对收益，没有用“跑赢大盘”的数字下结论。下一个业绩季：2027 年 2 月。</p>
+</div>
+
+<h2>第 9 轮：什么宏观环境，持有什么板块</h2>
+<div class="card">
+<p class="note">“超额”= 板块之后 1 个月的涨幅减去 ASX 200 的涨幅。只列两段时间（2015–21、2022 后）方向一致的结果。</p>
+<div class="scroll"><table>
+<tr><th>宏观状态</th><th>跑赢大盘（1 个月超额）</th><th>跑输大盘</th></tr>
+<tr><td><b>市场押降息</b>（澳 2 年 3 个月跌 &gt;0.5%）</td><td class="up">科技 +4.5%、REITs +1.2%、可选消费 +1.1%、小盘 +0.7%</td><td class="dn">必需消费 −1.8%、公用事业 −1.8%、能源 −0.3%</td></tr>
+<tr><td><b>市场押加息</b>（澳 2 年 3 个月涨 &gt;0.5%）</td><td class="up">公用事业 +2.4%、能源 +1.5%、矿业 +1.3%</td><td class="dn">科技 −2.7%、医疗 −1.9%、小盘 −1.0%</td></tr>
+<tr><td><b>VIX ≥ 25 恐慌</b></td><td class="up">科技 +3.1%、矿业 +1.1%、能源 +0.8%</td><td class="dn">必需消费 −1.0%、医疗 −0.9%、REITs −0.4%</td></tr>
+<tr><td><b>VIX 15–25 正常</b>（现在）</td><td class="up">矿业 +0.6%（两段都是 +0.6%）、工业 +0.2%</td><td class="dn">电信 −0.4%</td></tr>
+</table></div>
+<p><b>每天对利率的敏感度</b>（澳 2 年收益率每涨 0.1%，板块相对大盘）：<span class="up">能源 +0.53%</span>、金融 +0.09%；<span class="dn">REITs −0.42%</span>、医疗 −0.11%、小盘 −0.12%。澳元每涨 1%：科技、矿业、能源相对 +0.1%，必需消费 −0.22%。</p>
+<p><b>现在：</b>澳 2 年收益率 3 个月内 <b>+0.32%</b>（偏向加息，但没到 0.5% 的门槛），VIX 约 18（正常）。按历史，<b>矿业相对占优，科技和 REITs 偏弱</b>。如果收益率继续升过 +0.5%，科技和医疗历史上明显跑输。</p>
+<p class="note">这是一个“看环境选板块”的框架，适合 ETF 或板块龙头做 1 个月左右的波段。样本都不大，降息状态只有约 29 个周度样本。</p>
+</div>
+
+<div class="card">
+<h3>澳股季节性（ASX 200，2015–2026）</h3>
+<div id="mbars"></div>
+<ul>
+<li><b>7 月最强</b>：平均 +2.8%，12 年里 11 年上涨，两段都成立（年底报税抛售结束后的反弹）。<b>11 月</b> +2.1%、<b>4 月</b> +2.1% 也强。</li>
+<li><b>9 月最弱</b>：平均 −2.0%，只有 25% 的年份上涨；<b>3 月</b> −1.8%。注意：这是价格指数，银行和矿业大多在 2–3 月和 8–9 月除息，<b>弱势有一部分只是除息造成的</b>，不完全是真的下跌。</li>
+<li><b>圣诞行情</b>（12 月 15 日 → 1 月第 5 个交易日）：12 年里 11 年上涨，平均 +1.7%，但 2022 年后明显变弱（−0.7%、+0.1%、+0.6%、+1.0%）。</li>
+<li><b>“6 月报税抛售、7 月反弹”选股</b>（买过去一年跌最多的 10% 股票）：11 年里只有 5 年跑赢，平均值被 2022 年一次 +16.5% 拉高。<b>不可靠。</b></li>
+</ul>
+</div>
+
+<h2>波段高手每天 / 每周看什么（全部免费）</h2>
+<div class="card">
+<ol>
+<li><b>早上开盘前</b>：美股收盘和 VIX。注意：美股的涨跌在澳股开盘时已经反映完，<b>不要开盘去追</b>。VIX ≥ 25 是“准备加仓”的信号。</li>
+<li><b>利率预期</b>：ASX RBA Rate Tracker（每天收盘更新，看下次决议加/降息概率）和澳 2 年/3 年国债收益率。收益率 3 个月内大跌 = 偏利好；决议日收益率大涨 = 接下来一周小心。</li>
+<li><b>事件日历</b>：Forex Factory 日历（每周有 AUD、USD 事件的预期值和前值），本周有大事件的日子波动大，适合减小仓位，不押方向。</li>
+<li><b>每月</b>：ABS（澳洲统计局）CPI/就业、RBA 声明；美国 CPI、非农、美联储声明。看“实际 vs 预期”的差距和当天债券的反应。</li>
+</ol>
+</div>
+
+<h2>数据来源：免费 vs 付费</h2>
+<div class="card">
+<p><b>✅ 免费，已在我们的自动研究里测通、正在使用：</b></p>
+<div class="scroll"><table>
+<tr><th>来源</th><th>内容</th><th>更新</th></tr>
+<tr><td>RBA 统计表（rba.gov.au）</td><td>现金利率、澳债 2/3/5/10 年收益率、汇率、CPI 汇总</td><td>每日数据，F2 收益率每周五发布</td></tr>
+<tr><td>FRED（圣路易斯联储）</td><td>美债收益率、利差、VIX、美国 CPI、非农、联邦基金利率等 80 万个序列</td><td>每天</td></tr>
+<tr><td>ABS Data API（澳洲统计局）</td><td>CPI、就业、GDP 等官方原始数据</td><td>公布即更新</td></tr>
+<tr><td>Forex Factory 日历</td><td>本周全球事件 + 预期值 + 前值 + 实际值（只有本周）</td><td>实时</td></tr>
+<tr><td>ASX RBA Rate Tracker</td><td>下次澳联储决议的加/降息概率、未来 18 个月利率路径</td><td>每天收盘后</td></tr>
+<tr><td>美联储 / RBA 官网</td><td>决议声明、会议纪要、议息日历</td><td>按日程</td></tr>
+</table></div>
+<p class="note">❌ Nasdaq 公开经济日历拒绝了自动访问。我们的 EODHD 套餐不含经济日历和债券数据（已用上面的免费官方来源替代）。</p>
+<p class="note">美国 CPI、非农的历史公布日期已从 ALFRED（圣路易斯联储）免费下载，不需要注册 API Key。</p>
+<p><b>💰 付费（目前不需要买）：</b></p>
+<ul>
+<li><b>Trading Economics API</b>：最全的全球经济日历，含历史“预期 vs 实际”，能直接测“CPI 超预期”。第三方引用价格约 US$89/月起（以官网报价为准）。如果以后要深入做宏观意外交易，这个最值得买。</li>
+<li><b>Financial Modeling Prep（FMP）</b>：经济日历含预期值，比 Trading Economics 便宜，但澳洲数据覆盖要先确认。</li>
+<li><b>EODHD 升级套餐</b>：也有经济日历，但我们已经有 EODHD，升级前要确认澳洲数据是否完整。</li>
+<li><b>盈透 IBKR</b>（已在计划中）：实时行情、竞价数据、澳债期货，用于实盘，而不是历史研究。</li>
+<li>Bloomberg 终端：约 US$2.4 万/年，个人不划算。</li>
+</ul>
+<p><b>我的建议：</b>先不花钱。用债券反应当“意外”已经能做出有用的结果（见第 7 轮）。等我们选定方向，确实需要“预期值”历史时，再买 1 个月 Trading Economics 拉完历史数据就退订。</p>
+</div>
+
+<h2>第 6 轮：恐慌储备定投 &amp; 隔夜效应现在还在吗</h2>
+<div class="card">
+<h3>每月定投 $1000 到 ASX 200：普通定投 vs “一半留作储备，恐慌时全部投入”</h3>
+<div class="scroll"><table>
+<tr><th>规则</th><th>2015 年起 总收益</th><th>2022 年起 总收益</th></tr>
+<tr><td>普通定投</td><td>+38.4%</td><td>+17.1%</td></tr>
+<tr><td>VIX ≥ 20 时投入储备</td><td>+39.6%</td><td>+17.4%</td></tr>
+<tr><td>VIX ≥ 25 时投入储备</td><td>+38.8%</td><td>+16.6%</td></tr>
+<tr><td>VIX ≥ 30 时投入储备</td><td>+38.3%</td><td>+17.0%</td></tr>
+<tr><td><b>大盘离一年高点跌 10% 时投入储备</b></td><td class="up"><b>+40.0%</b></td><td class="up"><b>+18.9%</b></td></tr>
+<tr><td>大盘离一年高点跌 15% 时投入储备</td><td>+37.0%</td><td class="dn">+10.7%</td></tr>
+</table></div>
+<p><b>结论：</b>差别很小。最好的规则（跌 10% 时投入）比普通定投多赚约 1.6–1.8 个百分点（整个期间合计，不是每年）。门槛设太高（跌 15%）反而更差，因为钱长时间闲置。<b>普通定投已经足够好，不必为择时费心。</b></p>
+<h3 style="margin-top:16px">大涨后“收盘竞价买、开盘竞价卖”（扣 0.16% 佣金后，每次平均）</h3>
+<div id="onbars"></div>
+<p><b>结论：这个优势 2022 年以后基本消失了。</b>2015–2021 年每次净赚约 +0.2% 到 +0.6%，2022 年以后接近 0。胜率只有 41–56%，靠少数大赚撑起平均值。322 只有足够样本的股票里，有 82 只在两段时间都是正的（如 EOS、NVX、MSB、GLN、4DX），但这很可能是事后挑出来的运气，不建议据此交易。</p>
+</div>
+
+<h2>把规律做成 ETF 买卖规则：有用吗？（第 5 轮）</h2>
+<div class="card">
+<p class="note">用 ASX 200 指数模拟 ETF，2014 年中到 2026-11，换仓成本 0.1%，现金不算利息（保守），不含股息。所有信号只用前一天已知的数据。</p>
+<div class="scroll"><table>
+<tr><th>规则</th><th>平均仓位</th><th>年化收益</th><th>波动</th><th>最大回撤</th><th>夏普</th><th>2022 后年化</th></tr>
+<tr><td>一直持有</td><td>100%</td><td>4.1%</td><td>14.9%</td><td class="dn">−36.5%</td><td>0.34</td><td>4.3%</td></tr>
+<tr><td><b>恐慌加仓</b>：平时 50%，恐慌信号后 60 天 100%</td><td>83%</td><td class="up">4.3%</td><td>13.8%</td><td class="dn">−35.7%</td><td class="up">0.37</td><td>4.3%</td></tr>
+<tr><td>连跌 3 天后 100% 持有 5 天，平时 50%</td><td>65%</td><td>3.0%</td><td>10.1%</td><td class="dn">−27.5%</td><td>0.34</td><td>3.6%</td></tr>
+<tr><td>波动目标 12%（预测波动高就减仓）</td><td>81%</td><td class="dn">1.8%</td><td>10.2%</td><td class="dn">−17.4%</td><td class="dn">0.22</td><td class="dn">1.7%</td></tr>
+<tr><td>恐慌加仓 + 波动目标</td><td>67%</td><td>2.3%</td><td>9.4%</td><td class="dn">−21.7%</td><td>0.29</td><td>2.0%</td></tr>
+</table></div>
+<p><b>结论（老实说）：</b></p>
+<ul>
+<li><b>恐慌加仓</b>是唯一比一直持有略好的规则：用更少的平均仓位拿到差不多的收益，两段时间都不差。但优势很小。</li>
+<li><b>波动目标（高波动时减仓）在澳股上不划算</b>：回撤确实变小，但澳股大跌后反弹很快，减仓正好错过反弹，收益损失比风险减少得更多。这跟“恐慌之后买”的发现是一致的。</li>
+<li>对普通投资者最实在的结论：<b>长期持有 ETF，恐慌时不要卖，有闲钱就在恐慌时多买。</b>想靠短线择时明显跑赢，目前的数据不支持。</li>
+</ul>
+</div>
+
+<h2>下周可以一起讨论的方向</h2>
+<div class="card">
+<ol>
+<li><b>“恐慌加仓”细化</b>：第 5 轮已初步验证略优于一直持有。下一步测“平时定投 + 恐慌时加倍”和不同的恐慌门槛。</li>
+<li><b>隔夜策略</b>：第 6 轮显示 2022 年后已失效，建议放弃，除非用盈透的竞价数据找到新的变体。</li>
+<li><b>补上宏观“超预期”数据</b>：需要经济日历和债券收益率（升级 EODHD 套餐，或从 RBA/ABS 官网整理），才能真正测 CPI 超预期时哪些板块涨跌。</li>
+<li><b>波动预测用在期权或个股止损上</b>：第 5 轮显示用它给大盘减仓不划算，但预测本身是准的（R² 0.40），可以用来设止损幅度或判断期权贵不贵。</li>
+</ol>
+</div>
+
+<footer>本报告是历史数据统计研究，不是投资建议；过去的规律未来可能失效。我不是持牌财务顾问。交易成本按 Corwin-Schultz 价差估计 + 0.1% 佣金；可交易股票指股价 ≥ $0.20 且 20 日成交额中位数 ≥ $50 万。</footer>
+</div>
+<script>
+function bars(id,rows,max,fmt){const el=document.getElementById(id);rows.forEach(([l,v,c])=>{const w=Math.min(50,Math.abs(v)/max*50);const pos=v>=0?`left:50%;width:${w}%`:`right:50%;width:${w}%`;el.insertAdjacentHTML('beforeend',`<div class="bar"><span class="lb">${l}</span><span class="tr"><span class="fl" style="${pos};background:${c||(v>=0?'var(--up)':'var(--dn)')};box-shadow:0 0 10px ${c||(v>=0?'#19ff9c':'#ff2e74')}"></span></span><span class="v">${fmt(v)}</span></div>`)})}
+bars('evbars',[['美联储决议后',30,'var(--vi)'],['澳联储决议日',21,'var(--cy)'],['美国非农后',21,'var(--cy)'],['澳洲就业数据',3,'var(--mu)'],['澳洲季度CPI',-6,'var(--mu)']],35,v=>(v>=0?'+':'')+v+'%');
+bars('onbars',[['2015',0.22],['2016',0.34],['2017',0.54],['2018',0.29],['2019',0.32],['2020',0.61],['2021',0.23],['2022',0.05],['2023',-0.04],['2024',0.06],['2025',0.11],['2026',-0.04]],0.7,v=>(v>=0?'+':'')+v.toFixed(2)+'%');
+bars('mbars',[['1 月',1.09],['2 月',0.06],['3 月',-1.77],['4 月',2.07],['5 月',0.47],['6 月',-0.15],['7 月',2.83],['8 月',-0.54],['9 月',-2.04],['10 月',0.34],['11 月',2.05],['12 月',0.98]],3,v=>(v>=0?'+':'')+v.toFixed(2)+'%');
+bars('secbars',[["消费服务", 11.4], ["汽车", 8.8], ["房地产信托", 8.2], ["地产开发", 7.0], ["软件", 6.7], ["原材料/矿业", -2.7], ["电信", -3.7], ["半导体", -3.9], ["能源", -4.6], ["科技硬件", -12.3]],13,v=>(v>=0?'+':'')+v+'%');
+</script>
+</body></html>
