@@ -24,8 +24,7 @@ import study
 
 INDEX = {"XJO": "AXJO.INDX", "金融": "AXFJ.INDX", "矿业": "AXMJ.INDX", "科技": "AXIJ.INDX",
          "能源": "AXEJ.INDX", "医疗": "AXHJ.INDX", "地产信托": "AXPJ.INDX", "小盘": "AXSO.INDX"}
-MACRO = {"VIX": "VIX.INDX", "AUDUSD": "AUDUSD.FOREX", "AU10Y": "AU10Y.GBOND", "US10Y": "US10Y.GBOND",
-         "GOLD": "XAUUSD.FOREX", "SPX": "GSPC.INDX"}
+MACRO = {"VIX": "VIX.INDX", "AUDUSD": "AUDUSD.FOREX", "GOLD": "XAUUSD.FOREX", "SPX": "GSPC.INDX"}
 SPLIT = study.SPLIT
 
 
@@ -84,21 +83,65 @@ def classify(events):
     return picked
 
 
+FOMC = """2015-01-28 2015-03-18 2015-04-29 2015-06-17 2015-07-29 2015-09-17 2015-10-28 2015-12-16+
+2016-01-27 2016-03-16 2016-04-27 2016-06-15 2016-07-27 2016-09-21 2016-11-02 2016-12-14+
+2017-02-01 2017-03-15+ 2017-05-03 2017-06-14+ 2017-07-26 2017-09-20 2017-11-01 2017-12-13+
+2018-01-31 2018-03-21+ 2018-05-02 2018-06-13+ 2018-08-01 2018-09-26+ 2018-11-08 2018-12-19+
+2019-01-30 2019-03-20 2019-05-01 2019-06-19 2019-07-31- 2019-09-18- 2019-10-30- 2019-12-11
+2020-01-29 2020-03-03- 2020-03-15- 2020-04-29 2020-06-10 2020-07-29 2020-09-16 2020-11-05 2020-12-16
+2021-01-27 2021-03-17 2021-04-28 2021-06-16 2021-07-28 2021-09-22 2021-11-03 2021-12-15
+2022-01-26 2022-03-16+ 2022-05-04+ 2022-06-15+ 2022-07-27+ 2022-09-21+ 2022-11-02+ 2022-12-14+
+2023-02-01+ 2023-03-22+ 2023-05-03+ 2023-06-14 2023-07-26+ 2023-09-20 2023-11-01 2023-12-13
+2024-01-31 2024-03-20 2024-05-01 2024-06-12 2024-07-31 2024-09-18- 2024-11-07- 2024-12-18-
+2025-01-29 2025-03-19 2025-05-07 2025-06-18 2025-07-30 2025-09-17- 2025-10-29- 2025-12-10-
+2026-01-28? 2026-03-18? 2026-04-29? 2026-06-17? 2026-07-29? 2026-09-16? 2026-10-28? 2026-12-09?"""
+RBA_CHANGES = {"2015-02-03": "-", "2015-05-05": "-", "2016-05-03": "-", "2016-08-02": "-", "2019-06-04": "-",
+               "2019-07-02": "-", "2019-10-01": "-", "2020-03-03": "-", "2020-03-19": "-", "2020-11-03": "-",
+               "2022-05-03": "+", "2022-06-07": "+", "2022-07-05": "+", "2022-08-02": "+", "2022-09-06": "+",
+               "2022-10-04": "+", "2022-11-01": "+", "2022-12-06": "+", "2023-02-07": "+", "2023-03-07": "+",
+               "2023-05-02": "+", "2023-06-06": "+", "2023-11-07": "+", "2025-02-18": "-", "2025-05-20": "-",
+               "2025-08-12": "-"}
+RBA_NEW = ("2024-02-06 2024-03-19 2024-05-07 2024-06-18 2024-08-06 2024-09-24 2024-11-05 2024-12-10 "
+           "2025-02-18 2025-04-01 2025-05-20 2025-07-08 2025-08-12 2025-09-30 2025-11-04 2025-12-09 "
+           "2026-02-03? 2026-03-17? 2026-05-05? 2026-06-16? 2026-08-11? 2026-09-29? 2026-11-03? 2026-12-08?")
+
+
+def first_weekday(y, m, wd):
+    d = date(y, m, 1)
+    while d.weekday() != wd:
+        d += timedelta(days=1)
+    return d
+
+
 def fallback_events():
-    """Rule-based dates when the events feed is unavailable."""
+    """Curated calendar: FOMC and RBA decisions with outcome, AU quarterly CPI and US payrolls by rule.
+    The EODHD plan has no economic-events feed, so consensus surprises are not available; for central
+    banks the 'surprise' split is rate changed (+/-) vs hold."""
     picked = defaultdict(dict)
+    for tok in FOMC.split():
+        d, flag = tok[:10], tok[10:]
+        picked["美联储 利率决议"][d] = {"move": None if flag == "?" else flag or "="}
+    rba = []
+    for y in range(2015, 2024):
+        rba += [first_weekday(y, m, 1).isoformat() for m in range(2, 13)]
+    rba.append("2020-03-19")
+    for tok in RBA_NEW.split():
+        rba.append(tok)
+    for tok in rba:
+        d = tok[:10]
+        picked["澳联储 利率决议"][d] = {"move": None if tok.endswith("?") else RBA_CHANGES.get(d, "=")}
     for y in range(2015, date.today().year + 1):
-        for m in (1, 4, 7, 10):  # AU quarterly CPI: last Wednesday of the month after the quarter
-            d = date(y, m + 1, 1) - timedelta(days=1) if m < 12 else date(y, 12, 31)
+        for m in (1, 4, 7, 10):  # AU quarterly CPI: last Wednesday of the month after the quarter end
+            d = (date(y, m + 1, 1) - timedelta(days=1))
             while d.weekday() != 2:
                 d -= timedelta(days=1)
-            picked["澳洲 CPI(按惯例日期推算)"][d.isoformat()] = {}
-        if y <= 2023:
-            for m in range(2, 13):  # RBA: first Tuesday, Feb-Dec
-                d = date(y, m, 1)
-                while d.weekday() != 1:
-                    d += timedelta(days=1)
-                picked["澳联储 利率决议(按惯例日期推算)"][d.isoformat()] = {}
+            picked["澳洲 季度CPI"][d.isoformat()] = {}
+        for m in range(1, 13):  # US payrolls: first Friday (BLS convention; a few holiday exceptions)
+            picked["美国 非农就业"][first_weekday(y, m, 4).isoformat()] = {}
+    # AU monthly jobs report: usually the Thursday in the middle of the month (approximate)
+    for y in range(2015, date.today().year + 1):
+        for m in range(1, 13):
+            picked["澳洲 就业数据(约)"][(first_weekday(y, m, 3) + timedelta(days=14)).isoformat()] = {}
     return picked
 
 
@@ -124,8 +167,8 @@ def event_study(picked, series):
         hits = []
         for d, e in sorted(evs.items()):
             if d > date.today().isoformat():
-                upcoming.append({"event": label, "date": d, "estimate": e.get("estimate"),
-                                 "previous": e.get("previous")})
+                if d <= (date.today() + timedelta(days=45)).isoformat():
+                    upcoming.append({"event": label, "date": d, "asx_day": "当天" if country == "AU" else "下一个交易日"})
                 continue
             if d < "2015-01-01":
                 continue
@@ -137,6 +180,8 @@ def event_study(picked, series):
             surprise = None
             if isinstance(act, (int, float)) and isinstance(est, (int, float)):
                 surprise = act - est
+            elif e.get("move"):
+                surprise = {"+": 1, "-": -1, "=": 0}[e["move"]]
             r0 = rets[ad]
             r5 = xj[days[i + 5]] / xj[days[i - 1]] - 1
             r20 = xj[days[i + 20]] / xj[days[i - 1]] - 1
@@ -276,7 +321,7 @@ def regimes(series):
     SORTED = {k: sorted(v) for k, v in series.items()}
     defs = {
         "VIX 水平": lambda d: (lambda v: None if v is None else "VIX<15 平静" if v < 15 else "VIX 15-25 正常" if v < 25 else "VIX≥25 恐慌")(last("VIX", d)),
-        "澳 10 年债收益率 3 个月变化": lambda d: (lambda c: None if c is None else "收益率上升>0.5%" if c[0] - c[1] > .5 else "收益率下降>0.5%" if c[0] - c[1] < -.5 else "基本不变")(change("AU10Y", d, 63)),
+        "美股 3 个月走势": lambda d: (lambda c: None if c is None else "美股涨>5%" if c[0] / c[1] - 1 > .05 else "美股跌>5%" if c[0] / c[1] - 1 < -.05 else "美股平稳")(change("SPX", d, 63)),
         "澳元 3 个月走势": lambda d: (lambda c: None if c is None else "澳元涨>3%" if c[0] / c[1] - 1 > .03 else "澳元跌>3%" if c[0] / c[1] - 1 < -.03 else "澳元平稳")(change("AUDUSD", d, 63)),
         "金价 3 个月走势": lambda d: (lambda c: None if c is None else "金价涨>5%" if c[0] / c[1] - 1 > .05 else "金价跌>5%" if c[0] / c[1] - 1 < -.05 else "金价平稳")(change("GOLD", d, 63)),
         "大盘 3 个月走势": lambda d: (lambda c: None if c is None else "大盘涨>5%" if c[0] / c[1] - 1 > .05 else "大盘跌>5%" if c[0] / c[1] - 1 < -.05 else "大盘平稳")(change("XJO", d, 63)),
@@ -306,7 +351,12 @@ def regimes(series):
                 continue
             ins = [r for r, d in zip(v["r20"], v["d"]) if d < SPLIT]
             outs = [r for r, d in zip(v["r20"], v["d"]) if d >= SPLIT]
-            rows.append({"bucket": b, "n": n, "r20": 100 * sum(v["r20"]) / n, "r60": 100 * sum(v["r60"]) / n,
+            eps, lastd = 0, ""
+            for d in v["d"]:
+                if not lastd or (date.fromisoformat(d) - date.fromisoformat(lastd)).days > 90:
+                    eps += 1
+                lastd = d
+            rows.append({"bucket": b, "n": n, "episodes": eps, "r20": 100 * sum(v["r20"]) / n, "r60": 100 * sum(v["r60"]) / n,
                          "up20": 100 * sum(1 for x in v["r20"] if x > 0) / n, "vol20": 100 * sum(v["v20"]) / n,
                          "r20_in": 100 * sum(ins) / len(ins) if ins else None,
                          "r20_out": 100 * sum(outs) / len(outs) if outs else None})
@@ -323,13 +373,15 @@ def main():
     series = {k: v for k, v in series.items() if len(v) > 500}
     print("  series:", {k: len(v) for k, v in series.items()})
     src = "eodhd"
-    try:
-        picked = classify(fetch_events())
-    except Exception as e:
-        print("  events feed failed:", type(e).__name__)
-        picked = {}
+    src = "calendar"
+    picked = {}
+    if os.environ.get("S4_FEED"):
+        try:
+            picked = classify(fetch_events())
+        except Exception as e:
+            print("  events feed failed:", type(e).__name__)
     if sum(len(v) for v in picked.values()) < 50:
-        picked, src = fallback_events(), "rules"
+        picked, src = fallback_events(), "calendar"
     print("  events:", {k: len(v) for k, v in picked.items()}, src)
     idx_series = {k: series[k] for k in INDEX if k in series}
     ev_rows, upcoming, base_abs = event_study(picked, idx_series)
