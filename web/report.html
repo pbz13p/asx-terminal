@@ -824,7 +824,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 </ol>
 </div>
 
-<footer>本报告是历史数据统计研究，不是投资建议；过去的规律未来可能失效。我不是持牌财务顾问。交易成本按 Corwin-Schultz 价差估计 + 0.1% 佣金；可交易股票指股价 ≥ $0.20 且 20 日成交额中位数 ≥ $50 万。</footer>
+<footer>历史数据研究，过去的规律未来可能失效。交易成本按 Corwin-Schultz 价差估计 + 0.1% 佣金；可交易股票指股价 ≥ $0.20 且 20 日成交额中位数 ≥ $50 万。</footer>
 </div>
 <script>
 function bars(id,rows,max,fmt){const el=document.getElementById(id);rows.forEach(([l,v,c])=>{const w=Math.min(50,Math.abs(v)/max*50);const pos=v>=0?`left:50%;width:${w}%`:`right:50%;width:${w}%`;el.insertAdjacentHTML('beforeend',`<div class="bar"><span class="lb">${l}</span><span class="tr"><span class="fl" style="${pos};background:${c||(v>=0?'var(--up)':'var(--dn)')};box-shadow:0 0 10px ${c||(v>=0?'#19ff9c':'#ff2e74')}"></span></span><span class="v">${fmt(v)}</span></div>`)})}

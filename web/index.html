@@ -281,7 +281,7 @@ if(d.ranges){var R=d.ranges;h+='<div class="sec"><h4>正常波动范围（过去
 h+='<div class="sec"><h4>宏观状态</h4><div class="g"><div><b>'+f(m.vix,1)+'</b><span>VIX · '+m.vix_state+'</span></div><div><b>'+f(m.au2,2)+'%</b><span>澳 2 年国债 · '+m.rate_state+'</span></div><div><b>'+(m.au2_3m==null?'—':(m.au2_3m>=0?'+':'')+m.au2_3m.toFixed(2)+'%')+'</b><span>澳 2 年 3 个月变化</span></div><div><b>'+f(m.au10,2)+'% / '+f(m.us10,2)+'%</b><span>澳 / 美 10 年国债</span></div></div></div>';
 if(d.events.length||d.week.length){h+='<div class="sec"><h4>近期重要事件</h4><table>';d.events.forEach(function(e){h+='<tr><td>'+e.when+'</td><td>'+e.title+'</td><td></td></tr>';});
 d.week.forEach(function(e){h+='<tr><td>'+e.when+'</td><td>'+e.country+' '+e.title+'</td><td style="text-align:right;color:#8FA3D8">预期 '+(e.forecast||'—')+(e.actual?' · 实际 '+e.actual:'')+'</td></tr>';});h+='</table></div>';}
-h+='<div class="ft">信号来自 2014–2026 年历史数据研究（见“研究报告”），描述的是过去的规律，不是投资建议。</div>';
+h+='<div class="ft">信号来自 2014–2026 年历史数据研究（见“研究报告”），描述的是过去的规律。</div>';
 c.innerHTML=h;var cv=document.getElementById('insp'),x=cv.getContext('2d'),W=cv.width=cv.clientWidth*2,H=cv.height=180,p=d.spark,mn=Math.min.apply(0,p),mx=Math.max.apply(0,p);
 var up=p[p.length-1]>=p[0],cl=up?'#19FF9C':'#FF2E74',g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,up?'rgba(25,255,156,.35)':'rgba(255,46,116,.35)');g.addColorStop(1,'rgba(0,0,0,0)');
 x.beginPath();p.forEach(function(v,i){var X=i/(p.length-1)*W,Y=H-8-(v-mn)/(mx-mn||1)*(H-16);i?x.lineTo(X,Y):x.moveTo(X,Y);});x.lineWidth=4;x.strokeStyle=cl;x.shadowColor=cl;x.shadowBlur=16;x.stroke();x.lineTo(W,H);x.lineTo(0,H);x.closePath();x.shadowBlur=0;x.fillStyle=g;x.fill();}
@@ -310,7 +310,7 @@ h+='<div class="sec"><h4>放量突破 52 周新高（近 5 天）</h4>'+tb(d.bre
 h+='<div class="sec"><h4>业绩季跳涨站稳（近 5 天，2022 年后已无追涨优势，仅供参考）</h4>'+tb(d.season_gap_up,[['代码',function(x){return lk(x.code);}],['日期',function(x){return x.date.slice(5);}],['高开',function(x){return pc(x.gap);}],['当天',function(x){return pc(x.day);}],['之后',function(x){return pc(x.since);}]])+'</div>';
 h+='<div class="sec"><h4>业绩季跳空大跌（近 5 天，别急抄底）</h4>'+tb(d.season_gap_down,[['代码',function(x){return lk(x.code);}],['日期',function(x){return x.date.slice(5);}],['低开',function(x){return pc(x.gap);}],['之后',function(x){return pc(x.since);}]])+'</div>';
 h+='<div class="sec"><h4>停牌复牌后大跌（近 5 天，多为配股，别急着接）</h4>'+tb(d.halt_reopen_down||[],[['代码',function(x){return lk(x.code);}],['复牌',function(x){return x.date.slice(5);}],['停牌天数',function(x){return x.halted;}],['低开',function(x){return pc(x.gap);}],['之后',function(x){return pc(x.since);}]])+'</div>';
-h+='<div class="ft">点代码看方向面板。名单只说明符合历史规律的条件，不是买卖建议。</div>';c.innerHTML=h;
+h+='<div class="ft">点代码看方向面板。名单只说明符合历史规律的条件。</div>';c.innerHTML=h;
 c.querySelectorAll('a[data-c]').forEach(function(a){a.onclick=function(e){e.preventDefault();openInsight(a.getAttribute('data-c'));};});
 }catch(e){c.innerHTML='<div class="nm" style="margin-top:60px">'+e.message+'</div>';}}
 document.getElementById('scanb').onclick=function(e){e.preventDefault();openScan();};
