@@ -237,6 +237,12 @@ def insight(code, provider):
     rv20 = rv(rets[-20:])
     rv_hist = [rv(rets[i - 20:i]) for i in range(20, len(rets) + 1, 5)]
     rv_pct = 100 * sum(1 for v in rv_hist if v <= rv20) / len(rv_hist)
+    # typical ranges (for stops / position size): historical 5- and 20-day return percentiles, last 3 years
+    def pct_range(h):
+        rs = sorted(px[i] / px[i - h] - 1 for i in range(h, len(px)))
+        q = lambda f: 100 * rs[int(f * (len(rs) - 1))]
+        return {"p10": q(.10), "p50": q(.5), "p90": q(.90), "p02": q(.02)}
+    ranges = {"5": pct_range(5), "20": pct_range(20)}
     gains = [max(0, px[i] - px[i - 1]) for i in range(len(px) - 14, len(px))]
     losses = [max(0, px[i - 1] - px[i]) for i in range(len(px) - 14, len(px))]
     rsi = 100 - 100 / (1 + (sum(gains) / sum(losses))) if sum(losses) else 100.0
@@ -413,6 +419,6 @@ def insight(code, provider):
             "last": last, "asof": ds[-1],
             "chg": {"1天": d1, "5天": r5, "20天": chg(20), "60天": chg(60), "1年": chg(252)},
             "hi": hi, "lo": lo, "dist_hi": dist_hi, "ma50": ma50, "ma200": ma200, "rsi": rsi,
-            "rv20": rv20, "rv_pct": rv_pct, "macro": macro, "signals": S, "score": score,
+            "rv20": rv20, "rv_pct": rv_pct, "ranges": ranges, "macro": macro, "signals": S, "score": score,
             "events": events, "week": week[:12], "div": divinfo, "theme": tinfo, "short": short,
             "spark": [round(x, 4) for x in px[-120:]]}
