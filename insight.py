@@ -380,8 +380,8 @@ def insight(code, provider):
             ex = STATE_EXCESS[state][sector] if sector in STATE_EXCESS[state] else None
             label = {"cut": "市场押降息", "hike": "市场押加息", "panic": "VIX 恐慌", "normal": "VIX 正常", "calm": "VIX 平静"}[state]
             if ex is not None and abs(ex) >= .3:
-                S.append(sig("up" if ex > 0 else "down", f"{sector}板块 · {label}",
-                             f"在“{label}”环境下，{sector}板块历史上 1 个月平均{'跑赢' if ex > 0 else '跑输'}大盘 {abs(ex):.1f}%。"))
+                S.append(sig("info", f"{sector}板块 · {label}",
+                             f"在“{label}”环境下，{sector}板块历史上 1 个月平均{'跑赢' if ex > 0 else '跑输'}大盘 {abs(ex):.1f}%。但样本外检验（第 27 轮）按环境换板块并不赚钱，只作背景参考。"))
         b = RATE_BETA.get(sector)
         if b is not None and abs(b) >= .3:
             S.append(sig("info", "利率敏感", f"{sector}板块对利率很敏感：澳 2 年收益率每涨 0.1%，相对大盘约 {b:+.2f}%。"))
