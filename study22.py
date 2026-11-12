@@ -117,7 +117,7 @@ def main():
     study.download(["AXJO.INDX", "AUDUSD.FOREX"] + [t[0] for t in THEMES.values()])
     xj = study.load("AXJO.INDX")
     last_day = xj[-1][0]
-    breakouts, gap_up, gap_dn, halts = [], [], [], []
+    breakouts, gap_up, gap_dn, halts, sleeve = [], [], [], [], []
     xidx = {r[0]: k for k, r in enumerate(xj)}
     for f in study.CACHE.glob("*.AU.json"):
         rows = study.load(f.name[:-5])
@@ -132,11 +132,11 @@ def main():
                 continue
             vols = sorted(r[5] for r in rows[i - 20:i])
             turn = sorted(r[6] * r[5] for r in rows[i - 20:i])[10]
-            if turn < 5e5 or vols[10] <= 0:
+            if turn < 2e5 or vols[10] <= 0:
                 continue
             vx = v / vols[10]
             prev_hi = max(cl[i - 252:i])
-            if c > prev_hi and min(cl[i - 60:i]) <= prev_hi * .85 and vx >= 2:
+            if turn >= 5e5 and c > prev_hi and min(cl[i - 60:i]) <= prev_hi * .85 and vx >= 2:
                 breakouts.append({"code": code, "date": d, "close": raw, "vol_x": round(vx, 1), "turnover": round(turn),
                                   "since": round(100 * (cl[-1] / c - 1), 1)})
             pc = rows[i - 1][4]
@@ -149,9 +149,11 @@ def main():
                 gap = o / pc - 1
                 item = {"code": code, "date": d, "gap": round(100 * gap, 1), "day": round(100 * (c / o - 1), 1),
                         "close": raw, "turnover": round(turn), "since": round(100 * (cl[-1] / c - 1), 1)}
-                if gap >= .05 and c > o:
+                if gap >= .05 and c > o and turn >= 5e5:
                     gap_up.append(item)
-                elif gap <= -.05:
+                if gap >= .08 and c > o and 2e5 <= turn < 2e6:
+                    sleeve.append(item)
+                elif gap <= -.05 and turn >= 5e5:
                     gap_dn.append(item)
     # themes
     aud = {r[0]: r[4] for r in study.load("AUDUSD.FOREX")}
@@ -206,6 +208,7 @@ def main():
            "season_gap_up": sorted(gap_up, key=lambda x: -x["turnover"])[:30],
            "season_gap_down": sorted(gap_dn, key=lambda x: -x["turnover"])[:30], "themes": themes,
            "halt_reopen_down": sorted(halts, key=lambda x: -x["turnover"])[:30],
+           "sleeve_candidates": sorted(sleeve, key=lambda x: -x["turnover"])[:20],
            "announcements": fetch_announcements(),
            "seconds": round(time.time() - t0)}
     # keep a growing archive of classified announcements for future event studies
