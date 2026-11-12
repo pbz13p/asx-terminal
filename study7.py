@@ -229,6 +229,14 @@ def main():
     au2 = f2.get("FCMYGBAG2D") or {}
     au10 = f2.get("FCMYGBAG10D") or {}
     cal = study4.fallback_events()
+    import re
+    for rid, label in ((10, "美国 CPI"), (50, "美国 非农就业")):
+        pr = probe(f"ALFRED 公布日期 rid={rid}", lambda rid=rid: sorted(set(re.findall(r"\d{4}-\d{2}-\d{2}",
+                   get(f"https://alfred.stlouisfed.org/release/downloaddates?rid={rid}&ff=txt")))))
+        if pr["ok"] and len(pr["detail"]) > 50:
+            cal[label] = {d: {} for d in pr["detail"] if "2014-06-01" <= d}
+            pr["detail"] = f"{len(cal[label])} 个日期, 最新 {max(cal[label])}"
+        res["probes"].append(pr)
     if au2:
         au_events = {k: list(v) for k, v in cal.items() if not k.startswith("美")}
         res["au_surprise"] = surprise_study(au_events, au2, idx, lambda l: "AU")
