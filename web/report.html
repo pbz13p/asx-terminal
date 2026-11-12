@@ -36,6 +36,25 @@ th{color:var(--mu);font-weight:500;font-size:12px}
 .note{font-size:13px;color:var(--mu)}
 .chips span{display:inline-block;background:#141832;border:1px solid var(--line);border-radius:8px;padding:2px 8px;margin:3px 3px 0 0;font-size:13px}
 footer{margin-top:40px;font-size:12px;color:var(--mu)}
+@media (min-width:1100px){
+ body{font-size:17px}
+ .wrap{max-width:1500px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:32px;padding:28px 32px 80px}
+ .wrap>*{grid-column:2}
+ #toc{grid-column:1;grid-row:1 / span 999;position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow-y:auto;padding:14px 12px;border:1px solid var(--line);border-radius:14px;background:#0a0d1a}
+ h1{font-size:34px}
+ h2{font-size:23px;margin-top:44px}
+ table{font-size:15px}
+ th,td{padding:9px 10px}
+ .bar .lb{width:150px}
+}
+#toc{display:none}
+@media (min-width:1100px){#toc{display:block}}
+#toc a{display:block;color:#9FB0E0;text-decoration:none;font-size:13px;padding:4px 6px;border-radius:6px;line-height:1.35}
+#toc a:hover,#toc a.on{background:#141a3a;color:#fff}
+#toc b{display:block;color:#29E7FF;font-size:13px;margin:0 6px 8px;letter-spacing:.05em}
+td:first-child{min-width:150px}
+.tldr li{margin:8px 0}
+
 </style>
 </head>
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
@@ -44,7 +63,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <div class="sub">第 1–59 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
-<h3>一句话结论（49 轮研究后）</h3>
+<h3>一句话结论（59 轮研究后）</h3>
 <ul>
 <li><b>最难打败的是“买 ASX 200 ETF 长期持有”</b>（含股息年化约 8.7%）。只靠价格、成交量这类技术指标选个股做短线，扣完成本后都没赢过它，包括“新高突破”组合和动量、低波动等因子组合（2022 年后全部跑输）。</li>
 <li><b>大盘层面最稳的信号</b>：
@@ -64,7 +83,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 </ul>
 </div>
 
-<h2>⭐ 波段操作手册（53 轮研究提炼，按可靠程度排序）</h2>
+<h2>⭐ 波段操作手册（59 轮研究提炼，按可靠程度排序）</h2>
 <div class="card" style="border-color:#29e7ff66">
 <div class="scroll"><table>
 <tr><th>规则</th><th>做什么</th><th>持有</th><th>历史表现</th><th>可靠度</th><th>现在（11/12）</th></tr>
@@ -883,5 +902,11 @@ bars('evbars',[['美联储决议后',30,'var(--vi)'],['澳联储决议日',21,'v
 bars('onbars',[['2015',0.22],['2016',0.34],['2017',0.54],['2018',0.29],['2019',0.32],['2020',0.61],['2021',0.23],['2022',0.05],['2023',-0.04],['2024',0.06],['2025',0.11],['2026',-0.04]],0.7,v=>(v>=0?'+':'')+v.toFixed(2)+'%');
 bars('mbars',[['1 月',1.09],['2 月',1.02],['3 月',-1.04],['4 月',2.07],['5 月',0.93],['6 月',-0.09],['7 月',2.96],['8 月',0.15],['9 月',-1.70],['10 月',0.68],['11 月',2.09],['12 月',1.24]],3,v=>(v>=0?'+':'')+v.toFixed(2)+'%');
 bars('secbars',[["消费服务", 11.4], ["汽车", 8.8], ["房地产信托", 8.2], ["地产开发", 7.0], ["软件", 6.7], ["原材料/矿业", -2.7], ["电信", -3.7], ["半导体", -3.9], ["能源", -4.6], ["科技硬件", -12.3]],13,v=>(v>=0?'+':'')+v+'%');
+</script>
+<script>
+(function(){var w=document.querySelector('.wrap');var t=document.createElement('nav');t.id='toc';t.innerHTML='<b>目录</b>';
+document.querySelectorAll('.wrap h2').forEach(function(h,i){h.id='s'+i;var a=document.createElement('a');a.href='#s'+i;a.textContent=h.textContent.replace(/^[⭐📚\s]+/,'');t.appendChild(a);});
+w.insertBefore(t,w.firstChild);
+var links=[].slice.call(t.querySelectorAll('a'));window.addEventListener('scroll',function(){var cur=0;document.querySelectorAll('.wrap h2').forEach(function(h,i){if(h.getBoundingClientRect().top<120)cur=i;});links.forEach(function(a,i){a.classList.toggle('on',i===cur);});});})();
 </script>
 </body></html>
