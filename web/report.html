@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–34 轮</title>
+<title>ASX 量化研究报告 · 第 1–37 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–34 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–37 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论（25 轮研究后）</h3>
@@ -219,6 +219,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <tr><td>FRED（圣路易斯联储）</td><td>美债收益率、利差、VIX、美国 CPI、非农、联邦基金利率等 80 万个序列</td><td>每天</td></tr>
 <tr><td>ABS Data API（澳洲统计局）</td><td>CPI、就业、GDP 等官方原始数据</td><td>公布即更新</td></tr>
 <tr><td>Forex Factory 日历</td><td>本周全球事件 + 预期值 + 前值 + 实际值（只有本周）</td><td>实时</td></tr>
+<tr><td>ASX 公告（官网接口）</td><td>全市场最新公告、按公司按年份的历史公告</td><td>实时</td></tr>
 <tr><td>ASIC 卖空数据</td><td>每只股票被卖空的比例</td><td>每天（晚约 4 个工作日）</td></tr>
 <tr><td>ASX RBA Rate Tracker</td><td>下次澳联储决议的加/降息概率、未来 18 个月利率路径</td><td>每天收盘后</td></tr>
 <tr><td>美联储 / RBA 官网</td><td>决议声明、会议纪要、议息日历</td><td>按日程</td></tr>
@@ -653,6 +654,23 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <li>对流动性好的股票，<b>“业绩跳涨后追买”在 2022 年后已经没有优势</b>。可靠度降为 ★，基本不用。</li>
 <li><b>“业绩大跌别抄底”在 2022 年后反而更强</b>：之后 3 个月平均跑输大盘约 4%，10 个业绩季里 9 个为负。小盘股在两段时间都成立（第 11 轮）。这条避坑规则继续有效。</li>
 </ul>
+</div>
+
+<h2>第 35–37 轮：免费的 ASX 公告数据 → 公告雷达</h2>
+<div class="card">
+<p>找到并测通了 ASX 官方网站背后的<b>免费公告接口</b>：全市场最新公告（类型、标题、是否价格敏感），以及按公司、按年份的历史公告列表（可回溯多年）。</p>
+<p>已加进网站的 <b>📈 今日扫描</b>，每个交易日傍晚自动更新，分三栏：</p>
+<ul>
+<li><b>收购 / 协议安排</b>：如这几天的 MXO 协议安排小册子、VAU 股东大会结果、IEL 收到修订后的收购提议、INA 行使匹配权（有竞购）、FAU 对 JAV 的收购要约开放。这些就是并购套利的候选。</li>
+<li><b>配股 / 融资</b>：如 PDN 宣布 5.25 亿澳元全额包销融资（铀价领先之后）。按第 28、34 轮，中小盘折价配股后通常继续偏弱。</li>
+<li><b>停牌</b>：停牌后多半跟着融资或重大消息。</li>
+</ul>
+<p><b>第 37 轮·用历史公告确认收购交易（受限）：</b>已退市公司的历史公告页面在 ASX 官网上查不到，所以<b>成功完成的收购拿不到</b>，只能看到仍在交易的公司，也就是大多是失败或没谈成的案例（13 个）。这批反而说明了风险：</p>
+<ul>
+<li>只是“非约束性提议（NBIO）”就被拒绝或谈不拢的（如 2019 年 LYC、2023 年 LTR、2025 年 MVF），之后股价大幅回落，最多 −77%。</li>
+<li><b>即使签了协议安排实施契约（SID）也会失败</b>：2025 年 MYX（−61%）、PBH（−19%）。</li>
+</ul>
+<p><b>对套利的含义：</b>只在<b>签了 SID、现金对价、主要条件（股东投票、FIRB/ACCC、法院）都清楚</b>之后再进场。NBIO 阶段是在赌，不是套利。公告雷达可以帮你第一时间看到 SID 和协议安排小册子。</p>
 </div>
 
 <h2>下周可以一起讨论的方向</h2>
