@@ -1,6 +1,8 @@
 name: market-study
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '40 7 * * 1-5'
   push:
     branches: [main]
     paths: ['.github/run-study']
@@ -34,6 +36,7 @@ jobs:
         run: |
           MODE="$(cat .github/run-study)"
           ROUNDS=$(echo "$MODE" | grep -oP '(?<=rounds=)[0-9,]+' || echo "1,2,3,4,5,6,7,8,9")
+          if [ "${{ github.event_name }}" = "schedule" ]; then ROUNDS=22; fi
           for n in $(echo "$ROUNDS" | tr ',' ' '); do
             if [ "$n" = "1" ]; then f=study.py; v=STUDY_OUT; o=study_results.json; else f=study$n.py; v=STUDY${n}_OUT; o=study${n}_results.json; fi
             echo "=== round $n"; env $v=out/$o python $f || echo "round $n failed"

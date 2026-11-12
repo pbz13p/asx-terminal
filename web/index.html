@@ -98,7 +98,7 @@ canvas{display:block}
 <div class="app" id="app">
 <header><div class="brand"><span class="logo" aria-hidden="true"></span><div><h1>ASX <b>DESK</b></h1><div class="sub">SIX SECTORS · ONE BOARD · AUSTRALIA</div></div></div>
 <nav aria-label="分区"><span>SYNAPSE</span><span>TAPE</span><span>BOOK</span></nav><span class="demo" id="src">连接中…</span>
-<form id="sf" class="sf" role="search"><label for="si" style="position:absolute;left:-9999px">查股票代码</label><input id="si" placeholder="⌕ 输入代码查股票，如 BHP" maxlength="6" autocomplete="off"><span id="sm" aria-live="polite"></span></form><a class="rpt rpt2" href="#" id="insb">📡 方向面板</a><a class="rpt" href="/report.html">📊 研究报告</a><div class="hs"><div><b id="h1v" class="num"></b><span>当日成交额</span></div><div><b id="h2v" class="up num"></b><span>上涨</span></div><div><b id="h3v" class="dn num"></b><span>下跌</span></div><span class="clock num" id="clock"></span><span class="fl" style="font-size:12.5px;line-height:11px">AEDT<br>MELBOURNE</span><span class="online"><span id="mode">CONNECTING</span></span></div></header>
+<form id="sf" class="sf" role="search"><label for="si" style="position:absolute;left:-9999px">查股票代码</label><input id="si" placeholder="⌕ 输入代码查股票，如 BHP" maxlength="6" autocomplete="off"><span id="sm" aria-live="polite"></span></form><a class="rpt rpt2" href="#" id="insb">📡 方向面板</a><a class="rpt rpt2" href="#" id="scanb" style="border-color:#19FF9C;box-shadow:0 0 14px rgba(25,255,156,.45)">📈 今日扫描</a><a class="rpt" href="/report.html">📊 研究报告</a><div class="hs"><div><b id="h1v" class="num"></b><span>当日成交额</span></div><div><b id="h2v" class="up num"></b><span>上涨</span></div><div><b id="h3v" class="dn num"></b><span>下跌</span></div><span class="clock num" id="clock"></span><span class="fl" style="font-size:12.5px;line-height:11px">AEDT<br>MELBOURNE</span><span class="online"><span id="mode">CONNECTING</span></span></div></header>
 <div class="s2"><span class="g">● ASX</span><span id="s2"></span></div>
 <div class="wire"><span class="wl">LIVE WIRE</span><div class="wt" id="wt"></div></div>
 <div class="r1">
@@ -287,6 +287,27 @@ x.beginPath();p.forEach(function(v,i){var X=i/(p.length-1)*W,Y=H-8-(v-mn)/(mx-mn
 document.getElementById('insx').onclick=function(){box.classList.remove('on');};
 document.addEventListener('keydown',function(e){if(e.key==='Escape')box.classList.remove('on');});
 document.getElementById('insb').onclick=function(e){e.preventDefault();var v=document.getElementById('si').value.trim().toUpperCase();openInsight(v||(window.st&&st.sel)||'BHP');};
+})();
+</script>
+
+<script>
+(function(){
+var box=document.getElementById('ins'),c=document.getElementById('insc');
+function lk(x){return '<a href="#" data-c="'+x+'" style="color:#29E7FF;font-weight:800;text-decoration:none">'+x+'</a>';}
+function pc(v){return v==null?'—':'<span style="color:'+(v>=0?'#19FF9C':'#FF2E74')+'">'+(v>=0?'+':'')+(+v).toFixed(1)+'%</span>';}
+function tb(rows,cols){if(!rows.length)return '<p class="nm">目前没有。</p>';var h='<table><tr>'+cols.map(function(x){return '<td style="color:#8FA3D8">'+x[0]+'</td>';}).join('')+'</tr>';rows.forEach(function(r){h+='<tr>'+cols.map(function(x){return '<td>'+x[1](r)+'</td>';}).join('')+'</tr>';});return h+'</table>';}
+async function openScan(){box.classList.add('on');c.innerHTML='<div class="nm" style="margin-top:60px">读取今日扫描…</div>';
+try{var r=await fetch('/api/scan');var j=await r.json();if(!j.ok)throw new Error(j.error||'失败');var d=j.data;
+var h='<h2>今日扫描</h2><div class="nm">数据截至 '+d.last_day+' 收盘 · 每个交易日傍晚自动更新</div>';
+h+='<div class="sec"><h4>大盘</h4><p class="nm" style="color:#EEF2FF">ASX 200 已连跌 <b>'+d.xjo_down_days+'</b> 天'+(d.xjo_down_days>=3?' → <span style="color:#19FF9C">触发“连跌 3 天买 ETF”</span>':'')+'</p></div>';
+h+='<div class="sec"><h4>商品联动（z&lt;−1 = 股票落后于商品，历史上会补涨）</h4>'+tb(Object.keys(d.themes).map(function(k){var t=d.themes[k];t.name=k;return t;}),[['主题',function(t){return t.name;}],['商品 20 天',function(t){return pc(t.commodity_20d);}],['股票相对大盘',function(t){return pc(t.stocks_vs_xjo_20d);}],['z',function(t){return '<b style="color:'+(t.z<-1?'#19FF9C':t.z>1?'#FFC83D':'#EEF2FF')+'">'+t.z.toFixed(1)+'</b>';}]])+'</div>';
+h+='<div class="sec"><h4>放量突破 52 周新高（近 5 天）</h4>'+tb(d.breakouts.slice(0,25),[['代码',function(x){return lk(x.code);}],['日期',function(x){return x.date.slice(5);}],['量比',function(x){return x.vol_x+'×';}],['之后',function(x){return pc(x.since);}],['日成交',function(x){return '$'+(x.turnover/1e6).toFixed(1)+'M';}]])+'</div>';
+h+='<div class="sec"><h4>业绩季跳涨站稳（近 5 天，历史上之后 5 天偏强）</h4>'+tb(d.season_gap_up,[['代码',function(x){return lk(x.code);}],['日期',function(x){return x.date.slice(5);}],['高开',function(x){return pc(x.gap);}],['当天',function(x){return pc(x.day);}],['之后',function(x){return pc(x.since);}]])+'</div>';
+h+='<div class="sec"><h4>业绩季跳空大跌（近 5 天，别急抄底）</h4>'+tb(d.season_gap_down,[['代码',function(x){return lk(x.code);}],['日期',function(x){return x.date.slice(5);}],['低开',function(x){return pc(x.gap);}],['之后',function(x){return pc(x.since);}]])+'</div>';
+h+='<div class="ft">点代码看方向面板。名单只说明符合历史规律的条件，不是买卖建议。</div>';c.innerHTML=h;
+c.querySelectorAll('a[data-c]').forEach(function(a){a.onclick=function(e){e.preventDefault();openInsight(a.getAttribute('data-c'));};});
+}catch(e){c.innerHTML='<div class="nm" style="margin-top:60px">'+e.message+'</div>';}}
+document.getElementById('scanb').onclick=function(e){e.preventDefault();openScan();};
 })();
 </script>
 </body>

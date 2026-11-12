@@ -84,6 +84,19 @@ class Handler(SimpleHTTPRequestHandler):
                     return json.load(r)
             except Exception:
                 raise DataUnavailable("研究结果还没生成") from None
+        if name == "scan":
+            import urllib.request
+            hit = getattr(self.server, "_scan", None)
+            if hit and time.time() - hit[0] < 600:
+                return hit[1]
+            url = "https://raw.githubusercontent.com/pbz13p/asx-terminal/results/study22_results.json"
+            try:
+                with urllib.request.urlopen(url, timeout=20) as r:
+                    data = json.load(r)
+            except Exception:
+                raise DataUnavailable("今日扫描还没生成") from None
+            self.server._scan = (time.time(), data)
+            return data
         if name == "market":
             return provider.market()
         if name == "indices":
