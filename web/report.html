@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–14 轮</title>
+<title>ASX 量化研究报告 · 第 1–15 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–14 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–15 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论</h3>
@@ -282,6 +282,26 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 </table></div>
 <p><b>老实说：</b>算上股息后，<b>一直持有的总收益（8.1%）最高</b>，连跌买入的规则都赚得更少。它们的价值是<b>风险小得多</b>：“连跌 3 天·持 5 天”回撤只有 −12.5%（一直持有 −35.9%），每承受一份波动换来的收益更高（夏普 0.83 对 0.59），而且换参数、换时间段都稳定。</p>
 <p><b>适合谁：</b>受不了 30% 以上回撤的人，或者想用一部分资金做低风险波段的人。追求最高长期收益，还是一直持有指数 ETF 最好。</p>
+</div>
+
+<h2>第 15 轮：分红与 franking（除息日前后）</h2>
+<div class="card">
+<p class="note">成交最活跃的 125 只股票，2015–2026 年共 2,474 次分红。对比基准是 ASX 200 全收益指数（含股息），所以股息本身不会造成偏差。</p>
+<div class="scroll"><table>
+<tr><th></th><th>次数</th><th>除息前 20 天 跑赢大盘</th><th>除息日股价下跌 ÷ 现金股息（中位数）</th><th>除息后 20 天 相对大盘</th></tr>
+<tr><td><b>全部</b></td><td>2,474</td><td class="up"><b>+1.14%</b></td><td>0.93</td><td>−0.16%</td></tr>
+<tr><td>全额 franking</td><td>1,412</td><td class="up">+1.30%</td><td>1.00（2022 前 0.92 → 2022 后 1.07）</td><td>0.0%</td></tr>
+<tr><td>部分 franking</td><td>383</td><td class="up">+0.89%</td><td>0.92</td><td class="dn">−0.63%</td></tr>
+<tr><td>无 franking</td><td>673</td><td class="up">+0.98%</td><td>0.82</td><td>−0.10%</td></tr>
+<tr><td class="mu">2015–21 / 2022 后</td><td class="mu">1,410 / 1,064</td><td class="mu">+1.25% / +1.01%</td><td class="mu">0.88 / 1.00</td><td class="mu">−0.10% / −0.25%</td></tr>
+</table></div>
+<p><b>结论：</b></p>
+<ul>
+<li><b>“分红前行情”存在</b>：大中盘股在除息前 20 个交易日平均跑赢大盘约 1.1%，两段时间都成立（54% 的情况为正，靠幅度取胜）。做法是除息前约 4 周买入、<b>除息前一天卖出</b>（不拿股息）。大盘股来回成本约 0.2–0.3%。</li>
+<li><b>想靠“买入拿股息再卖”套利行不通</b>：除息日股价中位数下跌约等于现金股息（全额 franking 的股票 2022 年后跌得比现金股息还多，说明市场已经把 franking 的价值算进去了）。而且拿 franking 抵税要满足 45 天持有规则。</li>
+<li>无 franking 的股息，除息日只跌约 82%，但这部分股息要全额交税，税后并不占便宜。</li>
+</ul>
+<p class="note">方向面板已加入“分红”一栏：股息率、franking 比例、上次和下次除息日；除息日在 28 天内会提示。</p>
 </div>
 
 <h2>第 9 轮：什么宏观环境，持有什么板块</h2>

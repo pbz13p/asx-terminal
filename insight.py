@@ -208,6 +208,25 @@ def insight(code, provider):
             S.append(sig("down", "趋势向下", "股价在 50 日线和 200 日线下方，且 50 日线低于 200 日线。"))
     if rv_pct >= 80:
         S.append(sig("warn", "波动偏大", f"近 20 天年化波动 {rv20:.0f}%，处于自身历史第 {rv_pct:.0f} 百分位。仓位宜小一点，止损放宽。"))
+    # ---- dividends (round 15)
+    divinfo = None
+    try:
+        divs = cached(f"div:{code}", 6 * 3600, lambda: provider._get(f"div/{code}.AU", **{"from": (date.today() - timedelta(days=800)).isoformat()})) or []
+        past = [x for x in divs if x.get("date", "") <= today]
+        fut = [x for x in divs if x.get("date", "") > today]
+        if past or fut:
+            lastd = past[-1] if past else None
+            yr = sum(float(x.get("unadjustedValue") or x.get("value") or 0) for x in past
+                     if x.get("date", "") > (date.today() - timedelta(days=365)).isoformat())
+            divinfo = {"last_ex": lastd and lastd.get("date"), "last_amt": lastd and (lastd.get("unadjustedValue") or lastd.get("value")),
+                       "franking": (fut or past)[-1 if not fut else 0].get("franking"), "yield": 100 * yr / last if last else None,
+                       "next_ex": fut[0].get("date") if fut else None, "next_amt": fut[0].get("unadjustedValue") if fut else None}
+            if fut:
+                days_to = (date.fromisoformat(fut[0]["date"]) - date.today()).days
+                if 0 < days_to <= 28:
+                    S.append(sig("up", f"{days_to} 天后除息", f"除息日 {fut[0]['date']}。大中盘股在除息前 20 个交易日平均跑赢大盘约 1.1%（两段时间都成立，54% 的情况上涨）；除息日股价通常下跌约等于现金股息。"))
+    except Exception:
+        pass
     # ---- market (ASX 200) signals
     try:
         xh = provider.history("XJO", 3)
@@ -252,5 +271,5 @@ def insight(code, provider):
             "chg": {"1天": d1, "5天": r5, "20天": chg(20), "60天": chg(60), "1年": chg(252)},
             "hi": hi, "lo": lo, "dist_hi": dist_hi, "ma50": ma50, "ma200": ma200, "rsi": rsi,
             "rv20": rv20, "rv_pct": rv_pct, "macro": macro, "signals": S, "score": score,
-            "events": events, "week": week[:12],
+            "events": events, "week": week[:12], "div": divinfo,
             "spark": [round(x, 4) for x in px[-120:]]}
