@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–55 轮</title>
+<title>ASX 量化研究报告 · 第 1–56 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–55 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–56 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论（49 轮研究后）</h3>
@@ -826,6 +826,19 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 </table></div>
 <p><b>结论：</b>模型的预测和实际结果只有很弱的正相关（0.09），合起来<b>没有跑赢一直持有</b>（2024 年后跑赢，之前跑输）。模型学到的方向和前面的发现一致：澳债收益率下降、市场宽度低、离高点远、7 月时偏多，9 月偏空。但把这些信号“自动加总”去频繁调仓，并不比简单持有好。</p>
 <p><b>这进一步说明：</b>宏观信号适合作为<b>少数几个极端时刻</b>的加仓理由（押降息、恐慌、宽度很低），不适合天天用来择时。</p>
+</div>
+
+<h2>第 56 轮（大胆尝试）：中小盘“业绩大涨”做成真实组合</h2>
+<div class="card">
+<p class="note">规则：业绩季里，中小盘（日成交 $20–200 万）放量（≥3 倍）跳空高开 ≥8% 且当天收盘仍高于开盘，次日开盘买入，每只 10% 资金、最多 10 只，持有 20 个交易日。扣价差和佣金，空闲资金按澳联储利率计息。</p>
+<div class="scroll"><table>
+<tr><th></th><th>年化</th><th>最大回撤</th><th>夏普</th><th>2015–21</th><th>2022 后</th><th>2024 后</th></tr>
+<tr><td>业绩大涨组合</td><td>6.3%</td><td class="up"><b>−13.5%</b></td><td>0.62</td><td>4.7%</td><td class="up">8.8%</td><td class="up">9.3%</td></tr>
+<tr><td>ASX 200 全收益</td><td>8.7%</td><td>−35.9%</td><td>0.63</td><td>9.2%</td><td>8.0%</td><td>—</td></tr>
+</table></div>
+<p>12 年共 150 笔，<b>每笔扣成本平均 +3.6%，57% 赚钱</b>。组合一年只有 2 月、8 月前后两个多月在场，其余时间都是现金，所以回撤很小，但总收益比不上一直持有。</p>
+<p><b>可行的用法：</b>把它当成<b>卫星仓位</b>，主仓位照样放 ASX 200 ETF，再拿 10–20% 的资金在业绩季专门做这个。2022 年后单独算已经略好于大盘，而且和大盘的走势关系不大。业绩季开始时，今日扫描会列出符合条件的股票。</p>
+<p class="note">风险：中小盘价差大，下单要用限价单；单只股票可能亏 20% 以上，所以必须分散到多只。</p>
 </div>
 
 <h2>下周可以一起讨论的方向</h2>
