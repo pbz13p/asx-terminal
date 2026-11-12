@@ -275,7 +275,14 @@ def insight(code, provider):
         else:
             S.append(sig("up", "非业绩大跌，偏反弹", f"上个交易日跌 {d1:.1f}%。没有业绩原因的大跌，历史上之后一个月偏向反弹。"))
     dist_hi = 100 * (last / hi - 1)
-    if dist_hi >= -5:
+    # breakout (round 21): new 52-week high in the last 5 days after a 15%+ pullback within 60 days
+    brk = None
+    for t in range(len(px) - 5, len(px)):
+        if t >= 253 and px[t] > max(px[t - 252:t]) and min(px[t - 60:t]) <= max(px[t - 252:t]) * .85:
+            brk = ds[t]
+    if brk:
+        S.append(sig("up", "52 周新高突破", f"{brk} 创 52 周新高，而且 3 个月内曾比高点低 15% 以上（真正的突破）。如果当天放量（≥平时 2 倍），历史上之后 60 天平均跑赢一般股票约 3.6%，两段时间都成立；大盘弱（在 200 日线下）时突破的股票更强。注意：一半的突破 20 天内会失败。"))
+    if dist_hi >= -5 and not brk:
         S.append(sig("up", "靠近一年高点", f"离 52 周高点只差 {abs(dist_hi):.1f}%。“靠近高点”的股票之后 1 个月平均跑赢一般股票约 0.5%，两段时间都稳定（强者恒强），但幅度不大。"))
     elif dist_hi <= -40:
         S.append(sig("info", "远离一年高点", f"比 52 周高点低 {abs(dist_hi):.0f}%。这个信号 2022 年前后表现相反，不作为方向依据。"))
