@@ -73,7 +73,7 @@ def main():
                 if d < "2015-01-01":
                     continue
                 j = bisect.bisect_left(uk, d) - 1
-                if j < 1 or uk[j] <= p:  # the US session must fall between the two ASX sessions
+                if j < 1 or uk[j] < p:  # the US session dated p runs after the ASX close on p
                     continue
                 ur = us[uk[j]] / us[uk[j - 1]] - 1
                 o, c, pc = s[d][1], s[d][4], s[p][4]
