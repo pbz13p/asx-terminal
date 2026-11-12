@@ -153,6 +153,7 @@ RATE_BETA = {"能源": 0.53, "金融": 0.09, "矿业": 0.06, "科技": -0.09, "�
              "可选消费": -0.11, "必需消费": -0.03, "工业": -0.08, "公用事业": -0.07, "电信": -0.11}
 MONTH = {1: (1.09, 67), 2: (0.06, 58), 3: (-1.77, 50), 4: (2.07, 75), 5: (0.47, 67), 6: (-0.15, 67),
          7: (2.83, 92), 8: (-0.54, 50), 9: (-2.04, 25), 10: (0.34, 50), 11: (2.05, 67), 12: (0.98, 64)}
+RBA_DATES = ["2026-02-03", "2026-03-17", "2026-05-05", "2026-06-16", "2026-08-11", "2026-09-29", "2026-11-03", "2026-12-08"]
 KNOWN_EVENTS = [("2026-12-08", "澳联储 利率决议（下午 2:30）"), ("2026-12-10", "美联储决议后的澳股交易日")]
 
 
@@ -255,6 +256,14 @@ def insight(code, provider):
         macro["au2"], macro["au10"], macro["au_asof"] = au2[-1][1], au2[-1][2], au2[-1][0]
         au2_chg = au2[-1][1] - au2[-64][1]
         macro["au2_3m"] = au2_chg
+    hawk = None
+    if au2:
+        yd = [x[0] for x in au2]
+        for rd in RBA_DATES:
+            if rd in yd:
+                k = yd.index(rd)
+                if k >= 1 and au2[k][1] - au2[k - 1][1] >= .06 and len(yd) - 1 - k < 5:
+                    hawk = (rd, 100 * (au2[k][1] - au2[k - 1][1]))
     rate_state = None if au2_chg is None else "cut" if au2_chg < -.5 else "hike" if au2_chg > .5 else "flat"
     vix_state = None if vix is None else "panic" if vix >= 25 else "calm" if vix < 15 else "normal"
     macro["rate_state"] = {"cut": "市场押降息", "hike": "市场押加息", "flat": "利率预期平稳", None: "未知"}[rate_state]
@@ -357,6 +366,8 @@ def insight(code, provider):
     except Exception:
         pass
     # ---- macro signals
+    if hawk:
+        S.append(sig("down", "澳联储鹰派意外后一周", f"{hawk[0]} 决议当天澳 2 年收益率 +{hawk[1]:.0f}bp（比预期鹰派）。历史上之后一周 ASX 200 平均 −0.7%（p≈0.006），所有板块偏弱，REITs 最弱。ETF 回测：这一周把仓位减半，长期每年多约 1%。"))
     if vix_state == "panic":
         S.append(sig("up", "VIX 恐慌", f"VIX {vix:.1f} ≥ 25。历史上之后 1 个月 ASX 200 平均 +1.7%、3 个月 +5%，上涨概率约 76%。"))
     if rate_state == "cut":
