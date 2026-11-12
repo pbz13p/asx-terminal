@@ -30,6 +30,8 @@ def main():
             pre = i - 1
             while pre > 0 and rows[pre][5] == 0 and i - pre <= 6:
                 pre -= 1
+            if pre < 21:
+                continue
             pc = rows[pre][4]
             vols = sorted(r[5] for r in rows[pre - 20:pre + 1])
             turn = sorted(r[6] * r[5] for r in rows[pre - 20:pre + 1])[10]
