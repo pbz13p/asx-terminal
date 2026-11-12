@@ -51,6 +51,20 @@ def main():
     rba = set(study4.fallback_events()["澳联储 利率决议"])
     days = [d for d in sorted(acc) if d in px and d >= "2014-06-01"]
     start = next(i for i, d in enumerate(days) if d >= "2015-01-01")
+    out = {}
+    for enabled in (("FEAR", "CUTS", "STREAK", "HAWK"), ("FEAR",), ("CUTS",), ("STREAK",), ("HAWK",), ("CUTS", "STREAK", "HAWK")):
+        res, counts = simulate(enabled, days, start, acc, px, vix, vk, f2, yk, f1, ck, rba)
+        tag = "+".join(enabled)
+        for k, v in res.items():
+            out[f"{k} | {tag}"] = v
+        out[f"_days_active | {tag}"] = counts
+    p = Path(os.environ.get("STUDY25_OUT", study.DATA / "study25_results.json"))
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
+    print("round 25 done")
+
+
+def simulate(enabled, days, start, acc, px, vix, vk, f2, yk, f1, ck, rba):
     boost_left = {"FEAR": 0, "CUTS": 0, "STREAK": 0}
     cut_left = 0
     plans = {"A 一直 100%": (1.0, 1.0, 1.0), "B 平时 80%": (0.8, 1.0, 0.5), "C 平时 60%": (0.6, 1.0, 0.3), "D 只在鹰派后减仓": (1.0, 1.0, 0.5)}
@@ -65,14 +79,14 @@ def main():
         v = vix[vk[j]] if j >= 0 else None
         x3 = px[p] / px[days[i - 64]] - 1
         if (v and v >= 25) or x3 < -.05:
-            boost_left["FEAR"] = 60
+            boost_left["FEAR"] = 60 if "FEAR" in enabled else 0
         yj = bisect.bisect_right(yk, p) - 1
         if yj >= 63 and f2[yk[yj]] - f2[yk[yj - 63]] < -.5:
-            boost_left["CUTS"] = 20
+            boost_left["CUTS"] = 20 if "CUTS" in enabled else 0
         if px[p] < px[days[i - 2]] < px[days[i - 3]] < px[days[i - 4]]:
-            boost_left["STREAK"] = 5
+            boost_left["STREAK"] = 5 if "STREAK" in enabled else 0
         if p in rba and p in f2 and yj >= 1 and f2[p] - f2[yk[yj - 1]] >= .06:
-            cut_left = 5
+            cut_left = 5 if "HAWK" in enabled else 0
         boosted = any(v_ > 0 for v_ in boost_left.values())
         cut = cut_left > 0
         if i >= start:
@@ -91,13 +105,8 @@ def main():
             boost_left[k_] = max(0, boost_left[k_] - 1)
         cut_left = max(0, cut_left - 1)
     sp = next(k for k, d in enumerate(dates) if d >= study.SPLIT)
-    out = {k: {"all": stats(v), "2015–21": stats(v[:sp]), "2022后": stats(v[sp:]),
-               "avg_weight": None} for k, v in rets.items()}
-    out["_days_active"] = {k: round(100 * v / len(dates), 1) for k, v in counts.items()}
-    p = Path(os.environ.get("STUDY25_OUT", study.DATA / "study25_results.json"))
-    p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
-    print(json.dumps(out, ensure_ascii=False, indent=1))
+    res = {k: {"all": stats(v), "2015–21": stats(v[:sp]), "2022后": stats(v[sp:])} for k, v in rets.items()}
+    return res, {k: round(100 * v / len(dates), 1) for k, v in counts.items()}
 
 
 if __name__ == "__main__":
