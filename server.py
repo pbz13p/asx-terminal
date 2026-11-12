@@ -114,14 +114,29 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
+CODE_FILES = ("server.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+              "providers/ibkr.py", "providers/__init__.py")
+
+
+def _stamp():
+    return {f: (ROOT / f).stat().st_mtime_ns for f in CODE_FILES if (ROOT / f).exists()}
+
+
 def auto_update():
+    import importlib
+    import sys
     import update
     while True:
         time.sleep(300)
+        before = _stamp()
         try:
-            update.main()
+            importlib.reload(update).main()
         except Exception:
             pass
+        if _stamp() != before:  # program code changed: restart in place so new features work
+            print("Program updated, restarting...")
+            os.environ["ASX_DESK_RESTART"] = "1"
+            os.execv(sys.executable, [sys.executable] + sys.argv)
 
 
 def main():
@@ -130,7 +145,8 @@ def main():
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     print(f"ASX Neon Terminal 已启动: http://127.0.0.1:{port}  (关闭此窗口即停止)")
     if os.environ.get("NO_BROWSER") != "1":
-        webbrowser.open(f"http://127.0.0.1:{port}")
+        if not os.environ.get("ASX_DESK_RESTART"):
+            webbrowser.open(f"http://127.0.0.1:{port}")
     server.serve_forever()
 
 
