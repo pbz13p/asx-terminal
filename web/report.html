@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–13 轮</title>
+<title>ASX 量化研究报告 · 第 1–14 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–13 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–14 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论</h3>
@@ -261,10 +261,27 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 </table></div>
 <p><b>结论：</b></p>
 <ul>
-<li><b>“大盘连跌 3 天就买、拿 5 天”是最好的波段规则</b>：只有 28% 的时间在场，却拿到一直持有约 78% 的收益，回撤减半，夏普更高，两段时间都稳定。<b>空仓的 72% 时间如果放高息储蓄（现在约 4%），总回报会明显超过一直持有。</b></li>
+<li><b>“大盘连跌 3 天就买、拿 5 天”是最好的波段规则</b>：只有 28% 的时间在场，却拿到一直持有约 78% 的收益，回撤减半，夏普更高，两段时间都稳定。（第 14 轮更正：把股息和现金利息都算进去后，它的总收益<b>低于</b>一直持有，见下。）</li>
 <li>美股很有名的 RSI(2) 规则在澳股上<b>基本无效</b>，月末月初效应是负的，小盘指数上所有规则都不如一直持有。别照搬美股的书。</li>
 <li>方向面板已加上“大盘连跌 3 天”提示。</li>
 </ul>
+</div>
+
+<div class="card" style="border-color:#ffc83d66">
+<h3><span class="tag y">第 14 轮 · 更正</span>把股息和现金利息都算进去</h3>
+<p class="note">用 ASX 200 全收益指数（含股息再投资），空仓时按澳联储现金利率计息（2014–2026 平均约 2.2%）。下表把参数换一换，看结果稳不稳。</p>
+<div class="scroll"><table>
+<tr><th>规则</th><th>年化</th><th>最大回撤</th><th>夏普</th><th>2015–21 / 2022 后 年化</th></tr>
+<tr><td>一直持有（含股息）</td><td><b>8.1%</b></td><td class="dn">−35.9%</td><td>0.59</td><td>—</td></tr>
+<tr><td>全部放现金</td><td>2.2%</td><td>0%</td><td>—</td><td>—</td></tr>
+<tr><td><b>连跌 3 天·持 5 天</b></td><td>5.7%</td><td class="up"><b>−12.5%</b></td><td class="up"><b>0.83</b></td><td>5.9% / 5.6%</td></tr>
+<tr><td>连跌 3 天·持 10 天</td><td>6.4%</td><td>−18.3%</td><td>0.71</td><td>6.3% / 6.5%</td></tr>
+<tr><td>连跌 4 天·持 5 天</td><td>3.7%</td><td class="up">−6.9%</td><td class="up">0.83</td><td>3.7% / 3.7%</td></tr>
+<tr><td>连跌 2 天·持 10 天</td><td>8.1%</td><td>−27.3%</td><td>0.70</td><td>9.6% / 6.0%</td></tr>
+<tr><td>连跌 2 天·持 5 天</td><td>4.2%</td><td>−25.2%</td><td>0.44</td><td>6.3% / 1.4%</td></tr>
+</table></div>
+<p><b>老实说：</b>算上股息后，<b>一直持有的总收益（8.1%）最高</b>，连跌买入的规则都赚得更少。它们的价值是<b>风险小得多</b>：“连跌 3 天·持 5 天”回撤只有 −12.5%（一直持有 −35.9%），每承受一份波动换来的收益更高（夏普 0.83 对 0.59），而且换参数、换时间段都稳定。</p>
+<p><b>适合谁：</b>受不了 30% 以上回撤的人，或者想用一部分资金做低风险波段的人。追求最高长期收益，还是一直持有指数 ETF 最好。</p>
 </div>
 
 <h2>第 9 轮：什么宏观环境，持有什么板块</h2>
