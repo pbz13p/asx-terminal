@@ -80,6 +80,36 @@ def sector_map():
     raise RuntimeError("no directory")
 
 
+def asic_latest():
+    for back in range(3, 14):
+        d = date.today() - timedelta(days=back)
+        if d.weekday() >= 5:
+            continue
+        try:
+            raw = urllib.request.urlopen(urllib.request.Request(
+                f"https://download.asic.gov.au/short-selling/RR{d.strftime('%Y%m%d')}-001-SSDailyAggShortPos.csv", headers=UA), timeout=30).read()
+        except Exception:
+            continue
+        text = None
+        for enc in ("utf-16", "utf-8-sig", "latin-1"):
+            try:
+                text = raw.decode(enc)
+                if "Product" in text[:400]:
+                    break
+            except UnicodeDecodeError:
+                continue
+        delim = "\t" if text[:400].count("\t") > text[:400].count(",") else ","
+        out = {}
+        for row in csv.reader(io.StringIO(text), delimiter=delim):
+            try:
+                out[row[1].strip()] = float(row[4].strip().replace("%", ""))
+            except (ValueError, IndexError):
+                continue
+        if len(out) > 200:
+            return {"date": d.isoformat(), "data": out}
+    raise RuntimeError("ASIC unavailable")
+
+
 def ff_week():
     rows = json.loads(get("https://nfs.faireconomy.media/ff_calendar_thisweek.json"))
     out = []
@@ -296,6 +326,15 @@ def insight(code, provider):
             if theme == "黄金" and tinfo["commodity_20d"] > 5:
                 S.append(sig("up", "金价 1 个月大涨", f"金价（澳元）近 20 天 {tinfo['commodity_20d']:+.1f}%。历史上之后 20 天金矿股平均跑赢大盘约 5%。"))
             S.append(sig("info", f"{theme}隔夜规律", note))
+    # ---- short selling (round 19)
+    short = None
+    asic = cached("asic", 12 * 3600, asic_latest)
+    if asic and code in asic["data"]:
+        short = {"pct": asic["data"][code], "date": asic["date"]}
+        if short["pct"] >= 10:
+            S.append(sig("down", "空头很高", f"有 {short['pct']:.1f}% 的股份被卖空（ASIC {asic['date']}）。空头 ≥10% 的股票 2022 年后平均每月跑输一般股票约 0.7%，也更容易出现剧烈的轧空反弹。"))
+        elif short["pct"] >= 6:
+            S.append(sig("info", "空头偏高", f"有 {short['pct']:.1f}% 的股份被卖空（ASIC {asic['date']}）。"))
     # ---- market (ASX 200) signals
     try:
         xh = provider.history("XJO", 3)
@@ -340,5 +379,5 @@ def insight(code, provider):
             "chg": {"1天": d1, "5天": r5, "20天": chg(20), "60天": chg(60), "1年": chg(252)},
             "hi": hi, "lo": lo, "dist_hi": dist_hi, "ma50": ma50, "ma200": ma200, "rsi": rsi,
             "rv20": rv20, "rv_pct": rv_pct, "macro": macro, "signals": S, "score": score,
-            "events": events, "week": week[:12], "div": divinfo, "theme": tinfo,
+            "events": events, "week": week[:12], "div": divinfo, "theme": tinfo, "short": short,
             "spark": [round(x, 4) for x in px[-120:]]}

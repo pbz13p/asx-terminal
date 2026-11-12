@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–18 轮</title>
+<title>ASX 量化研究报告 · 第 1–19 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–18 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–19 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论</h3>
@@ -344,6 +344,21 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <p>更有意思的是反过来：BHP/FMG、RIO/FMG、QBE/IAG、WDS/STO 拉开差距后<b>差距往往继续扩大</b>（这些配对平均 −0.7% 到 −1.4%）。说明澳洲蓝筹之间的差异多数来自公司基本面（如 FMG 的单一铁矿、QBE 的海外业务），不是会自动修复的“错误定价”。<b>不要因为“同行涨了它没涨”就去买落后的那只。</b></p>
 </div>
 
+<h2>第 19 轮：卖空数据（ASIC 免费公开）</h2>
+<div class="card">
+<p class="note">ASIC 每天公布每只股票被卖空的比例（晚约 4 个工作日）。2015–2026 年 140 个月末快照。因为数据有延迟，从数据日期后第 5 个交易日开盘才进场，看之后 20 天比一般股票多涨多少。</p>
+<div class="scroll"><table>
+<tr><th>被卖空比例</th><th>样本</th><th>之后 1 个月（相对中位数）</th><th>2015–21</th><th>2022 后</th></tr>
+<tr><td>&lt;1%</td><td>18,894</td><td class="up">+0.66%</td><td>+0.68%</td><td>+0.65%</td></tr>
+<tr><td>1–3%</td><td>12,788</td><td>+0.38%</td><td>+0.40%</td><td>+0.36%</td></tr>
+<tr><td>3–6%</td><td>6,392</td><td>+0.37%</td><td>+0.54%</td><td>+0.13%</td></tr>
+<tr><td>6–10%</td><td>2,657</td><td>+0.29%</td><td>+0.18%</td><td>+0.47%</td></tr>
+<tr><td><b>≥10%</b></td><td>994</td><td>+0.16%</td><td>+0.64%</td><td class="dn"><b>−0.69%</b></td></tr>
+</table></div>
+<p><b>结论：</b>卖空越多，之后大致越弱，但差距不大。最明显的是 <b>2022 年后被卖空 ≥10% 的股票，每月比空头很少的股票差约 1.3 个百分点</b>。空头 1 个月内大增或大减，没有稳定规律（有时会轧空）。</p>
+<p><b>用法：</b>空头 ≥10% 的股票（通常是锂、零售、有争议的科技股），做多要更谨慎、仓位更小。方向面板已显示每只股票的最新卖空比例。</p>
+</div>
+
 <h2>第 9 轮：什么宏观环境，持有什么板块</h2>
 <div class="card">
 <p class="note">“超额”= 板块之后 1 个月的涨幅减去 ASX 200 的涨幅。只列两段时间（2015–21、2022 后）方向一致的结果。</p>
@@ -389,6 +404,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <tr><td>FRED（圣路易斯联储）</td><td>美债收益率、利差、VIX、美国 CPI、非农、联邦基金利率等 80 万个序列</td><td>每天</td></tr>
 <tr><td>ABS Data API（澳洲统计局）</td><td>CPI、就业、GDP 等官方原始数据</td><td>公布即更新</td></tr>
 <tr><td>Forex Factory 日历</td><td>本周全球事件 + 预期值 + 前值 + 实际值（只有本周）</td><td>实时</td></tr>
+<tr><td>ASIC 卖空数据</td><td>每只股票被卖空的比例</td><td>每天（晚约 4 个工作日）</td></tr>
 <tr><td>ASX RBA Rate Tracker</td><td>下次澳联储决议的加/降息概率、未来 18 个月利率路径</td><td>每天收盘后</td></tr>
 <tr><td>美联储 / RBA 官网</td><td>决议声明、会议纪要、议息日历</td><td>按日程</td></tr>
 </table></div>
