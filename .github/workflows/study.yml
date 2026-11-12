@@ -29,24 +29,30 @@ jobs:
           git fetch -q origin results && git --work-tree=out checkout origin/results -- . || true
           git reset -q
       - name: Run round 4 (macro)
-        if: ${{ !contains(steps.mode.outputs.mode, 'only7') }}
+        if: ${{ !contains(steps.mode.outputs.mode, 'only7') && !contains(steps.mode.outputs.mode, 'only8') }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY4_OUT: out/study4_results.json
         run: python study4.py
       - name: Run round 5 (ETF rules)
-        if: ${{ !contains(steps.mode.outputs.mode, 'only7') }}
+        if: ${{ !contains(steps.mode.outputs.mode, 'only7') && !contains(steps.mode.outputs.mode, 'only8') }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY5_OUT: out/study5_results.json
         run: python study5.py
       - name: Run round 6
-        if: ${{ !contains(steps.mode.outputs.mode, 'only7') }}
+        if: ${{ !contains(steps.mode.outputs.mode, 'only7') && !contains(steps.mode.outputs.mode, 'only8') }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY6_OUT: out/study6_results.json
         run: python study6.py
+      - name: Run round 8 (robustness)
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          STUDY8_OUT: out/study8_results.json
+        run: python study8.py
       - name: Run round 7 (official macro data)
+        if: ${{ !contains(steps.mode.outputs.mode, 'only8') }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY7_OUT: out/study7_results.json
