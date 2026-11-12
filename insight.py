@@ -388,7 +388,7 @@ def insight(code, provider):
         pass
     # ---- macro signals
     if hawk:
-        S.append(sig("down", "澳联储鹰派意外后一周", f"{hawk[0]} 决议当天澳 2 年收益率 +{hawk[1]:.0f}bp（比预期鹰派）。历史上之后一周 ASX 200 平均 −0.7%（p≈0.006），所有板块偏弱，科技、REITs、小盘最弱，必需消费和工业最抗跌。ETF 回测：这一周减仓，长期每年多约 1%；但 2024 年改为两天会议后 4 次都没生效，建议小幅减仓。"))
+        S.append(sig("warn", "澳联储鹰派意外后一周", f"{hawk[0]} 决议当天澳 2 年收益率 +{hawk[1]:.0f}bp（比预期鹰派）。历史上之后一周 ASX 200 平均 −0.7%（p≈0.006），所有板块偏弱，科技、REITs、小盘最弱，必需消费和工业最抗跌。ETF 回测：这一周减仓，长期每年多约 1%；但 2024 年改为两天会议后还没有生效，只作观察。"))
     if vix_state == "panic":
         S.append(sig("up", "VIX 恐慌", f"VIX {vix:.1f} ≥ 25。历史上之后 1 个月 ASX 200 平均 +1.7%、3 个月 +5%，上涨概率约 76%。"))
     if rate_state == "cut":
