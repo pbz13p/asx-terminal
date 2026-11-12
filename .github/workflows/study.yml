@@ -22,17 +22,31 @@ jobs:
           key: eod-${{ github.run_id }}
           restore-keys: eod-
       - run: pip install numpy
+      - id: mode
+        run: |
+          echo "mode=$(cat .github/run-study)" >> $GITHUB_OUTPUT
+          mkdir -p out
+          git fetch -q origin results && git --work-tree=out checkout origin/results -- . || true
+          git reset -q
+      - name: Run round 4 (macro)
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          STUDY4_OUT: out/study4_results.json
+        run: python study4.py
       - name: Run study
+        if: ${{ !contains(steps.mode.outputs.mode, 'only4') }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY_OUT: out/study_results.json
         run: python study.py
       - name: Run round 2
+        if: ${{ !contains(steps.mode.outputs.mode, 'only4') }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY2_OUT: out/study2_results.json
         run: python study2.py
       - name: Run round 3
+        if: ${{ !contains(steps.mode.outputs.mode, 'only4') }}
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY3_OUT: out/study3_results.json
@@ -43,6 +57,6 @@ jobs:
           git init -q -b results
           git config user.name "asx-study-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add study_results.json study2_results.json study3_results.json
+          git add *.json
           git commit -q -m "Study results $(date -u +%F)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" results
