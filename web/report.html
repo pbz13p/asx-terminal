@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–38 轮</title>
+<title>ASX 量化研究报告 · 第 1–39 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–38 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–39 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论（25 轮研究后）</h3>
@@ -73,7 +73,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <tr><td><b>市场押降息时加仓</b></td><td>澳 2 年国债 3 个月跌 &gt;0.5% → 加仓 ASX 200 ETF</td><td>1–3 个月</td><td>1 个月 +2.9%，7 段时期全涨</td><td>★★★★</td><td class="mu">未触发（+0.32%，偏加息）</td></tr>
 <tr><td><b>恐慌时加仓</b></td><td>VIX ≥25 或大盘 3 个月跌 &gt;5% → 加仓 ETF</td><td>1–3 个月</td><td>1 个月 +1.6–2.7%，3 个月 +5%</td><td>★★★★</td><td class="mu">未触发（VIX≈18）</td></tr>
 <tr><td><b>澳联储鹰派意外后减仓一周</b></td><td>决议日 2 年收益率涨 ≥6bp → ETF 减半仓 5 天，REITs 尤其小心</td><td>1 周</td><td>之后一周 −0.7%，p≈0.006；ETF 计划每年多约 1%（第 25 轮）</td><td>★★★★</td><td class="up">12 月 8 日决议</td></tr>
-<tr><td><b>金矿股落后于金价时低吸</b></td><td>金矿股篮子明显落后金价（面板/扫描 z&lt;−1）→ 买金矿股</td><td>1–4 周</td><td>28 次独立进场，20 天平均 +5.4%，68% 为正</td><td>★★★</td><td class="mu">未触发（黄金 z≈+0.4）</td></tr>
+<tr><td><b>金矿股落后于金价时低吸</b></td><td>金矿股篮子明显落后金价（面板/扫描 z&lt;−1）→ 买金矿股</td><td>1–4 周</td><td>28 次独立进场，20 天平均 +5.4%；2019 后样本外方向一致但偏弱</td><td>★★</td><td class="mu">未触发（黄金 z≈+0.4）</td></tr>
 <tr><td><b>大盘连跌 3 天买 ETF</b></td><td>ASX 200 连跌 3 天 → 买 IOZ/STW，5 天后卖</td><td>5 天</td><td>回撤减半，夏普 0.83（但总收益低于一直持有）</td><td>★★★</td><td class="mu">看面板提示</td></tr>
 <tr><td><b>放量突破一年新高</b></td><td>3 个月内曾回调 15%+、放量创 52 周新高 → 次日买，分散持多只</td><td>1–3 个月</td><td>跑赢一般股票 +3.6%（t≈4.9），但做成组合<b>跑输 ASX 200</b>（第 24 轮）</td><td>★ 只用来挑时机</td><td class="mu">看面板提示</td></tr>
 <tr><td><b>业绩跳涨且站稳 → 买</b></td><td>业绩季高开 ≥5% 放量、收盘仍高于开盘 → 次日开盘买</td><td>5 天</td><td>2022 年后对流动性好的股票已无优势（第 33 轮）</td><td>★</td><td class="mu">2027 年 2 月</td></tr>
@@ -685,6 +685,16 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <li><b>之后一周没有稳定方向</b>：大盘和各板块都在 ±0.4% 以内，两段时间方向不一致。</li>
 </ul>
 <p><b>结论：</b>看到美债或澳元大动，不要第二天再去追相关板块。这和第 2、17、20 轮的结论一样：<b>隔夜消息在澳股开盘那一刻就定价了</b>。</p>
+</div>
+
+<h2>第 39 轮：金矿股补涨规则的样本外检验</h2>
+<div class="card">
+<p class="note">用 2019 年前的数据估算金矿股对金价的敏感度和正常波动，2019–2026 年原样应用。换回看期（10/20/40 天）、门槛（z&lt;−0.75 到 −1.5）、持有期（10/20/40 天），共 21 种组合，看金矿股篮子之后相对 ASX 200 的表现。</p>
+<ul>
+<li><b>21 种里 20 种平均为正</b>（+0.7% 到 +9.8%），方向很一致。</li>
+<li>但单个组合的 t 值大多只有 0.6–2.0，<b>统计上偏弱</b>；而且 2019 年后金价大牛市，金矿股本来就整体跑赢大盘，一部分收益来自这个背景。</li>
+</ul>
+<p><b>结论：</b>方向可信，力度别高估。可靠度从 ★★★ 降为 ★★：适合在<b>本来就想买金矿股</b>时，挑“落后于金价”的时机进场，不宜单独重仓。</p>
 </div>
 
 <h2>下周可以一起讨论的方向</h2>
