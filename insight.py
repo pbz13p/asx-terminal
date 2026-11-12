@@ -208,6 +208,18 @@ def insight(code, provider):
             S.append(sig("down", "趋势向下", "股价在 50 日线和 200 日线下方，且 50 日线低于 200 日线。"))
     if rv_pct >= 80:
         S.append(sig("warn", "波动偏大", f"近 20 天年化波动 {rv20:.0f}%，处于自身历史第 {rv_pct:.0f} 百分位。仓位宜小一点，止损放宽。"))
+    # ---- market (ASX 200) signals
+    try:
+        xh = provider.history("XJO", 3)
+        xc = [float(r["close"]) for r in xh]
+        downs = 0
+        while downs < len(xc) - 1 and xc[-1 - downs] < xc[-2 - downs]:
+            downs += 1
+        macro["xjo_down_days"] = downs
+        if downs >= 3:
+            S.append(sig("up", f"大盘连跌 {downs} 天", "ASX 200 连跌 3 天后买入、持有 5 天：历史上平均 +0.4%，两段时间都成立；做成策略回撤只有一直持有的一半。"))
+    except Exception:
+        pass
     # ---- macro signals
     if vix_state == "panic":
         S.append(sig("up", "VIX 恐慌", f"VIX {vix:.1f} ≥ 25。历史上之后 1 个月 ASX 200 平均 +1.7%、3 个月 +5%，上涨概率约 76%。"))
