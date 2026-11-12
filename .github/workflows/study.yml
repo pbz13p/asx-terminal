@@ -21,6 +21,7 @@ jobs:
           path: data/eod
           key: eod-${{ github.run_id }}
           restore-keys: eod-
+      - run: pip install numpy
       - name: Run study
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
@@ -31,12 +32,17 @@ jobs:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY2_OUT: out/study2_results.json
         run: python study2.py
+      - name: Run round 3
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          STUDY3_OUT: out/study3_results.json
+        run: python study3.py
       - name: Publish results to the results branch
         run: |
           cd out
           git init -q -b results
           git config user.name "asx-study-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add study_results.json study2_results.json
+          git add study_results.json study2_results.json study3_results.json
           git commit -q -m "Study results $(date -u +%F)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" results
