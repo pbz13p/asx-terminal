@@ -370,7 +370,11 @@ def findings(table, corr):
     seen = set()
     uniq = []
     for r in sorted(table, key=lambda r: r["group"] != "全部"):
-        k = (r["study"], r["bucket"], r["h"], round(r["all"]["net"], 3))
+        k = (r["study"], r["bucket"], r["h"]) if r["group"] == "全部" or (r["study"], r["bucket"], r["h"]) not in seen else None
+        if k is None:
+            continue
+        if r["group"] != "全部":
+            k = (r["study"], r["bucket"], r["h"], r["group"])
         if k not in seen:
             seen.add(k)
             uniq.append(r)

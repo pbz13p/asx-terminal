@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASX 短线波动研究</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#E8EEFF;--mu:#AEB9E0;--c:#22E4F5;--up:#19FF9C;--dn:#FF2E74;--y:#FFE01F;--v:#A44BFF;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;--disp:"Space Grotesk",system-ui,sans-serif}
+*{box-sizing:border-box}html,body{margin:0;background:#000;color:var(--ink);font:500 14px/1.55 var(--mono)}
+body{background:radial-gradient(1200px 700px at 20% -10%,rgba(164,75,255,.22),transparent 60%),radial-gradient(900px 600px at 100% 30%,rgba(34,228,245,.13),transparent 60%),radial-gradient(rgba(120,160,255,.09) 1px,transparent 1px),#000;background-size:auto,auto,14px 14px,auto}
+.wrap{max-width:1240px;margin:0 auto;padding:22px 16px 60px}
+h1{margin:0;font:700 34px/1.15 var(--disp);letter-spacing:.01em}h1 span{color:var(--c);text-shadow:0 0 18px rgba(34,228,245,.7)}
+.meta{color:var(--mu);font-size:13px;margin:8px 0 22px}
+.meta b{color:var(--ink)}
+h2{font:800 15px/1.2 var(--mono);letter-spacing:.1em;margin:34px 0 12px;color:#fff;text-shadow:0 0 12px var(--a,#22E4F5)}
+h2:before{content:"◆ ";color:var(--a,#22E4F5)}
+.card{--a:#22E4F5;background:linear-gradient(160deg,rgba(14,18,44,.96),rgba(1,2,8,.97) 60%);border:1px solid color-mix(in srgb,var(--a) 60%,transparent);border-radius:10px;box-shadow:0 0 18px color-mix(in srgb,var(--a) 28%,transparent),inset 0 1px 0 rgba(255,255,255,.12);padding:14px 16px}
+.finds{display:grid;gap:10px}
+.f{display:grid;grid-template-columns:1fr;gap:4px}.f .t{font-weight:800;font-size:14px}.f .x{font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;font-size:16px;line-height:1.6;color:#F2F5FF}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}
+th{color:var(--mu);font-weight:500;text-align:right;padding:5px 6px;border-bottom:1px solid rgba(120,160,255,.25);white-space:nowrap}th:first-child,td:first-child{text-align:left}
+td{text-align:right;padding:5px 6px;border-bottom:1px solid rgba(120,160,255,.08);white-space:nowrap}
+.up{color:var(--up);text-shadow:0 0 8px rgba(25,255,156,.45)}.dn{color:var(--dn);text-shadow:0 0 8px rgba(255,46,116,.5)}.mu{color:var(--mu)}
+.badge{display:inline-block;font-size:11px;font-weight:800;padding:1px 6px;border-radius:9px;margin-left:6px}.ok{color:#000;background:var(--up)}.no{color:var(--mu);border:1px solid rgba(174,185,224,.4)}
+.bar{position:relative;display:inline-block;width:70px;height:9px;background:rgba(120,160,255,.12);border-radius:5px;vertical-align:middle;margin-left:6px}.bar i{position:absolute;top:0;bottom:0;border-radius:5px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.tab{all:unset;cursor:pointer;padding:6px 12px;border:1px solid rgba(120,160,255,.35);border-radius:16px;color:var(--mu);font-size:13px;min-height:24px}.tab[aria-pressed=true]{background:var(--c);color:#000;border-color:var(--c);box-shadow:0 0 12px rgba(34,228,245,.6)}
+.scroll{overflow-x:auto}
+canvas{display:block;width:100%}
+.big{font:700 40px/1 var(--disp)}.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.kpi small{display:block;color:var(--mu);font-size:12px;margin-top:6px}
+.note{color:var(--mu);font-size:12.5px;font-family:system-ui,"PingFang SC",sans-serif;line-height:1.6}
+.err{padding:60px 0;text-align:center;color:var(--y);font-size:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>ASX <span>短线波动</span>研究</h1>
+<div class="meta" id="meta">加载中…</div>
+<div id="root"></div>
+</div>
+<script>
+(function(){
+var UP='#19FF9C',DN='#FF2E74',C='#22E4F5',V='#A44BFF',Y='#FFE01F';
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function pc(v,d){if(v==null||isNaN(v))return '—';d=d==null?2:d;return (v>0?'+':v<0?'−':'')+Math.abs(v).toFixed(d)+'%';}
+function cls(v){return v>0?'up':v<0?'dn':'mu';}
+function fit(cv,h){var d=Math.min(2,devicePixelRatio||1),w=cv.clientWidth;cv.style.height=h+'px';cv.width=w*d;cv.height=h*d;var x=cv.getContext('2d');x.setTransform(d,0,0,d,0,0);return {x:x,w:w,h:h};}
+function glowLine(x,pts,col,w){x.strokeStyle=col;x.shadowColor=col;x.shadowBlur=10;x.lineWidth=w||1.8;x.beginPath();pts.forEach(function(p,i){i?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]);});x.stroke();x.shadowBlur=0;}
+function axisText(x,t,X,Y,al){x.fillStyle='#AEB9E0';x.font='11px JetBrains Mono';x.textAlign=al||'left';x.fillText(t,X,Y);x.textAlign='left';}
+
+function render(D){window.__D=D;
+  var m=D.meta;
+  $('meta').innerHTML='数据 <b>'+m.start+'</b> 至今 · <b>'+m.stocks+'</b> 只股票（含已退市 <b>'+m.delisted+'</b> 只）· 生成于 <b>'+esc(m.generated)+'</b> · 前后两段：2015–2021 / <b>2022 起</b>（样本外验证）';
+  var h='';
+  h+='<h2 style="--a:#FFE01F">一句话结论</h2><div class="finds">'+D.findings.map(function(f){var a=f.tag.indexOf('✅')>=0?UP:f.tag.indexOf('⛔')>=0?DN:f.tag.indexOf('⚠')>=0?Y:C;return '<div class="card f" style="--a:'+a+'"><div class="t" style="color:'+a+'">'+esc(f.tag)+'</div><div class="x">'+esc(f.text)+'</div></div>';}).join('')+'</div>';
+  h+='<p class="note">“净收益”= 扣掉手续费 0.1% 和按流动性估算的买卖价差之后的平均收益。信号在当天收盘确认，假设<b>第二天开盘</b>买入（除了标注“收盘买”的大盘研究）。“两段都成立”= 2015–21 年和 2022 年后方向一致、按日期聚类的 t 值都 ≥ 2。历史统计，不构成投资建议。</p>';
+  if(D.vol)h+=volBlock(D.vol);
+  if(D.us_corr&&D.us_corr['样本天数'])h+='<h2 style="--a:#2F7BFF">美股隔夜 → 澳股</h2><div class="card kpis" style="--a:#2F7BFF">'+['美股→澳股开盘跳空','美股→澳股开盘后到收盘','美股→澳股全天'].map(function(k){var v=D.us_corr[k];return '<div class="kpi"><div class="big '+cls(v)+'">'+v.toFixed(2)+'</div><small>相关系数 · '+k+'</small></div>';}).join('')+'<div class="kpi"><div class="big">'+D.us_corr['样本天数']+'</div><small>样本天数</small></div></div>';
+  var studies={};D.rows.forEach(function(r){(studies[r.study]=studies[r.study]||[]).push(r);});
+  Object.keys(studies).sort().forEach(function(s,si){
+    var rows=studies[s],groups=[];rows.forEach(function(r){if(groups.indexOf(r.group)<0)groups.push(r.group);});
+    var id='s'+si,col=[C,V,UP,Y,'#FF9A1F','#FF2BD6','#2F7BFF'][si%7];
+    h+='<h2 style="--a:'+col+'">'+esc(s)+'</h2><div class="card" style="--a:'+col+'">';
+    if(groups.length>1)h+='<div class="tabs" data-for="'+id+'">'+groups.map(function(g,gi){return '<button class="tab" aria-pressed="'+(g==='全部'||(gi===0&&groups.indexOf('全部')<0))+'" data-g="'+esc(g)+'">'+esc(g==='全部'?'全部流动性':'日成交额 '+g.slice(3))+'</button>';}).join('')+'</div>';
+    h+='<div class="scroll" id="'+id+'">'+groups.map(function(g){return '<table data-g="'+esc(g)+'" style="display:'+((g==='全部'||(groups.indexOf('全部')<0&&g===groups[0]))?'table':'none')+'"><thead><tr><th>情形</th><th>持有</th><th>次数</th><th>毛收益</th><th>净收益</th><th>胜率</th><th>2015–21</th><th>2022 起</th><th>t</th></tr></thead><tbody>'+rows.filter(function(r){return r.group===g;}).map(function(r){var n=r.all.net;return '<tr><td>'+esc(r.bucket)+(r.robust?'<span class="badge ok">两段都成立</span>':'')+'</td><td>'+(r.h?r.h+' 天':'当天')+'</td><td>'+r.all.n.toLocaleString()+'</td><td class="'+cls(r.all.gross)+'">'+pc(r.all.gross)+'</td><td class="'+cls(n)+'"><b>'+pc(n)+'</b><span class="bar"><i style="'+(n>=0?'left:50%;':'right:50%;')+'width:'+Math.min(50,Math.abs(n)*10)+'%;background:'+(n>=0?UP:DN)+'"></i></span></td><td>'+r.all.win.toFixed(0)+'%</td><td class="'+cls(r.in&&r.in.net)+'">'+(r.in?pc(r.in.net):'—')+'</td><td class="'+cls(r.out&&r.out.net)+'">'+(r.out?pc(r.out.net):'—')+'</td><td class="mu">'+r.all.t.toFixed(1)+'</td></tr>';}).join('')+'</tbody></table>';}).join('')+'</div></div>';
+  });
+  $('root').innerHTML=h;
+  [].forEach.call(document.querySelectorAll('.tabs'),function(tb){tb.addEventListener('click',function(e){var b=e.target.closest('.tab');if(!b)return;[].forEach.call(tb.children,function(x){x.setAttribute('aria-pressed',x===b);});[].forEach.call($(tb.getAttribute('data-for')).children,function(t){t.style.display=t.getAttribute('data-g')===b.getAttribute('data-g')?'table':'none';});});});
+  if(D.vol)drawVol(D.vol);
+}
+
+function volBlock(v){
+  var n=v.now,lv=n.pct20>=80?'偏高':n.pct20<=20?'偏低':'正常';
+  return '<h2 style="--a:#A44BFF">ASX 200 波动体检</h2><div class="card kpis" style="--a:#A44BFF"><div class="kpi"><div class="big" style="color:'+C+'">'+n.rv20.toFixed(1)+'%</div><small>当前 20 日年化波动</small></div><div class="kpi"><div class="big" style="color:'+Y+'">'+n.pct20.toFixed(0)+'</div><small>历史百分位 · '+lv+'</small></div><div class="kpi"><div class="big dn">'+n.dd.toFixed(1)+'%</div><small>离最高点</small></div><div class="kpi"><div class="big dn">'+n.maxdd.toFixed(1)+'%</div><small>历史最大回撤 · '+n.maxdd_date+'</small></div></div>'+
+  '<div class="finds" style="margin-top:10px">'+v.findings.map(function(t){return '<div class="card f" style="--a:#A44BFF"><div class="x">'+esc(t)+'</div></div>';}).join('')+'</div>'+
+  '<div class="grid" style="margin-top:12px"><div class="card" style="--a:#22E4F5"><div class="mu">20 日年化波动 · 历史走势</div><canvas id="vSer"></canvas></div><div class="card" style="--a:#FFE01F"><div class="mu">按波动高低分五组 · 之后 20 天平均涨跌</div><canvas id="vQ"></canvas></div><div class="card" style="--a:#19FF9C"><div class="mu">波动会扎堆 · |涨跌| 与 N 天后的相关</div><canvas id="vAc"></canvas></div><div class="card" style="--a:#FF2E74"><div class="mu">离最高点的回撤</div><canvas id="vDd"></canvas></div></div>';
+}
+function drawVol(v){
+  var f=fit($('vSer'),190),x=f.x,s=v.series,mx=Math.max.apply(0,s.map(function(p){return p.v;})),L=34,B=f.h-18;
+  [10,20,40,60].forEach(function(g){if(g>mx)return;var y=B-g/mx*(B-8);x.strokeStyle='rgba(120,160,255,.13)';x.beginPath();x.moveTo(L,y);x.lineTo(f.w,y);x.stroke();axisText(x,g+'%',2,y+4);});
+  var pts=s.map(function(p,i){return [L+i/(s.length-1)*(f.w-L-4),B-p.v/mx*(B-8)];});
+  var g=x.createLinearGradient(0,0,0,B);g.addColorStop(0,'rgba(34,228,245,.35)');g.addColorStop(1,'rgba(34,228,245,0)');x.fillStyle=g;x.beginPath();x.moveTo(pts[0][0],B);pts.forEach(function(p){x.lineTo(p[0],p[1]);});x.lineTo(pts[pts.length-1][0],B);x.fill();glowLine(x,pts,C,1.4);
+  axisText(x,s[0].d.slice(0,4),L,f.h-3);axisText(x,s[s.length-1].d.slice(0,4),f.w-4,f.h-3,'right');
+  var q=v.quintiles;f=fit($('vQ'),190);x=f.x;var m2=Math.max.apply(0,q.map(function(a){return Math.abs(a.ret);}))||1,bw=(f.w-20)/q.length,mid=f.h/2;x.strokeStyle='rgba(120,160,255,.3)';x.beginPath();x.moveTo(0,mid);x.lineTo(f.w,mid);x.stroke();
+  q.forEach(function(a,i){var hgt=a.ret/m2*(mid-28),X=10+i*bw+bw*.18,w=bw*.64,col=a.ret>=0?UP:DN;x.fillStyle=col;x.shadowColor=col;x.shadowBlur=12;x.fillRect(X,a.ret>=0?mid-hgt:mid,w,Math.abs(hgt));x.shadowBlur=0;x.fillStyle='#fff';x.font='700 12px JetBrains Mono';x.textAlign='center';x.fillText(pc(a.ret),X+w/2,a.ret>=0?mid-hgt-6:mid-hgt+14);axisText(x,a.lo.toFixed(0)+'–'+a.hi.toFixed(0)+'%',X+w/2,f.h-4,'center');});
+  var ac=v.ac_abs;f=fit($('vAc'),190);x=f.x;var bw2=(f.w-10)/ac.length;ac.forEach(function(a,i){var hh=Math.max(0,a)/ .4*(f.h-34);x.fillStyle=UP;x.globalAlpha=.4+.6*(1-i/ac.length);x.shadowColor=UP;x.shadowBlur=8;x.fillRect(5+i*bw2+1,f.h-20-hh,bw2-2,hh);});x.globalAlpha=1;x.shadowBlur=0;axisText(x,'1 天',5,f.h-4);axisText(x,'20 天',f.w-4,f.h-4,'right');axisText(x,ac[0].toFixed(2),5,f.h-26-Math.max(0,ac[0])/.4*(f.h-34));
+  var d=v.drawdown;f=fit($('vDd'),190);x=f.x;var mn=Math.min.apply(0,d.map(function(p){return p.v;}))||-1;pts=d.map(function(p,i){return [i/(d.length-1)*f.w,6+p.v/mn*(f.h-26)];});g=x.createLinearGradient(0,0,0,f.h);g.addColorStop(0,'rgba(255,46,116,0)');g.addColorStop(1,'rgba(255,46,116,.4)');x.fillStyle=g;x.beginPath();x.moveTo(0,6);pts.forEach(function(p){x.lineTo(p[0],p[1]);});x.lineTo(f.w,6);x.fill();glowLine(x,pts,DN,1.3);axisText(x,mn.toFixed(0)+'%',4,f.h-4);
+}
+
+function load(){if(window.STUDY){render(window.STUDY);return;}fetch('/api/study').then(function(r){return r.json();}).then(function(j){if(!j.ok)throw new Error(j.error);render(j.data);}).catch(function(e){$('meta').textContent='';$('root').innerHTML='<div class="err">'+esc(e.message||'加载失败')+'</div>';});}
+load();var rt;addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){if(window.__D)render(window.__D);},250);});
+})();
+</script>
+</body>
+</html>

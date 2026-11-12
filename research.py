@@ -137,8 +137,10 @@ def analyse(code, rows):
     level = "偏高" if pct20 >= 80 else "偏低" if pct20 <= 20 else "正常"
     findings = [
         f"现在 20 日年化波动 {cur20 * 100:.1f}%，比过去 {len(r) // 252} 年里 {pct20:.0f}% 的时候都高，属于{level}水平。",
-        f"大跌大涨比正态分布常见：超过 3 倍标准差的日子有 {tail_n} 天，正态分布只会有约 {tail_exp:.0f} 天，是 {tail_n / max(tail_exp, 1e-9):.1f} 倍。",
-        f"波动会扎堆：今天波动大，明天大概率也大（相关系数 {ac_abs[0]:.2f}），20 天后还剩 {ac_abs[19]:.2f}。涨跌方向本身几乎不能预测（相关系数 {ac_ret[0]:+.2f}）。",
+        (f"大跌大涨比正态分布更常见：超过 3 倍标准差的日子有 {tail_n} 天，正态分布只会有约 {tail_exp:.0f} 天，是 {tail_n / max(tail_exp, 1e-9):.1f} 倍。"
+         if tail_n > tail_exp * 1.3 else f"超过 3 倍标准差的日子有 {tail_n} 天，和正态分布预计的 {tail_exp:.0f} 天差不多。"),
+        (f"波动会扎堆：今天波动大，明天大概率也大（相关系数 {ac_abs[0]:.2f}），20 天后还剩 {ac_abs[19]:.2f}。" if ac_abs[0] > .1
+         else f"波动扎堆不明显（相关系数 {ac_abs[0]:.2f}）。") + f"涨跌方向本身几乎不能预测（相关系数 {ac_ret[0]:+.2f}）。",
         f"历史最大回撤 {max_dd * 100:.1f}%（{max_dd_date}），现在离最高点 {dd_series[-1]['v']:.1f}%。",
     ]
     if len(quint) == 5:

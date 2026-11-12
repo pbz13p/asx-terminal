@@ -1,6 +1,9 @@
 name: market-study
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/run-study']
 permissions:
   contents: write
 concurrency: market-study
