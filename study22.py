@@ -196,6 +196,22 @@ def main():
            "halt_reopen_down": sorted(halts, key=lambda x: -x["turnover"])[:30],
            "announcements": fetch_announcements(),
            "seconds": round(time.time() - t0)}
+    # keep a growing archive of classified announcements for future event studies
+    hist_path = Path("out/announcements_history.json")
+    try:
+        hist = json.loads(hist_path.read_text(encoding="utf-8")) if hist_path.exists() else []
+    except Exception:
+        hist = []
+    keys = {(h["bucket"], h["code"], h["time"], h["headline"]) for h in hist}
+    for bucket, rows_ in out["announcements"].items():
+        for a in rows_:
+            k = (bucket, a["code"], a["time"], a["headline"])
+            if k not in keys:
+                keys.add(k)
+                hist.append({"bucket": bucket, **a})
+    hist_path.parent.mkdir(parents=True, exist_ok=True)
+    hist_path.write_text(json.dumps(hist, ensure_ascii=False), encoding="utf-8")
+    print("  announcement archive:", len(hist))
     p = Path(os.environ.get("STUDY22_OUT", study.DATA / "scan.json"))
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
