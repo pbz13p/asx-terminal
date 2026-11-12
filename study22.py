@@ -185,12 +185,24 @@ def main():
         sd = math.sqrt(sum(x * x for x in res) / len(res))
         themes[theme] = {"z": round(res[-1] / sd, 2), "commodity_20d": round(100 * cum(u, len(u) - 20, len(u)), 1),
                          "stocks_vs_xjo_20d": round(100 * cum(b, len(b) - 20, len(b)), 1), "etf": etf}
+    # market breadth (round 41): share of liquid stocks above their 200-day average
+    above = tot = 0
+    for f in study.CACHE.glob("*.AU.json"):
+        rows = study.load(f.name[:-5])
+        if len(rows) < 220 or rows[-1][0] != last_day:
+            continue
+        turn = sorted(r[6] * r[5] for r in rows[-20:])[10]
+        if turn < 1e6:
+            continue
+        tot += 1
+        above += rows[-1][4] > sum(r[4] for r in rows[-200:]) / 200
+    breadth = round(100 * above / tot, 1) if tot >= 100 else None
     xc = [r[4] for r in xj]
     downs = 0
     while downs < len(xc) - 1 and xc[-1 - downs] < xc[-2 - downs]:
         downs += 1
     out = {"generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "last_day": last_day,
-           "xjo_down_days": downs, "breakouts": sorted(breakouts, key=lambda x: -x["turnover"])[:40],
+           "xjo_down_days": downs, "breadth": breadth, "breadth_n": tot, "breakouts": sorted(breakouts, key=lambda x: -x["turnover"])[:40],
            "season_gap_up": sorted(gap_up, key=lambda x: -x["turnover"])[:30],
            "season_gap_down": sorted(gap_dn, key=lambda x: -x["turnover"])[:30], "themes": themes,
            "halt_reopen_down": sorted(halts, key=lambda x: -x["turnover"])[:30],
