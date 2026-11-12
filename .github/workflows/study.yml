@@ -26,12 +26,17 @@ jobs:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY_OUT: out/study_results.json
         run: python study.py
+      - name: Run round 2
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          STUDY2_OUT: out/study2_results.json
+        run: python study2.py
       - name: Publish results to the results branch
         run: |
           cd out
           git init -q -b results
           git config user.name "asx-study-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add study_results.json
+          git add study_results.json study2_results.json
           git commit -q -m "Study results $(date -u +%F)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" results

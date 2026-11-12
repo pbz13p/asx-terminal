@@ -210,7 +210,8 @@ def record(study, bucket, rows, i, liq, entry="open"):
         if abs(g) > 3:  # bad print or unadjusted consolidation
             return
         STUDIES[(study, bucket, liq, h)].add(rows[i][0], g, g - c)
-        STUDIES[(study, bucket, "全部", h)].add(rows[i][0], g, g - c)
+        if liq != "L0 <1万":
+            STUDIES[(study, bucket, "全部", h)].add(rows[i][0], g, g - c)
 
 
 WEEKLY = defaultdict(list)  # date -> [(past5, next5, liq)]
@@ -257,7 +258,8 @@ def scan_stock(rows):
             g = rows[i][4] / rows[i][1] - 1
             if abs(g) < 3:
                 STUDIES[("S4 跳空当天(开盘买到收盘)", tag, liq, 0)].add(d, g, g - c)
-                STUDIES[("S4 跳空当天(开盘买到收盘)", tag, "全部", 0)].add(d, g, g - c)
+                if liq != "L0 <1万":
+                    STUDIES[("S4 跳空当天(开盘买到收盘)", tag, "全部", 0)].add(d, g, g - c)
             record("S4 跳空之后", tag, rows, i, liq)
         if i >= 250:
             while hq and hq[0] < i - 250:
