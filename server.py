@@ -73,6 +73,17 @@ class Handler(SimpleHTTPRequestHandler):
                     "capabilities": provider.capabilities}
         if name == "version":
             return {"web": (ROOT / "web" / "index.html").stat().st_mtime_ns}
+        if name == "study":
+            f = ROOT / "data" / "study_results.json"
+            if f.exists():
+                return json.loads(f.read_text(encoding="utf-8"))
+            import urllib.request
+            url = "https://raw.githubusercontent.com/pbz13p/asx-terminal/results/study_results.json"
+            try:
+                with urllib.request.urlopen(url, timeout=20) as r:
+                    return json.load(r)
+            except Exception:
+                raise DataUnavailable("研究结果还没生成") from None
         if name == "market":
             return provider.market()
         if name == "indices":
@@ -85,6 +96,10 @@ class Handler(SimpleHTTPRequestHandler):
         code = q.get("code", "").upper()
         if not CODE.match(code):
             raise ValueError("股票代码不正确")
+        if name == "vol":
+            from research import analyse
+            years = max(3, min(30, int(q.get("years", "20"))))
+            return analyse(code, provider.history(code, years))
         if name == "candles":
             if q.get("tf") not in TF:
                 raise ValueError("周期不正确")

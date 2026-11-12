@@ -10,14 +10,14 @@ def px(c,seed=0):
 def series(sym,n):
     random.seed(sym); p=random.uniform(5,200); o=[]; d=date.today()-timedelta(days=n)
     for i in range(n):
-        p*=1+random.gauss(.0003,.014); o.append(dict(date=(d+timedelta(days=i)).isoformat(),open=round(p*.99,3),high=round(p*1.01,3),low=round(p*.98,3),close=round(p,3),volume=random.randint(1000,900000)))
+        p*=1+random.gauss(.0003,.014); g=random.random()<.01;q=p*(1+random.gauss(0,.08)) if g else p*(1+random.gauss(0,.006));o.append(dict(date=(d+timedelta(days=i)).isoformat(),open=round(q,3),high=round(max(p,q)*1.01,3),low=round(min(p,q)*.98,3),close=round(p,3),adjusted_close=round(p,3),volume=random.randint(1000,900000)*(6 if random.random()<.02 else 1)))
     return o
 class H(BaseHTTPRequestHandler):
     def log_message(self,*a):pass
     def do_GET(self):
         u=urlparse(self.path);q={k:v[0] for k,v in parse_qs(u.query).items()};p=u.path.replace('/api/','',1)
         assert q.get('api_token')=='testkey'
-        if p.startswith('exchange-symbol-list'):b=[{'Code':c,'Name':c+' Ltd','Type':'Common Stock'} for c in CODES]
+        if p.startswith('exchange-symbol-list'):b=[{'Code':c,'Name':c+' Ltd','Type':'Common Stock'} for c in (['D%02d'%i for i in range(20)] if q.get('delisted') else CODES)]
         elif p.startswith('eod-bulk'):
             d=q.get('date',L.isoformat())
             if d not in (L.isoformat(),P.isoformat()):b=[]
@@ -31,7 +31,7 @@ class H(BaseHTTPRequestHandler):
             for x in s:
                 c=series(x,90)[-1]['close'];b.append(dict(code=x,timestamp=1794216000,gmtoffset=0,open=c,high=c*1.01,low=c*.99,close=c,volume=12345,previousClose=round(c/1.006,3),change=.1,change_p=.6))
             if len(b)==1:b=b[0]
-        elif p.startswith('eod/'):b=series(p.split('/')[1],400)
+        elif p.startswith('eod/'):b=series(p.split('/')[1],3000)
         elif p.startswith('intraday/'):
             self.send_response(403);self.end_headers();return
         else:b=[]

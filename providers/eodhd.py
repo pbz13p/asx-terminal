@@ -153,6 +153,23 @@ class EodhdProvider(Provider):
         sectors = [reading(l, l, s) for l, s in SECTORS]
         return {"main": [x for x in main if x], "sectors": [x for x in sectors if x]}
 
+    INDEX_SYMBOLS = {"XJO": "AXJO", "XAO": "AORD", "XTL": "AXTL", "XSO": "AXSO",
+                     "XMJ": "AXMJ", "XFJ": "AXFJ", "XIJ": "AXIJ", "XEJ": "AXEJ",
+                     "XDJ": "AXDJ", "XHJ": "AXHJ"}
+
+    def history(self, code, years=20):
+        idx = self.INDEX_SYMBOLS.get(code)
+        symbol = f"{idx}.INDX" if idx else f"{code}.AU"
+        def load():
+            start = date(date.today().year - years, 1, 1).isoformat()
+            rows = self._get(f"eod/{symbol}", **{"from": start})
+            out = [{"date": r["date"], "close": r.get("adjusted_close") or r.get("close")}
+                   for r in rows if (r.get("adjusted_close") or r.get("close"))]
+            if len(out) < 300:
+                raise DataUnavailable(f"{code} 历史数据不足")
+            return out
+        return self._cached(f"hist:{symbol}:{years}", TTL["history"], load)
+
     def candles(self, code, tf):
         symbol = f"{code}.AU"
         if tf in ("1D", "5D"):

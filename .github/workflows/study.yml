@@ -1,0 +1,34 @@
+name: market-study
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: market-study
+jobs:
+  study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: data/eod
+          key: eod-${{ github.run_id }}
+          restore-keys: eod-
+      - name: Run study
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          STUDY_OUT: out/study_results.json
+        run: python study.py
+      - name: Publish results to the results branch
+        run: |
+          cd out
+          git init -q -b results
+          git config user.name "asx-study-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add study_results.json
+          git commit -q -m "Study results $(date -u +%F)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" results

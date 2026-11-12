@@ -35,6 +35,10 @@ class Provider:
         """tf is one of 1D 5D 1M 6M 1Y. Returns [candle], oldest first."""
         raise DataUnavailable
 
+    def history(self, code, years=20):
+        """Daily closes for a share or index code: [{date, close}], oldest first."""
+        raise DataUnavailable
+
     def symbols(self):
         """Valid share codes as a set."""
         raise DataUnavailable
