@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–11 轮</title>
+<title>ASX 量化研究报告 · 第 1–12 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–11 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–12 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论</h3>
@@ -232,6 +232,20 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <li><b>业绩大跌之后</b>：748 次，20 天后股价平均 −3.4%，中位数 −2.8%，t≈−4.1（很显著）。26 个业绩季里 17 个继续跌。即使去掉 2020 年 2 月疫情暴跌，大多数业绩季仍是负的。<b>这是业绩季最可靠的规律：业绩差的股票不要急着抄底。</b></li>
 <li>容量：这些股票平时每天成交额中位数约 $300 万，个人资金进出没有问题。</li>
 </ul>
+</div>
+
+<div class="card">
+<h3><span class="tag c">第 12 轮</span>方向面板的个股评分靠得住吗？</h3>
+<p class="note">用面板同样的个股信号，2015 年起每周五给所有可交易股票打分，看之后 1 个月比当周所有股票的中位数多涨多少（这样能抵消大盘涨跌和股息）。约 20 万个样本。</p>
+<div class="scroll"><table>
+<tr><th>评分</th><th>样本</th><th>之后 1 个月（相对中位数）</th><th>2015–21</th><th>2022 后</th></tr>
+<tr><td>≥ +2</td><td>47,954</td><td>+0.47%</td><td>+0.49%</td><td>+0.44%</td></tr>
+<tr><td>+1</td><td>34,941</td><td>+0.60%</td><td>+0.57%</td><td>+0.64%</td></tr>
+<tr><td>0</td><td>69,388</td><td>+0.34%</td><td>+0.24%</td><td>+0.46%</td></tr>
+<tr><td>−1</td><td>35,618</td><td>+0.24%</td><td>+0.30%</td><td>+0.17%</td></tr>
+<tr><td>≤ −2</td><td>15,122</td><td>−0.01%</td><td>+0.78%</td><td class="dn">−0.74%</td></tr>
+</table></div>
+<p><b>结论：</b>评分高的股票确实比评分低的好一点（约 0.5 个百分点 / 月），但<b>远小于交易成本</b>，只能当“方向参考”，不能单靠它买卖。两个最稳定的个股信号是<b>“靠近一年高点”</b>和<b>“均线多头排列”</b>（两段时间都约 +0.5%）。“5 天涨太多”只在 1–5 天内有回吐，看 1 个月反而不差；“远离高点”“5 天跌太多”在 2022 年前后表现相反。面板已按这个结果修改：不稳定的信号改成灰色提示，不计入评分。</p>
 </div>
 
 <h2>第 9 轮：什么宏观环境，持有什么板块</h2>
