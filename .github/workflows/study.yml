@@ -46,35 +46,16 @@ jobs:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           STUDY6_OUT: out/study6_results.json
         run: python study6.py
-      - name: Run round 8 (robustness)
+      - name: Run selected rounds
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
-          STUDY8_OUT: out/study8_results.json
-        run: python study8.py
-      - name: Run round 7 (official macro data)
-        if: ${{ !contains(steps.mode.outputs.mode, 'only8') }}
-        env:
-          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
-          STUDY7_OUT: out/study7_results.json
-        run: python study7.py
-      - name: Run study
-        if: ${{ !contains(steps.mode.outputs.mode, 'only') }}
-        env:
-          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
-          STUDY_OUT: out/study_results.json
-        run: python study.py
-      - name: Run round 2
-        if: ${{ !contains(steps.mode.outputs.mode, 'only') }}
-        env:
-          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
-          STUDY2_OUT: out/study2_results.json
-        run: python study2.py
-      - name: Run round 3
-        if: ${{ !contains(steps.mode.outputs.mode, 'only') }}
-        env:
-          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
-          STUDY3_OUT: out/study3_results.json
-        run: python study3.py
+        run: |
+          MODE="$(cat .github/run-study)"
+          ROUNDS=$(echo "$MODE" | grep -oP '(?<=rounds=)[0-9,]+' || echo "1,2,3,4,5,6,7,8,9")
+          for n in $(echo "$ROUNDS" | tr ',' ' '); do
+            if [ "$n" = "1" ]; then f=study.py; v=STUDY_OUT; o=study_results.json; else f=study$n.py; v=STUDY${n}_OUT; o=study${n}_results.json; fi
+            echo "=== round $n"; env $v=out/$o python $f || echo "round $n failed"
+          done
       - name: Publish results to the results branch
         run: |
           cd out
