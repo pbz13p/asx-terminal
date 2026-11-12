@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASX 量化研究报告 · 第 1–16 轮</title>
+<title>ASX 量化研究报告 · 第 1–17 轮</title>
 <style>
 :root{--bg:#000;--card:#0b0d16;--line:#1d2340;--tx:#eef2ff;--mu:#8b93b8;--up:#19FF9C;--dn:#FF2E74;--cy:#29E7FF;--vi:#B46BFF;--am:#FFC83D}
 *{box-sizing:border-box}
@@ -41,7 +41,7 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <body><div class="wrap"><a href="/" style="color:#29E7FF;text-decoration:none;font-size:14px">← 返回行情</a>
 
 <h1>ASX 量化研究报告</h1>
-<div class="sub">第 1–16 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
+<div class="sub">第 1–17 轮 · 数据：EODHD 日线 2014–2026-11-12，含已退市股票（避免幸存者偏差）· 全部结论分 2015–2021 和 2022 以后两段分别检验</div>
 
 <div class="card tldr">
 <h3>一句话结论</h3>
@@ -302,6 +302,39 @@ footer{margin-top:40px;font-size:12px;color:var(--mu)}
 <li>无 franking 的股息，除息日只跌约 82%，但这部分股息要全额交税，税后并不占便宜。</li>
 </ul>
 <p class="note">方向面板已加入“分红”一栏：股息率、franking 比例、上次和下次除息日；除息日在 28 天内会用灰色提示（只作参考，不计分）。高股息（&gt;2.5%）的股票除息前反而略跑输大盘。</p>
+</div>
+
+<h2>第 17 轮：大宗商品 → 澳洲资源股（黄金、石油、铜、锂、铀）</h2>
+<div class="card">
+<p class="note">用美国上市的商品 ETF（GLD 黄金、USO 石油、CPER 铜、LIT 锂、URA 铀，换算成澳元）对照澳股同主题的一篮子股票（等权，如黄金：NST、EVN、RRL、PRU、RMS…；铀：PDN、BOE、DYL…）。2015–2026。</p>
+<h3>① 隔夜商品涨跌：开盘就反映完了吗？</h3>
+<div class="scroll"><table>
+<tr><th>主题</th><th>美股 ETF 隔夜涨 &gt;2% 后：开盘跳空</th><th>开盘后到收盘</th><th>隔夜跌 &gt;2% 后：开盘</th><th>开盘后到收盘</th><th>结论</th></tr>
+<tr><td>黄金</td><td>+2.9%</td><td>+0.1%</td><td>−2.7%</td><td>+0.4%</td><td>开盘就反映完，别追</td></tr>
+<tr><td>锂</td><td>+1.5%</td><td>+0.1%</td><td>−1.1%</td><td>−0.2%</td><td>开盘就反映完</td></tr>
+<tr><td>石油天然气</td><td>+1.1%</td><td>+0.2%</td><td>−0.9%</td><td>−0.4%</td><td>基本反映完</td></tr>
+<tr><td><b>铀</b></td><td>+3.0%</td><td class="up"><b>+0.7%</b></td><td>−1.9%</td><td class="dn"><b>−0.8%</b></td><td><b>反应慢，开盘后还会顺势走</b>（两段都成立）</td></tr>
+<tr><td><b>铜</b></td><td>+1.1%</td><td class="up"><b>+0.6%</b></td><td>−1.0%</td><td class="dn">−0.4%</td><td>反应慢（上涨时两段都成立）</td></tr>
+</table></div>
+<h3 style="margin-top:14px">② 股票落后于商品时，会追上吗？（之后 20 天，扣掉商品本身的影响）</h3>
+<div class="scroll"><table>
+<tr><th>主题</th><th>股票明显落后商品（z&lt;−1）</th><th>正常时</th><th>2015–21 / 2022 后（落后时）</th></tr>
+<tr><td><b>黄金</b></td><td class="up"><b>+3.5%</b>（5 天就 +1.4%）</td><td>+1.0%</td><td class="up">+4.0% / +3.0%</td></tr>
+<tr><td><b>铀</b></td><td class="up"><b>+4.2%</b></td><td>−0.5%</td><td class="up">+7.0% / +2.3%</td></tr>
+<tr><td><b>石油天然气</b></td><td class="up"><b>+2.0%</b></td><td>−0.1%</td><td class="up">+2.3% / +1.3%</td></tr>
+<tr><td>铜</td><td>+1.5%</td><td>+1.0%</td><td>+1.8% / +1.3%</td></tr>
+<tr><td>锂</td><td>+2.2%</td><td>+1.1%</td><td>+1.7% / +2.4%（锂反而是“领先的继续领先”）</td></tr>
+</table></div>
+<h3 style="margin-top:14px">③ 金价趋势会传导到金矿股</h3>
+<p>金价（澳元）20 天涨超 5% 后，金矿股篮子接下来 20 天跑赢 ASX 200 <b>+5.1%</b>（两段：+6.4% / +3.7%），金价平稳时只有 +2.0%。锂价大涨后锂矿股也跑赢，但 2022 年后几乎消失。</p>
+<p><b>波段用法：</b></p>
+<ul>
+<li><b>金矿、铀矿、油气股明显落后于自己的商品时，是最好的低吸时机</b>：两段时间都会补涨。</li>
+<li>金价 1 个月涨超 5% 时，金矿股通常接下来继续跑赢大盘。</li>
+<li>黄金、锂的隔夜涨跌在开盘就反映完，不要开盘追；铀、铜反应慢，开盘后还可能顺势走一段，但小盘铀矿股的买卖价差会吃掉大部分利润。</li>
+</ul>
+<p><b>现在（11 月 12 日）：</b>油气股（相对 ASX 200 近 20 天 −8.2%）和铜矿股（−8.6%）都接近“落后于商品”的门槛（z≈−1.0 和 −0.9）；铀矿股 z≈+1.1，已经跑在铀价前面；黄金和锂正常。</p>
+<p class="note">注意：篮子用的是现在知道的公司名单，有一定幸存者偏差，所以绝对数偏高；比较“落后时 vs 正常时”的差距更可靠。方向面板会对这些主题的股票显示当前状态。</p>
 </div>
 
 <h2>第 9 轮：什么宏观环境，持有什么板块</h2>

@@ -126,6 +126,59 @@ MONTH = {1: (1.09, 67), 2: (0.06, 58), 3: (-1.77, 50), 4: (2.07, 75), 5: (0.47, 
 KNOWN_EVENTS = [("2026-12-08", "澳联储 利率决议（下午 2:30）"), ("2026-12-10", "美联储决议后的澳股交易日")]
 
 
+THEMES = {
+    "黄金": ("GLD.US", ["NST", "EVN", "RRL", "PRU", "RMS", "WGX", "GOR", "DEG", "CMM", "RSG", "SBM", "WAF", "PDI", "BGL", "GMD", "VAU", "SLR"]),
+    "石油天然气": ("USO.US", ["WDS", "STO", "BPT", "KAR", "STX", "CVN", "SXY"]),
+    "铜": ("CPER.US", ["SFR", "29M", "AIS", "HCH", "C6C", "AZY", "S32", "SND", "CYM"]),
+    "锂": ("LIT.US", ["PLS", "MIN", "IGO", "LTR", "CXO", "SYA", "LKE", "VUL", "GL1", "INR"]),
+    "铀": ("URA.US", ["PDN", "BOE", "DYL", "LOT", "BMN", "PEN", "AGE", "DEV", "NXG"]),
+}
+THEME_TEXT = {  # round 17: residual 20-day catch-up when the basket lags (z<-1), and overnight behaviour
+    "黄金": ("+3.5%", "金价隔夜涨跌开盘就反映完，别开盘追。金价 20 天涨超 5% 时，金矿股之后 20 天平均跑赢大盘约 5%。"),
+    "石油天然气": ("+2.0%", "油价隔夜涨跌基本在开盘反映完。"),
+    "铜": ("+1.5%", "铜价隔夜大涨后，铜矿股开盘后平均还会多走约 0.6%。"),
+    "锂": ("+2.2%", "锂价隔夜涨跌开盘就反映完；锂股更像“强者恒强”，领先的往往继续领先。"),
+    "铀": ("+4.2%", "铀价隔夜涨跌开盘后还会顺势走约 0.7–0.8%（反应慢）。"),
+}
+
+
+def theme_state(theme, provider):
+    etf, members = THEMES[theme]
+    start = (date.today() - timedelta(days=3 * 365)).isoformat()
+    ser = lambda sym: {r["date"]: r.get("adjusted_close") or r["close"] for r in provider._get(f"eod/{sym}", **{"from": start})}
+    e, aud = ser(etf), ser("AUDUSD.FOREX")
+    xj = {r["date"]: float(r["close"]) for r in provider.history("XJO", 3)}
+    mem = {}
+    for m in members:
+        try:
+            mem[m] = {r["date"]: float(r["close"]) for r in provider.history(m, 3)}
+        except Exception:
+            pass
+    days = sorted(xj)
+    ek, ak = sorted(e), sorted(aud)
+    import bisect
+
+    def us(d):
+        j, k = bisect.bisect_left(ek, d) - 1, bisect.bisect_left(ak, d) - 1
+        return e[ek[j]] / aud[ak[k]] if j >= 0 and k >= 0 else None
+    b, u = [], []
+    for i in range(1, len(days)):
+        d, p = days[i], days[i - 1]
+        rs = [s[d] / s[p] - 1 for s in mem.values() if d in s and p in s and s[p] > 0]
+        u1, u0 = us(d), us(p)
+        if len(rs) < 3 or not u1 or not u0:
+            continue
+        b.append(sum(rs) / len(rs) - (xj[d] / xj[p] - 1))
+        u.append(u1 / u0 - 1)
+    n = len(b)
+    mb, mu = sum(b) / n, sum(u) / n
+    bt = sum((x - mu) * (y - mb) for x, y in zip(u, b)) / sum((x - mu) ** 2 for x in u)
+    cum = lambda a, i, j: math.prod(1 + x for x in a[i:j]) - 1
+    res = [cum(b, i - 20, i) - bt * cum(u, i - 20, i) for i in range(20, n + 1)]
+    sd = math.sqrt(sum(x * x for x in res) / len(res))
+    return {"z": res[-1] / sd, "commodity_20d": 100 * cum(u, n - 20, n), "basket_20d": 100 * cum(b, n - 20, n), "etf": etf}
+
+
 def season(d):
     md = d[5:]
     return ("02-05" <= md <= "03-05") or ("08-05" <= md <= "09-05")
@@ -227,6 +280,22 @@ def insight(code, provider):
                     S.append(sig("info", f"{days_to} 天后除息", f"除息日 {fut[0]['date']}。除息前 10 天平均只跑赢大盘约 0.4%，扣成本后为 0，2022 年后更弱，不值得专门为此买卖；除息日股价通常下跌约等于现金股息。"))
     except Exception:
         pass
+    # ---- commodity theme (round 17)
+    theme = next((t for t, (_, ms) in THEMES.items() if code in ms), None)
+    tinfo = None
+    if theme:
+        tinfo = cached(f"theme:{theme}", 6 * 3600, lambda: theme_state(theme, provider))
+        if tinfo:
+            tinfo["theme"] = theme
+            z = tinfo["z"]
+            catch, note = THEME_TEXT[theme]
+            if z < -1:
+                S.append(sig("up", f"{theme}股落后于商品", f"{theme}股篮子近 20 天相对大盘 {tinfo['basket_20d']:+.1f}%，商品 {tinfo['commodity_20d']:+.1f}%，明显落后（z={z:.1f}）。历史上这种情况之后 20 天平均补涨 {catch}，两段时间都成立。"))
+            elif z > 1:
+                S.append(sig("info", f"{theme}股跑在商品前面", f"{theme}股篮子近 20 天跑赢自己的商品（z={z:.1f}），之后补涨优势消失，2022 年后略偏弱。"))
+            if theme == "黄金" and tinfo["commodity_20d"] > 5:
+                S.append(sig("up", "金价 1 个月大涨", f"金价（澳元）近 20 天 {tinfo['commodity_20d']:+.1f}%。历史上之后 20 天金矿股平均跑赢大盘约 5%。"))
+            S.append(sig("info", f"{theme}隔夜规律", note))
     # ---- market (ASX 200) signals
     try:
         xh = provider.history("XJO", 3)
@@ -271,5 +340,5 @@ def insight(code, provider):
             "chg": {"1天": d1, "5天": r5, "20天": chg(20), "60天": chg(60), "1年": chg(252)},
             "hi": hi, "lo": lo, "dist_hi": dist_hi, "ma50": ma50, "ma200": ma200, "rsi": rsi,
             "rv20": rv20, "rv_pct": rv_pct, "macro": macro, "signals": S, "score": score,
-            "events": events, "week": week[:12], "div": divinfo,
+            "events": events, "week": week[:12], "div": divinfo, "theme": tinfo,
             "spark": [round(x, 4) for x in px[-120:]]}
