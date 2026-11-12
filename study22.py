@@ -27,6 +27,57 @@ THEMES = {
 }
 
 
+ANN_URL = "https://asx.api.markitdigital.com/asx-research/1.0/markets/announcements?page={p}&itemsPerPage=100"
+RULES = [  # (bucket, words in type or headline) — order matters
+    ("收购/协议安排", ("scheme implementation", "scheme booklet", "takeover bid", "bidder's statement", "bidders statement",
+                   "target's statement", "targets statement", "takeover offer", "non-binding indicative", "indicative proposal",
+                   "scheme meeting", "unsolicited proposal", "binding scheme", "acquisition proposal", "off-market takeover",
+                   "takeover announcements", "scheme announcements")),
+    ("配股/融资", ("placement", "capital raising", "entitlement offer", "share purchase plan", "rights issue", "institutional offer",
+               "proposed issue of securities")),
+    ("停牌", ("trading halt", "suspension from quotation", "voluntary suspension")),
+]
+
+
+def fetch_announcements(days_back=3):
+    import urllib.request
+    cutoff = (date.today() - timedelta(days=days_back)).isoformat()
+    items = []
+    for page in range(0, 40):
+        try:
+            req = urllib.request.Request(ANN_URL.format(p=page), headers={"Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                data = json.load(r)["data"]["items"]
+        except Exception as e:
+            print("  announcements page", page, type(e).__name__)
+            break
+        if not data:
+            break
+        items += data
+        if data[-1].get("date", "")[:10] < cutoff:
+            break
+    out = {b: [] for b, _ in RULES}
+    seen = set()
+    for it in items:
+        if it.get("date", "")[:10] < cutoff:
+            continue
+        text = (" ".join(it.get("announcementTypes") or []) + " " + (it.get("headline") or "")).lower()
+        for bucket, words in RULES:
+            if any(w in text for w in words):
+                key = (bucket, it.get("symbol"), it.get("headline"))
+                if key in seen:
+                    break
+                seen.add(key)
+                info = (it.get("companyInfo") or [{}])
+                out[bucket].append({"code": it.get("symbol"), "time": it.get("date", "")[:16].replace("T", " "),
+                                    "headline": it.get("headline"), "sensitive": bool(it.get("isPriceSensitive")),
+                                    "type": ", ".join(it.get("announcementTypes") or []),
+                                    "name": info[0].get("displayName") if info else None})
+                break
+    print("  announcements:", len(items), {k: len(v) for k, v in out.items()})
+    return out
+
+
 def refresh_cache():
     """Append the last few sessions from the bulk endpoint to every cached file."""
     study.CACHE.mkdir(parents=True, exist_ok=True)
@@ -143,6 +194,7 @@ def main():
            "season_gap_up": sorted(gap_up, key=lambda x: -x["turnover"])[:30],
            "season_gap_down": sorted(gap_dn, key=lambda x: -x["turnover"])[:30], "themes": themes,
            "halt_reopen_down": sorted(halts, key=lambda x: -x["turnover"])[:30],
+           "announcements": fetch_announcements(),
            "seconds": round(time.time() - t0)}
     p = Path(os.environ.get("STUDY22_OUT", study.DATA / "scan.json"))
     p.parent.mkdir(parents=True, exist_ok=True)
