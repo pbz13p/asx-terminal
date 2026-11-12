@@ -8,6 +8,7 @@ is above its 200-day average, and by period.
 """
 import bisect
 import json
+import math
 import os
 from collections import defaultdict
 from pathlib import Path
@@ -37,6 +38,7 @@ def main():
     med = {d: {h: sorted(v)[len(v) // 2] for h, v in hs.items() if len(v) > 30} for d, hs in fwd.items()}
     mkeys = sorted(med)
     agg = defaultdict(lambda: {h: [] for h in HOLDS})
+    cohort = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))  # key -> hold -> month -> excess
     for code, rows in stocks.items():
         from collections import deque
         cl = [r[4] for r in rows]
@@ -94,11 +96,20 @@ def main():
                 for key in ("全部", per, liq, trend):
                     if key:
                         agg[key][hd].append((r - cost, r - m[hd]))
+                        cohort[key][hd][d[:7]].append(r - m[hd])
     out = {}
     for k, hs in agg.items():
         out[k] = {str(h): {"n": len(v), "net": 100 * sum(x[0] for x in v) / len(v), "excess": 100 * sum(x[1] for x in v) / len(v),
                            "median_net": 100 * sorted(x[0] for x in v)[len(v) // 2], "win": 100 * sum(1 for x in v if x[0] > 0) / len(v)}
                   for h, v in hs.items() if v}
+        for h in HOLDS:
+            ms = [sum(v) / len(v) for v in cohort[k][h].values()]
+            if len(ms) > 5 and str(h) in out[k]:
+                mm = sum(ms) / len(ms)
+                sd = math.sqrt(sum((x - mm) ** 2 for x in ms) / (len(ms) - 1))
+                out[k][str(h)]["months"] = len(ms)
+                out[k][str(h)]["month_pos"] = 100 * sum(1 for x in ms if x > 0) / len(ms)
+                out[k][str(h)]["t_month"] = mm / (sd / math.sqrt(len(ms))) if sd else None
     p = Path(os.environ.get("STUDY21_OUT", study.DATA / "study21_results.json"))
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
