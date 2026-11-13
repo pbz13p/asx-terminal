@@ -157,7 +157,7 @@ def days_since(event_dates, idx):
     ev = sorted(set(event_dates))
     out, j = [], -1
     for d in idx:
-        while j + 1 < len(ev) and ev[j + 1] <= d:
+        while j + 1 < len(ev) and ev[j + 1] < d:  # strictly earlier days: an announcement dated today may come after the close
             j += 1
         out.append(min(400, (date.fromisoformat(d) - date.fromisoformat(ev[j])).days) if j >= 0 else 400)
     return np.array(out, dtype=float)
