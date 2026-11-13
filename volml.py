@@ -152,6 +152,29 @@ def clean(code, start, calendar, log):
     return df
 
 
+def company_info(code):
+    """Name / sector / industry / market cap / short description from the ASX company API (cached 6 days)."""
+    f = study.CACHE / f"info_{code}.json"
+    if f.exists() and time.time() - f.stat().st_mtime < 6 * 86400:
+        return json.loads(f.read_text(encoding="utf-8"))
+    info = {}
+    for part in ("header", "about"):
+        try:
+            req = urllib.request.Request(f"https://asx.api.markitdigital.com/asx-research/1.0/companies/{code.lower()}/{part}",
+                                         headers={"Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=30) as r:
+                d = json.load(r).get("data") or {}
+            _calls["asx_company"] += 1
+            for k in ("displayName", "sector", "industry", "marketCap", "description", "priceLast", "website"):
+                if d.get(k) not in (None, ""):
+                    info[k] = d[k]
+        except Exception:
+            STATS["company_info_failed"] += 1
+    if info:
+        f.write_text(json.dumps(info), encoding="utf-8")
+    return info
+
+
 # ================================================================ stage 2: features
 def days_since(event_dates, idx):
     ev = sorted(set(event_dates))
@@ -441,6 +464,9 @@ def run(codes, out_path, stage="all"):
             item[f"median1y{h}"] = round(float(np.median(hist1y)), 1) if len(hist1y) else None
             item[f"conf{h}"] = conf
             item[f"naive_vol{h}"] = round(float(to_vol(row[f"naive{h}"], h)), 1)
+        ci = company_info(c)
+        item.update({"name": ci.get("displayName"), "sector": ci.get("sector"), "industry": ci.get("industry"),
+                     "mcap": ci.get("marketCap"), "about": (ci.get("description") or "")[:400]})
         item["alert"] = bool((item.get("pct20") or 0) >= 90 or (item.get("median1y20") and item["vol20"] >= 1.5 * item["median1y20"]))
         item["days_since_results"] = int(row["days_since_results"])
         item["after_reopen"] = bool(row["after_reopen5"] > 0)
