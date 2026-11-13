@@ -98,7 +98,7 @@ canvas{display:block}
 <div class="app" id="app">
 <header><div class="brand"><span class="logo" aria-hidden="true"></span><div><h1>ASX <b>DESK</b></h1><div class="sub">SIX SECTORS · ONE BOARD · AUSTRALIA</div></div></div>
 <nav aria-label="分区"><span>SYNAPSE</span><span>TAPE</span><span>BOOK</span></nav><span class="demo" id="src">连接中…</span>
-<form id="sf" class="sf" role="search"><label for="si" style="position:absolute;left:-9999px">查股票代码</label><input id="si" placeholder="⌕ 输入代码查股票，如 BHP" maxlength="6" autocomplete="off"><span id="sm" aria-live="polite"></span></form><a class="rpt rpt2" href="#" id="insb">📡 方向面板</a><a class="rpt rpt2" href="#" id="scanb" style="border-color:#19FF9C;box-shadow:0 0 14px rgba(25,255,156,.45)">📈 今日扫描</a><a class="rpt" href="/report.html">📊 研究报告</a><a class="rpt" href="#" id="updb" title="立即从 GitHub 取最新版本" style="border-color:#FFC83D;box-shadow:0 0 14px rgba(255,200,61,.45)">🔄 更新</a><div class="hs"><div><b id="h1v" class="num"></b><span>当日成交额</span></div><div><b id="h2v" class="up num"></b><span>上涨</span></div><div><b id="h3v" class="dn num"></b><span>下跌</span></div><span class="clock num" id="clock"></span><span class="fl" style="font-size:12.5px;line-height:11px">AEDT<br>MELBOURNE</span><span class="online"><span id="mode">CONNECTING</span></span></div></header>
+<form id="sf" class="sf" role="search"><label for="si" style="position:absolute;left:-9999px">查股票代码</label><input id="si" placeholder="⌕ 输入代码查股票，如 BHP" maxlength="6" autocomplete="off"><span id="sm" aria-live="polite"></span></form><a class="rpt rpt2" href="#" id="insb">📡 方向面板</a><a class="rpt rpt2" href="#" id="scanb" style="border-color:#19FF9C;box-shadow:0 0 14px rgba(25,255,156,.45)">📈 今日扫描</a><a class="rpt rpt2" href="#" id="volb" style="border-color:#B36BFF;box-shadow:0 0 14px rgba(179,107,255,.45)">📉 波动率</a><a class="rpt" href="/report.html">📊 研究报告</a><a class="rpt" href="#" id="updb" title="立即从 GitHub 取最新版本" style="border-color:#FFC83D;box-shadow:0 0 14px rgba(255,200,61,.45)">🔄 更新</a><div class="hs"><div><b id="h1v" class="num"></b><span>当日成交额</span></div><div><b id="h2v" class="up num"></b><span>上涨</span></div><div><b id="h3v" class="dn num"></b><span>下跌</span></div><span class="clock num" id="clock"></span><span class="fl" style="font-size:12.5px;line-height:11px">AEDT<br>MELBOURNE</span><span class="online"><span id="mode">CONNECTING</span></span></div></header>
 <div class="s2"><span class="g">● ASX</span><span id="s2"></span></div>
 <div class="wire"><span class="wl">LIVE WIRE</span><div class="wt" id="wt"></div></div>
 <div class="r1">
@@ -315,6 +315,28 @@ h+='<div class="ft">点代码看方向面板。名单只说明符合历史规律
 c.querySelectorAll('a[data-c]').forEach(function(a){a.onclick=function(e){e.preventDefault();openInsight(a.getAttribute('data-c'));};});
 }catch(e){c.innerHTML='<div class="nm" style="margin-top:60px">'+e.message+'</div>';}}
 document.getElementById('scanb').onclick=function(e){e.preventDefault();openScan();};
+
+async function openVol(){box.classList.add('on');c.innerHTML='<div class="nm" style="margin-top:60px">读取波动率模型…</div>';
+try{var r=await fetch('/api/volml');var j=await r.json();if(!j.ok)throw new Error(j.error||'失败');var d=j.data;
+function cf(x){return '<b style="color:'+(x=='高'?'#19FF9C':x=='中'?'#FFC83D':'#7D89B8')+'">'+x+'</b>';}
+function pt(v){return v==null?'—':'<b style="color:'+(v>=90?'#FF2E74':v>=70?'#FFC83D':v<=20?'#29E7FF':'#EEF2FF')+'">'+v+'</b>';}
+var h='<h2>波动率学习</h2><div class="nm">预测未来 5 / 20 个交易日的年化波动率（不预测涨跌）· '+d.stocks+' 只股票 · 测试期 '+d.test_from+' 起 · 生成于 '+d.generated+'</div>';
+['5','20'].forEach(function(H){var R=d.results[H];if(!R)return;
+h+='<div class="sec"><h4>模型面板 · 未来 '+H+' 日（walk-forward 样本外，数值越低越好，相关越高越好）</h4>';
+var nm=Object.keys(R.overall),b=R.overall[nm[0]];
+h+=tb(nm.map(function(k){var o=R.overall[k];o.name=k;return o;}),[['模型',function(o){return (o.name==R.chosen?'<b style="color:#19FF9C">✔ ':'')+o.name+(o.name==R.chosen?'</b>':'');}],['QLIKE',function(o){return o.qlike+(o.name!=nm[0]?' <span style="color:'+(o.qlike<b.qlike?'#19FF9C':'#FF2E74')+'">'+((o.qlike/b.qlike-1)*100).toFixed(0)+'%</span>':'');}],['RMSE',function(o){return o.rmse;}],['相关',function(o){return o.corr;}]]);
+h+='<p class="nm" style="color:#EEF2FF;margin-top:8px">逐级：'+R.ladder.map(function(l){return l.model+(l.beats?' <span style="color:#19FF9C">赢</span> ':' <span style="color:#FF2E74">没赢</span> ')+l.vs;}).join('；')+' → 采用 <b>'+R.chosen+'</b></p>';
+var G=R.groups||{};h+='<table><tr><td style="color:#8FA3D8">分组 QLIKE</td>'+nm.map(function(k){return '<td style="color:#8FA3D8">'+k.replace('最笨基准：过去 20 日波动','基准')+'</td>';}).join('')+'</tr>';
+Object.keys(G).forEach(function(g){var best=Math.min.apply(null,nm.map(function(k){return G[g][k].qlike;}));h+='<tr><td>'+g.replace(/（.*）/,'')+'</td>'+nm.map(function(k){var q=G[g][k].qlike;return '<td'+(q==best?' style="color:#19FF9C;font-weight:800"':'')+'>'+q+'</td>';}).join('')+'</tr>';});
+h+='</table></div>';});
+var al=d.alerts||[];
+h+='<div class="sec"><h4>⚠ 异常波动预警（预测 20 日波动 ≥ 历史 90 分位，或 ≥ 近一年中位数 1.5 倍）</h4>'+tb(al.slice(0,40),[['代码',function(x){return lk(x.code);}],['预测 20 日',function(x){return x.vol20+'%';}],['近 1 年中位',function(x){return (x.median1y20||'—')+'%';}],['分位',function(x){return pt(x.pct20);}],['置信',function(x){return cf(x.conf20);}]])+'</div>';
+h+='<div class="sec"><h4>全部股票（按 20 日预测波动分位排序）</h4>'+tb(d.latest,[['代码',function(x){return lk(x.code);}],['5 日',function(x){return x.vol5+'%';}],['分位',function(x){return pt(x.pct5);}],['20 日',function(x){return x.vol20+'%';}],['分位',function(x){return pt(x.pct20);}],['置信',function(x){return cf(x.conf20);}]])+'</div>';
+var cl=d.cleaning||{};h+='<div class="sec"><h4>数据清洗日志</h4><p class="nm" style="color:#C9D2F5">'+(cl.rules||[]).join('<br>')+'</p><p class="nm">'+Object.keys(cl.counts||{}).map(function(k){return k+'：'+cl.counts[k];}).join(' · ')+'<br>公告：'+(cl.announcements?cl.announcements.stocks_with_any+' 只股票共 '+cl.announcements.total+' 条':'—')+'</p></div>';
+h+='<div class="ft">分位 = 预测值在该股自身历史实现波动中的位置。置信：该股样本外，采用的模型 QLIKE 比基准好 5% 以上、RMSE 也更好、相关 ≥0.5 为“高”。'+(d.notes||[]).join(' ')+'</div>';c.innerHTML=h;
+c.querySelectorAll('a[data-c]').forEach(function(a){a.onclick=function(e){e.preventDefault();openInsight(a.getAttribute('data-c'));};});
+}catch(e){c.innerHTML='<div class="nm" style="margin-top:60px">'+e.message+'</div>';}}
+document.getElementById('volb').onclick=function(e){e.preventDefault();openVol();};
 })();
 </script>
 
