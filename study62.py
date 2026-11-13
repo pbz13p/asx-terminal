@@ -73,16 +73,19 @@ def main():
             q_ret = {k: [] for k in range(5)}
             low30, months, bench, prev = [], [], [], {k: set() for k in range(5)}
             prev30 = set()
+            skipped = []
             for i in range(len(month_ends) - 1):
                 d0, d1 = month_ends[i], month_ends[i + 1]
                 t0 = C.index.get_loc(d0)
                 if t0 < look:
+                    skipped.append((d0, "history"))
                     continue
                 win_v = V.iloc[t0 - 59:t0 + 1].median()
                 price = C.iloc[t0]
                 ok = (win_v > 0) & (price >= 0.5) & R.iloc[t0 - look + 1:t0 + 1].notna().sum().ge(int(look * .8))
                 elig = win_v[ok].sort_values(ascending=False).index[:N]
                 if len(elig) < N * .8:
+                    skipped.append((d0, f"only {len(elig)} eligible"))
                     continue
                 vol = R.iloc[t0 - look + 1:t0 + 1][elig].std().dropna().sort_values()
                 # next-month return per stock; delisted -> last available price in the month
@@ -102,7 +105,7 @@ def main():
                 months.append(d1[:7])
                 bench.append(float(acc[acc.index <= d1].iloc[-1] / acc[acc.index <= d0].iloc[-1] - 1))
             b = pd.Series(bench, index=months)
-            res = {"bench": stats(b)}
+            res = {"bench": stats(b), "skipped": skipped, "first_month": months[0] if months else None}
             for k in range(5):
                 res[f"Q{k + 1}"] = stats(pd.Series(q_ret[k], index=months), b)
             res["最低波动 30 只"] = stats(pd.Series(low30, index=months), b)
