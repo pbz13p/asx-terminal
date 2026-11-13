@@ -318,7 +318,7 @@ document.getElementById('scanb').onclick=function(e){e.preventDefault();openScan
 
 async function openVol(){box.classList.add('on');c.innerHTML='<div class="nm" style="margin-top:60px">读取波动率模型…</div>';
 try{var r=await fetch('/api/volml');var j=await r.json();if(!j.ok)throw new Error(j.error||'失败');var d=j.data;
-function cf(x){return '<b style="color:'+(x=='高'?'#19FF9C':x=='中'?'#FFC83D':'#7D89B8')+'">'+x+'</b>';}
+var SECZH={'Information Technology':'信息技术','Industrials':'工业','Financials':'金融','Real Estate':'房地产','Materials':'原材料/矿业','Communication Services':'通信','Health Care':'医疗','Consumer Discretionary':'可选消费','Consumer Staples':'必需消费','Energy':'能源','Utilities':'公用事业'};function mc(x){return x.mcap?'$'+(x.mcap>=1e9?(x.mcap/1e9).toFixed(1)+'B':(x.mcap/1e6).toFixed(0)+'M'):'—';}function nmc(x){return '<span style="color:#9FB0E0;font-size:12px" title="'+(x.about||'').replace(/"/g,'')+'">'+(x.name||'').replace(/ (LIMITED|LTD\.?|GROUP|HOLDINGS|INC\.)/g,'').slice(0,22)+'<br>'+(SECZH[x.sector]||x.sector||'')+'</span>';}function cf(x){return '<b style="color:'+(x=='高'?'#19FF9C':x=='中'?'#FFC83D':'#7D89B8')+'">'+x+'</b>';}
 function pt(v){return v==null?'—':'<b style="color:'+(v>=90?'#FF2E74':v>=70?'#FFC83D':v<=20?'#29E7FF':'#EEF2FF')+'">'+v+'</b>';}
 var h='<h2>波动率学习</h2><div class="nm">预测未来 5 / 20 个交易日的年化波动率（不预测涨跌）· '+d.stocks+' 只股票 · 测试期 '+d.test_from+' 起 · 生成于 '+d.generated+'</div>';
 ['5','20'].forEach(function(H){var R=d.results[H];if(!R)return;
@@ -330,8 +330,8 @@ var G=R.groups||{};h+='<table><tr><td style="color:#8FA3D8">分组 QLIKE</td>'+n
 Object.keys(G).forEach(function(g){var best=Math.min.apply(null,nm.map(function(k){return G[g][k].qlike;}));h+='<tr><td>'+g.replace(/（.*）/,'')+'</td>'+nm.map(function(k){var q=G[g][k].qlike;return '<td'+(q==best?' style="color:#19FF9C;font-weight:800"':'')+'>'+q+'</td>';}).join('')+'</tr>';});
 h+='</table></div>';});
 var al=d.alerts||[];
-h+='<div class="sec"><h4>⚠ 异常波动预警（预测 20 日波动 ≥ 历史 90 分位，或 ≥ 近一年中位数 1.5 倍）</h4>'+tb(al.slice(0,40),[['代码',function(x){return lk(x.code);}],['预测 20 日',function(x){return x.vol20+'%';}],['近 1 年中位',function(x){return (x.median1y20||'—')+'%';}],['分位',function(x){return pt(x.pct20);}],['置信',function(x){return cf(x.conf20);}]])+'</div>';
-h+='<div class="sec"><h4>全部股票（按 20 日预测波动分位排序）</h4>'+tb(d.latest,[['代码',function(x){return lk(x.code);}],['5 日',function(x){return x.vol5+'%';}],['分位',function(x){return pt(x.pct5);}],['20 日',function(x){return x.vol20+'%';}],['分位',function(x){return pt(x.pct20);}],['置信',function(x){return cf(x.conf20);}]])+'</div>';
+h+='<div class="sec"><h4>⚠ 异常波动预警（预测 20 日波动 ≥ 历史 90 分位，或 ≥ 近一年中位数 1.5 倍）</h4>'+tb(al.slice(0,40),[['代码',function(x){return lk(x.code);}],['公司 / 板块',nmc],['市值',mc],['预测 20 日',function(x){return x.vol20+'%';}],['近 1 年中位',function(x){return (x.median1y20||'—')+'%';}],['分位',function(x){return pt(x.pct20);}],['置信',function(x){return cf(x.conf20);}]])+'</div>';
+h+='<div class="sec"><h4>全部股票（按 20 日预测波动分位排序）</h4>'+tb(d.latest,[['代码',function(x){return lk(x.code);}],['公司 / 板块',nmc],['市值',mc],['5 日',function(x){return x.vol5+'%';}],['分位',function(x){return pt(x.pct5);}],['20 日',function(x){return x.vol20+'%';}],['分位',function(x){return pt(x.pct20);}],['置信',function(x){return cf(x.conf20);}]])+'</div>';
 var cl=d.cleaning||{};h+='<div class="sec"><h4>数据清洗日志</h4><p class="nm" style="color:#C9D2F5">'+(cl.rules||[]).join('<br>')+'</p><p class="nm">'+Object.keys(cl.counts||{}).map(function(k){return k+'：'+cl.counts[k];}).join(' · ')+'<br>公告：'+(cl.announcements?cl.announcements.stocks_with_any+' 只股票共 '+cl.announcements.total+' 条':'—')+'</p></div>';
 h+='<div class="ft">分位 = 预测值在该股自身历史实现波动中的位置。置信：该股样本外，采用的模型 QLIKE 比基准好 5% 以上、RMSE 也更好、相关 ≥0.5 为“高”。'+(d.notes||[]).join(' ')+'</div>';c.innerHTML=h;
 c.querySelectorAll('a[data-c]').forEach(function(a){a.onclick=function(e){e.preventDefault();openInsight(a.getAttribute('data-c'));};});
