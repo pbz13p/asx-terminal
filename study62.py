@@ -60,7 +60,8 @@ def stats(r, bench=None):
 def main():
     C, V = load_panel()
     acc = pd.Series({r[0]: r[4] for r in study.load("AXJOA.INDX")})
-    C = C.loc[C.index >= acc.index.min()]
+    # use the index's trading calendar: a few stocks have stray rows on weekends/holidays
+    C = C.reindex([d for d in acc.index if d >= C.index.min()])
     V = V.reindex(C.index)
     R = C.pct_change(fill_method=None)
     R = R.where(R.abs() < 1.5)
