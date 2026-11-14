@@ -1,0 +1,44 @@
+name: quick-study
+# Runs single research rounds on the cached price data without touching the results branch or the
+# announcement download (which has its own workflow and concurrency group). Output is encrypted and
+# kept as a workflow artifact for 30 days.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/run-quick']
+permissions:
+  contents: read
+concurrency: quick-study
+jobs:
+  quick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/eod
+          key: eod-none
+          restore-keys: eod-
+      - run: pip install numpy pandas scipy lightgbm
+      - name: Run rounds
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+        run: |
+          ls data/eod | wc -l
+          mkdir -p out
+          ROUNDS=$(grep -oP '(?<=rounds=)[0-9,]+' .github/run-quick)
+          for n in $(echo "$ROUNDS" | tr ',' ' '); do
+            echo "=== round $n"; env STUDY${n}_OUT=out/study${n}_results.json python study$n.py || echo "round $n failed"
+          done
+          python securedata.py encrypt-dir out
+          ls -la out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quick-results
+          path: out
+          retention-days: 30
