@@ -25,6 +25,11 @@
 - 回测必须包含退市股，并扣真实成本：佣金 + 一格价差；A 股另外处理涨跌停买不进、卖不出。
 - 提交时作者名用 pbz13p 和主人的邮箱，提交信息里不要写 User-Agent 字符串。
 
+## 数据永久保存（主人要求，不能丢）
+- 每天自动扫一遍所有数据缓存（backup.yml），每周日加密备份到 GitHub Release「data-backup」。每次开工先看最近一次备份成功没有（Release 里的 LAST_BACKUP.txt）；失败了先修好再做别的。
+- 新增任何数据源，都要同时加进 backup.yml。
+- 实盘记录（out/track_*.json）只增不删。
+
 ## 界面
 `web/index.html` 是 Neon Terminal 新版，采用 TradingView 式布局，暗色霓虹配色、干净实用；旧版是 `web/classic.html`。新功能都要遵守"傻瓜、方便"的原则：一次点击就能拿到结果，信息一目了然。
 

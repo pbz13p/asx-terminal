@@ -1,0 +1,49 @@
+name: data-backup
+# Keeps every data cache alive (GitHub drops a cache after 7 days without use) and, every Sunday, stores an
+# encrypted copy of all raw data in the GitHub Release "data-backup" for permanent keeping.
+# Restore later:  openssl enc -d -aes-256-cbc -pbkdf2 -pass env:ASX_DATA_KEY -in X.tar.gz.enc | tar xz
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '10 5 * * *'
+permissions:
+  contents: write
+concurrency: data-backup
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore ASX prices
+        uses: actions/cache/restore@v4
+        with: {path: data/eod, key: eod-none, restore-keys: eod-}
+      - name: Restore ASX announcements
+        uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann-}
+      - name: Restore A-share prices
+        uses: actions/cache/restore@v4
+        with: {path: data/cn, key: cn-none, restore-keys: cn-}
+      - name: Restore A-share announcement index
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann, key: cnann-none, restore-keys: cnann-}
+      - name: Restore US daily snapshots
+        uses: actions/cache/restore@v4
+        with: {path: data/us_daily, key: usd-none, restore-keys: usd-}
+      - name: Sizes
+        run: du -sh data/* 2>/dev/null || true
+      - name: Encrypted copy to the data-backup release (Sundays, or when run by hand)
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%u)" != "7" ]; then echo "not Sunday: caches refreshed only"; exit 0; fi
+          mkdir -p bk
+          for d in eod ann cn cn_ann us_daily; do
+            [ -d "data/$d" ] || continue
+            tar czf - -C data "$d" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:ASX_DATA_KEY | split -b 1900m -d - "bk/$d.tar.gz.enc.part"
+          done
+          ls -la bk
+          gh release view data-backup >/dev/null 2>&1 || gh release create data-backup --title "Encrypted data backup" --notes "Encrypted with ASX_DATA_KEY. Join parts: cat X.part* | openssl enc -d -aes-256-cbc -pbkdf2 -pass env:ASX_DATA_KEY | tar xz"
+          gh release upload data-backup bk/* --clobber
+          date -u +%FT%TZ > bk/LAST_BACKUP.txt && gh release upload data-backup bk/LAST_BACKUP.txt --clobber
