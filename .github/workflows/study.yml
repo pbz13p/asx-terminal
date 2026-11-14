@@ -30,9 +30,13 @@ jobs:
           mkdir -p out
           git fetch -q origin results && git --work-tree=out checkout origin/results -- . || true
           git reset -q
+          python securedata.py decrypt-dir out
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
       - name: Run selected rounds
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
         run: |
           MODE="$(cat .github/run-study)"
           ROUNDS=$(echo "$MODE" | grep -oP '(?<=rounds=)[0-9,]+' || echo "1,2,3,4,5,6,7,8,9")
@@ -42,11 +46,14 @@ jobs:
             echo "=== round $n"; env $v=out/$o python $f || echo "round $n failed"
           done
       - name: Publish results to the results branch
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
         run: |
+          python securedata.py encrypt-dir out
           cd out
           git init -q -b results
           git config user.name "asx-study-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add *.json
+          git add -A .
           git commit -q -m "Study results $(date -u +%F)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" results

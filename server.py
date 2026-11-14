@@ -22,6 +22,21 @@ def load_env():
 
 
 load_env()
+
+
+def fetch_result(name, timeout=30):
+    """A results-branch file: the encrypted .enc copy when ASX_DATA_KEY is set, else the plain one."""
+    import urllib.request
+    base = "https://raw.githubusercontent.com/pbz13p/asx-terminal/results/"
+    if os.environ.get("ASX_DATA_KEY"):
+        try:
+            import securedata
+            with urllib.request.urlopen(base + name + ".enc", timeout=timeout) as r:
+                return json.loads(securedata.decrypt(r.read()))
+        except Exception:
+            pass
+    with urllib.request.urlopen(base + name, timeout=timeout) as r:
+        return json.load(r)
 from providers import get_provider  # noqa: E402
 from providers.base import DataUnavailable  # noqa: E402
 
@@ -54,6 +69,8 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         url = urlparse(self.path)
+        if url.path == "/report.html" and (ROOT / "web" / "report.html.enc").exists():
+            return self.send_report()
         if not url.path.startswith("/api/"):
             return super().do_GET()
         q = {k: v[0] for k, v in parse_qs(url.query).items()}
@@ -66,6 +83,26 @@ class Handler(SimpleHTTPRequestHandler):
         except Exception as e:  # never expose internals or the key to the page
             print(f"[{url.path}] {type(e).__name__}")
             self.send_json({"ok": False, "error": "服务器内部错误"}, 500)
+
+    def do_HEAD(self):
+        return self.do_GET()
+
+    def send_report(self):
+        enc = ROOT / "web" / "report.html.enc"
+        try:
+            import securedata
+            body = securedata.decrypt(enc.read_bytes())
+        except Exception as e:
+            plain = ROOT / "web" / "report.html"
+            if plain.exists():
+                return super().do_GET()
+            msg = "研究报告是加密的：请在 App 文件夹的 .env 里加上 ASX_DATA_KEY=（密钥），再重启 App。"
+            body = f"<!doctype html><meta charset=utf-8><body style='background:#05060F;color:#EEF2FF;font:20px sans-serif;padding:40px'>{msg}</body>".encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def route(self, name, q):
         if name == "status":
@@ -83,10 +120,8 @@ class Handler(SimpleHTTPRequestHandler):
             if f.exists():
                 return json.loads(f.read_text(encoding="utf-8"))
             import urllib.request
-            url = "https://raw.githubusercontent.com/pbz13p/asx-terminal/results/study_results.json"
             try:
-                with urllib.request.urlopen(url, timeout=20) as r:
-                    return json.load(r)
+                return fetch_result("study_results.json")
             except Exception:
                 raise DataUnavailable("研究结果还没生成") from None
         if name == "scan":
@@ -94,10 +129,8 @@ class Handler(SimpleHTTPRequestHandler):
             hit = getattr(self.server, "_scan", None)
             if hit and time.time() - hit[0] < 600:
                 return hit[1]
-            url = "https://raw.githubusercontent.com/pbz13p/asx-terminal/results/study22_results.json"
             try:
-                with urllib.request.urlopen(url, timeout=20) as r:
-                    data = json.load(r)
+                data = fetch_result("study22_results.json")
             except Exception:
                 raise DataUnavailable("今日扫描还没生成") from None
             self.server._scan = (time.time(), data)
@@ -107,10 +140,8 @@ class Handler(SimpleHTTPRequestHandler):
             hit = getattr(self.server, "_volml", None)
             if hit and time.time() - hit[0] < 600:
                 return hit[1]
-            url = "https://raw.githubusercontent.com/pbz13p/asx-terminal/results/study61_results.json"
             try:
-                with urllib.request.urlopen(url, timeout=30) as r:
-                    data = json.load(r)
+                data = fetch_result("study61_results.json")
             except Exception:
                 raise DataUnavailable("波动率模型结果还没生成") from None
             data.pop("results_per_stock", None)
@@ -146,7 +177,7 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "securedata.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py")
 
 
