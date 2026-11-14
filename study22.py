@@ -113,8 +113,8 @@ def rocket_screen(last_day):
     out = []
     for f in study.CACHE.glob("*.AU.json"):
         rows = study.load(f.name[:-5])
-        if len(rows) < 260 or rows[-1][0] != last_day:
-            continue
+        if len(rows) < 260 or rows[-1][0] < (date.fromisoformat(last_day) - timedelta(days=7)).isoformat():
+            continue  # thinly traded stocks often skip days
         cl = [r[4] for r in rows]
         val = [r[6] * r[5] for r in rows]
         raw = rows[-1][6]
