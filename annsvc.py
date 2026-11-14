@@ -20,7 +20,7 @@ import study67
 ROOT = Path(__file__).resolve().parent
 CACHE = ROOT / "data" / "ann_cn"
 _mem = {}
-MODEL = os.environ.get("TRANSLATE_MODEL", "claude-haiku-5-5")
+MODEL = os.environ.get("TRANSLATE_MODEL", "claude-sonnet-5-5")  # accuracy first; chunks run in parallel for speed
 
 
 def _cached(key, ttl, fn):
@@ -80,6 +80,39 @@ def text(code, ids):
     return out
 
 
+GLOSSARY = ("placement=配售（定向增发）; entitlement offer / rights issue=配股; SPP (share purchase plan)=股东认购计划; "
+            "Appendix 5B=季度现金流报告（附表 5B）; Appendix 4C=季度现金流报告（附表 4C）; trading halt=停牌; voluntary suspension=自愿停牌; "
+            "reinstatement to quotation=复牌; scheme of arrangement=协议安排（收购方案）; takeover bid=收购要约; "
+            "JORC=JORC 标准; Mineral Resource=矿产资源量; Ore Reserve=矿石储量; Indicated / Inferred / Measured=控制的 / 推断的 / 探明的; "
+            "drill hole / intercept=钻孔 / 见矿段; g/t=克/吨; capital raising=融资; cornerstone investor=基石投资者; "
+            "Director's interest notice / Appendix 3Y=董事持股变动通知（附表 3Y）; Cleansing notice=合规通知; "
+            "quarters of funding available=现金可支撑的季度数; net cash used in operating activities=经营活动净现金流出; "
+            "offtake agreement=包销协议; binding / non-binding=有约束力 / 无约束力; MOU=谅解备忘录; Board=董事会; AGM=年度股东大会")
+
+
+def _call(key, prompt, max_tokens):
+    req = urllib.request.Request("https://api.anthropic.com/v1/messages", method="POST",
+                                 data=json.dumps({"model": MODEL, "max_tokens": max_tokens, "temperature": 0,
+                                                  "messages": [{"role": "user", "content": prompt}]}).encode(),
+                                 headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+    with urllib.request.urlopen(req, timeout=240) as r:
+        res = json.loads(r.read())
+    u = res.get("usage", {})
+    return "".join(b.get("text", "") for b in res.get("content", [])), u.get("input_tokens", 0), u.get("output_tokens", 0)
+
+
+def _chunks(text, size=7000):
+    parts, cur = [], ""
+    for para in re.split(r"\n\s*\n", text):
+        if len(cur) + len(para) > size and cur:
+            parts.append(cur)
+            cur = ""
+        cur += para + "\n\n"
+    if cur.strip():
+        parts.append(cur)
+    return parts or [text]
+
+
 def translate(code, ids):
     f = CACHE / f"{ids}.zh.json"
     if f.exists():
@@ -88,24 +121,23 @@ def translate(code, ids):
         return d
     key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not key:
-        raise ValueError("没有设置 AI 翻译密钥：可以用浏览器右键“翻译成中文”免费翻译")
+        raise ValueError("还没有设置 AI 翻译密钥（在 App 文件夹的 .env 里加一行 ANTHROPIC_API_KEY=…，再重启 App）")
     src = text(code, ids)
-    body = src["text"][:30000]
-    prompt = ("把下面这份澳洲上市公司公告完整翻译成简体中文。保留数字、金额、日期、表格结构和公司名；专业词用中国投资者熟悉的说法"
-              "（如 placement=定向增发/配售，Appendix 5B=季度现金流报告，trading halt=停牌）。只输出译文。\n\n标题：" + src["headline"] + "\n\n" + body)
-    req = urllib.request.Request("https://api.anthropic.com/v1/messages", method="POST",
-                                 data=json.dumps({"model": MODEL, "max_tokens": 16000,
-                                                  "messages": [{"role": "user", "content": prompt}]}).encode(),
-                                 headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
-    with urllib.request.urlopen(req, timeout=180) as r:
-        res = json.loads(r.read())
-    zh = "".join(b.get("text", "") for b in res.get("content", []))
-    u = res.get("usage", {})
-    out = {"ids": ids, "headline": src["headline"], "zh": zh, "tokens_in": u.get("input_tokens"), "tokens_out": u.get("output_tokens"),
-           "model": MODEL, "truncated": len(src["text"]) > 30000}
+    parts = _chunks(src["text"][:80000])
+    head = ("你是专业的澳洲证券市场翻译。把下面这段澳洲上市公司（ASX）公告逐句完整翻译成简体中文，要求：\n"
+            "1. 准确第一：不漏译、不增译、不总结，每一句都要译；数字、金额（保留 A$/US$）、百分比、日期、单位、股票代码、人名、公司名一律照原样保留。\n"
+            "2. 用中国投资者熟悉的专业说法，术语对照：" + GLOSSARY + "\n"
+            "3. 表格按原来的行列译成每行一条，列之间用 | 分隔。\n"
+            "4. 只输出译文，不要任何解释。\n\n公告标题：" + src["headline"] + "\n\n")
+    import concurrent.futures as cf
+    with cf.ThreadPoolExecutor(min(8, len(parts))) as pool:
+        res = list(pool.map(lambda t: _call(key, head + "这是全文的第 {}/{} 段：\n\n".format(t[0] + 1, len(parts)) + t[1], 8000),
+                            list(enumerate(parts))))
+    zh = "\n\n".join(r[0].strip() for r in res)
+    out = {"ids": ids, "headline": src["headline"], "zh": zh, "tokens_in": sum(r[1] for r in res), "tokens_out": sum(r[2] for r in res),
+           "model": MODEL, "parts": len(parts), "truncated": len(src["text"]) > 80000}
     f.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
-    log = CACHE / "usage.jsonl"
-    with log.open("a", encoding="utf-8") as g:
-        g.write(json.dumps({"t": time.strftime("%Y-%m-%d %H:%M"), "ids": ids, "in": out["tokens_in"], "out": out["tokens_out"]}) + "\n")
+    with (CACHE / "usage.jsonl").open("a", encoding="utf-8") as g:
+        g.write(json.dumps({"t": time.strftime("%Y-%m-%d %H:%M"), "ids": ids, "model": MODEL, "in": out["tokens_in"], "out": out["tokens_out"]}) + "\n")
     out["cached"] = False
     return out

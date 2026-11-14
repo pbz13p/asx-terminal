@@ -57,6 +57,10 @@ td.w{white-space:normal;min-width:260px}
 .sig{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #0F1428}.sig i{flex:none;width:7px;height:7px;border-radius:50%;margin-top:6px}.sig b{display:block;font-size:12.5px}.sig p{margin:2px 0 0;color:#B9C2E6;font-size:12px;line-height:1.5}
 .ann{padding:7px 0;border-bottom:1px solid #0F1428;cursor:pointer}.ann:hover{background:#0F1430}.ann small{color:var(--mu2)}.ann .ps{color:var(--dn);font-size:10.5px;border:1px solid var(--dn);border-radius:3px;padding:0 3px;margin-right:4px}
 .empty{color:var(--mu2);padding:10px 0}
+#dr{position:fixed;top:46px;right:0;bottom:0;width:min(620px,100vw);background:#0A0D18;border-left:1px solid #22E4F5;box-shadow:-10px 0 40px rgba(34,228,245,.18);transform:translateX(105%);transition:transform .25s;z-index:50;display:flex;flex-direction:column}
+#dr.on{transform:none}#dr .dh{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--ln)}#dr .dh b{flex:1;font-size:13px}
+#dr .db{overflow-y:auto;padding:14px 18px;font:14px/1.8 "Segoe UI",system-ui,sans-serif;color:#DCE3FF}#dr .db p{margin:0 0 10px}#dr .db .en{color:#8590B8;font-size:13px;border-top:1px dashed var(--ln2);margin-top:14px;padding-top:12px}
+.ann .tr{all:unset;cursor:pointer;float:right;margin-left:6px;padding:0 6px;border:1px solid var(--ln2);border-radius:4px;color:var(--c);font-size:11px}.ann .tr:hover{border-color:var(--c)}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#1A2244;border-radius:4px}::-webkit-scrollbar-track{background:transparent}
 @media (max-width:1100px){main{grid-template-columns:1fr}aside{max-height:260px}aside.r{max-height:none}#app{height:auto}#chart{height:380px;flex:none}}
 </style>
@@ -99,6 +103,7 @@ td.w{white-space:normal;min-width:260px}
   </aside>
 </main>
 </div>
+<div id="dr" role="dialog" aria-label="公告"><div class="dh"><b id="drt"></b><button class="btn" id="dro">原文页</button><button class="btn" id="drx" aria-label="关闭">✕</button></div><div class="db" id="drb"></div></div>
 <script>
 var $=function(i){return document.getElementById(i);};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
@@ -188,10 +193,24 @@ async function loadRight(c){
    ['20 日波动率',d.rv20!=null?d.rv20.toFixed(0)+'%':'—'],['波动率历史分位',d.rv_pct!=null?d.rv_pct.toFixed(0)+'%':'—']];
   $('rkv').innerHTML=kv.map(function(x){return '<div><small>'+x[0]+'</small><b>'+x[1]+'</b></div>';}).join('');
   research(c,d);renderList();}).catch(function(e){if(st.sel===c){$('rres').innerHTML='<div class="empty">'+esc(e.message)+'</div>';research(c,null);}});
- api('ann?code='+c).then(function(a){if(st.sel!==c)return;$('rann').innerHTML=a.length?a.slice(0,25).map(function(x){return '<div class="ann" data-ids="'+esc(x.ids)+'"><small>'+esc(x.date)+'</small><br>'+(x.sensitive?'<span class="ps">价格敏感</span>':'')+esc(x.headline)+'</div>';}).join(''):'<div class="empty">近两年没有公告</div>';})
+ api('ann?code='+c).then(function(a){if(st.sel!==c)return;$('rann').innerHTML=a.length?a.slice(0,25).map(function(x){return '<div class="ann" data-ids="'+esc(x.ids)+'"><button class="tr" data-tr="'+esc(x.ids)+'">译</button><small>'+esc(x.date)+'</small><br>'+(x.sensitive?'<span class="ps">价格敏感</span>':'')+esc(x.headline)+'</div>';}).join(''):'<div class="empty">近两年没有公告</div>';})
   .catch(function(e){if(st.sel===c)$('rann').innerHTML='<div class="empty">公告读取失败：'+esc(e.message)+'</div>';});
 }
-$('rann').addEventListener('click',function(e){var a=e.target.closest('.ann');if(a)window.open('/ann.html?code='+encodeURIComponent(st.sel)+'&ids='+a.getAttribute('data-ids'),'_blank');});
+$('rann').addEventListener('click',function(e){var t=e.target.getAttribute('data-tr'),a=e.target.closest('.ann');if(!a)return;openAnn(st.sel,a.getAttribute('data-ids'),true);});
+function paras(t){return (t||'').split(/\n\s*\n|\n(?=[A-Z0-9•\-])/).map(function(x){x=x.replace(/\s*\n\s*/g,' ').trim();return x?'<p>'+esc(x)+'</p>':'';}).join('');}
+var DR={};
+async function openAnn(code,ids,tr){DR={code:code,ids:ids};$('dr').classList.add('on');$('drt').textContent=code+' · 读取中…';$('drb').innerHTML='<p class="mu">读取公告全文…</p>';
+ var en=null;try{en=await api('anntext?code='+code+'&ids='+ids);}catch(e){$('drb').innerHTML='<p class="dn">读取失败：'+esc(e.message)+'</p>';return;}
+ if(DR.ids!==ids)return;$('drt').textContent=code+' · '+en.date+' · '+en.headline;
+ var enHtml='<div class="en" lang="en"><b>英文原文（'+en.pages+' 页）</b>'+paras(en.text)+'</div>';
+ if(!tr){$('drb').innerHTML='<p><button class="btn" id="drtr">翻译成中文</button></p>'+enHtml;$('drtr').onclick=function(){openAnn(code,ids,true);};return;}
+ $('drb').innerHTML='<p class="mu">翻译中，长公告分段同时翻译，一般 10–30 秒…</p>'+enHtml;
+ try{var z=await api('anntr?code='+code+'&ids='+ids);if(DR.ids!==ids)return;
+  $('drb').innerHTML='<p class="mu" style="font-size:12px">'+(z.cached?'已翻译过，直接读取，未再收费':'AI 翻译完成 · '+(z.tokens_in||0)+' + '+(z.tokens_out||0)+' token')+(z.truncated?' · 公告太长，只翻译了前约 8 万字':'')+'</p>'+paras(z.zh)+enHtml;$('drb').scrollTop=0;}
+ catch(e){$('drb').innerHTML='<p class="y">'+esc(e.message)+'</p><p class="mu">没有设置 AI 密钥时，可以点右上角“原文页”，用 Chrome 自带翻译免费翻成中文。</p>'+enHtml;}}
+$('drx').onclick=function(){$('dr').classList.remove('on');};
+$('dro').onclick=function(){if(DR.ids)window.open('/ann.html?code='+encodeURIComponent(DR.code)+'&ids='+DR.ids,'_blank');};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')$('dr').classList.remove('on');});
 async function research(c,ins){var h='';
  try{var p=await api('profile?code='+c);if(st.sel!==c)return;
   (p.lists||[]).forEach(function(r){var t=r.list==='爆拉候选'?'第 66 轮规则：跌过 50%、成交放大 2 倍、重新站上 200 日线。历史上约 34% 一年内碰到翻倍、20% 腰斩。'+(r.days!=null?'信号已 '+r.days+' 天，之后 '+(r.ret_since>=0?'+':'')+r.ret_since+'%。':''):'今日扫描名单';
