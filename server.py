@@ -70,8 +70,77 @@ class Handler(SimpleHTTPRequestHandler):
         except (ConnectionError, OSError):
             pass  # the page was closed or refreshed mid-request
 
+    # ---- private login when hosted (SITE_USERS="frank:password1,baba:password2" in .env) ----
+    def _users(self):
+        out = {}
+        for part in os.environ.get("SITE_USERS", "").split(","):
+            if ":" in part:
+                u, pw = part.split(":", 1)
+                out[u.strip()] = pw.strip()
+        return out
+
+    def _token(self, user):
+        import hashlib
+        import hmac
+        secret = (os.environ.get("SITE_SECRET") or os.environ.get("ASX_DATA_KEY") or "local").encode()
+        return user + "." + hmac.new(secret, user.encode(), hashlib.sha256).hexdigest()[:40]
+
+    def _logged_in(self):
+        users = self._users()
+        if not users:
+            return True  # local use on your own PC: no login
+        from http.cookies import SimpleCookie
+        c = SimpleCookie(self.headers.get("Cookie") or "")
+        tok = c["ntsess"].value if "ntsess" in c else ""
+        user = tok.split(".", 1)[0]
+        import hmac
+        return bool(user in users and hmac.compare_digest(tok, self._token(user)))
+
+    def _login_page(self, msg=""):
+        body = f"""<!doctype html><html lang=zh-CN><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>Neon Terminal</title><link href="/fonts/fonts.css" rel=stylesheet>
+<body style="margin:0;height:100vh;display:grid;place-items:center;background:#05060C;color:#E6ECFF;font:15px 'JetBrains Mono','Microsoft YaHei',monospace">
+<form method=post action=/login style="width:300px;padding:28px;border:1px solid #22E4F5;border-radius:12px;background:#0A0D18;box-shadow:0 0 30px rgba(34,228,245,.2)">
+<div style="font:700 18px 'Space Grotesk';margin-bottom:18px"><span style="color:#22E4F5">●</span> NEON <b style="color:#22E4F5">TERMINAL</b></div>
+<input name=u placeholder="用户名" autocomplete=username style="width:100%;height:38px;margin-bottom:10px;background:#0E1222;border:1px solid #222B4D;border-radius:6px;color:#fff;padding:0 10px">
+<input name=p type=password placeholder="密码" autocomplete=current-password style="width:100%;height:38px;margin-bottom:14px;background:#0E1222;border:1px solid #222B4D;border-radius:6px;color:#fff;padding:0 10px">
+<button style="width:100%;height:40px;border:0;border-radius:6px;background:#22E4F5;color:#03050A;font-weight:700;cursor:pointer">登录</button>
+<div style="color:#FF2E74;margin-top:10px;font-size:13px">{msg}</div></form></body></html>""".encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_POST(self):
+        if urlparse(self.path).path != "/login":
+            self.send_error(404)
+            return
+        from urllib.parse import parse_qs as _pq
+        n = int(self.headers.get("Content-Length") or 0)
+        form = {k: v[0] for k, v in _pq(self.rfile.read(min(n, 4096)).decode("utf-8", "replace")).items()}
+        u, pw = form.get("u", "").strip(), form.get("p", "")
+        users = self._users()
+        import hmac
+        if u in users and hmac.compare_digest(pw, users[u]):
+            self.send_response(303)
+            self.send_header("Set-Cookie", f"ntsess={self._token(u)}; Path=/; Max-Age=7776000; HttpOnly; SameSite=Lax")
+            self.send_header("Location", "/")
+            self.end_headers()
+            return
+        time.sleep(1.5)  # slow down password guessing
+        self._login_page("用户名或密码不对")
+
     def do_GET(self):
         url = urlparse(self.path)
+        if not self._logged_in() and not url.path.startswith("/fonts/"):
+            if url.path.startswith("/api/"):
+                self.send_json({"ok": False, "error": "请先登录"}, 401)
+                return
+            return self._login_page()
+        if self._users() and url.path == "/api/update":
+            self.send_json({"ok": False, "error": "网上版本会自动更新"}, 403)
+            return
         if url.path == "/report.html" and (ROOT / "web" / "report.html.enc").exists():
             return self.send_report()
         if not url.path.startswith("/api/"):
@@ -342,7 +411,8 @@ def auto_update():
 def main():
     threading.Thread(target=auto_update, daemon=True).start()
     port = int(os.environ.get("PORT", "8765"))
-    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    host = os.environ.get("HOST", "127.0.0.1")  # the hosted copy listens behind Caddy on 127.0.0.1 too
+    server = ThreadingHTTPServer((host, port), Handler)
     print(f"ASX Neon Terminal 已启动: http://127.0.0.1:{port}  (关闭此窗口即停止)")
     if os.environ.get("NO_BROWSER") != "1":
         if not os.environ.get("ASX_DESK_RESTART"):
