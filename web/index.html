@@ -41,7 +41,8 @@ aside{background:var(--p);border-right:1px solid var(--ln)}aside.r{border-right:
 .tool{display:flex;gap:4px;margin-left:auto;align-items:center;flex-wrap:wrap}.tf{all:unset;cursor:pointer;padding:3px 8px;border:1px solid var(--ln2);border-radius:5px;color:var(--mu);font-size:12px}
 .tool select{background:var(--p2);border:1px solid var(--ln2);border-radius:5px;height:24px;padding:0 4px;color:var(--mu)}
 .sep{width:1px;height:18px;background:var(--ln2);margin:0 4px}
-#chart{flex:1;min-height:240px;position:relative}#sub{height:150px;flex:none;border-top:1px solid var(--ln)}
+#chart{flex:1;min-height:240px;position:relative}
+body.fs header,body.fs aside,body.fs .bottom{display:none}body.fs main{grid-template-columns:1fr}body.fs #app{grid-template-rows:0 1fr}#sub{height:150px;flex:none;border-top:1px solid var(--ln)}
 #legend{position:absolute;left:12px;top:6px;z-index:3;font-size:11.5px;color:var(--mu);pointer-events:none}
 #note{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:var(--mu);z-index:2}
 .bottom{height:260px;flex:none;border-top:1px solid var(--ln);display:flex;flex-direction:column;background:var(--p)}
@@ -97,10 +98,11 @@ td.w{white-space:normal;min-width:260px}
       <div class="tool">
         <span id="tfs"></span><span class="sep"></span>
         <button class="tf on" data-ma="20">MA20</button><button class="tf on" data-ma="50">MA50</button><button class="tf on" data-ma="200">MA200</button><span class="sep"></span>
+        <button class="tf" id="tvb" title="TradingView 专业图表：画线工具、100 多种指标">专业图表</button><button class="tf" id="fsb" title="图表全屏（Esc 退出）">⛶ 全屏</button><span class="sep"></span>
         <select id="subsel" aria-label="副图指标"><option value="rsi">RSI</option><option value="macd">MACD</option><option value="kdj">KDJ</option><option value="none">无副图</option></select>
       </div>
     </div>
-    <div id="chart"><div id="legend"></div><div id="note"></div></div>
+    <div id="chart"><div id="legend"></div><div id="note"></div><div id="tv" style="position:absolute;inset:0;display:none;z-index:4"></div></div>
     <div id="sub"></div>
     <div class="bottom">
       <div class="tabs" id="btabs"><button data-t="rockets" class="on">爆拉候选</button><button data-t="breakouts">放量突破</button><button data-t="watchalerts">自选提醒</button><button data-t="mkt">市场公告</button><button data-t="find">研究结论</button></div>
@@ -295,7 +297,16 @@ function setMarket(m,code){if(m===st.m&&!code)return;st.m=m;lss('nt_m',m);loadW(
  $('si').placeholder=m==='cn'?'搜 A 股代码，如 600519':'搜代码，如 CND（A 股输 6 位数字）';$('addi').placeholder=m==='cn'?'加自选，如 600036':'加自选，如 BHP';$('breadth').style.display=m==='cn'?'none':'';
  setTfs();renderBTabs();renderBottom();$('idx').innerHTML='';loadIdx();loadMarket();select(code||lsg('nt_sel_'+m,st.watch[0]));loadQuotes();}
 $('mkt').addEventListener('click',function(e){var m=e.target.getAttribute('data-m');if(m)setMarket(m);});
-function select(c){st.sel=c;lss('nt_sel_'+st.m,c);$('annhint').textContent=st.m==='cn'?'· 点一下打开原文 PDF（巨潮资讯）':'· 点一下，中文直接弹出';head();renderList();loadChart();loadRight(c);if(!Q[c])loadQuotes();}
+var TVON=false;
+function tvSym(c){return st.m==='cn'?(c.charAt(0)==='6'?'SSE:':'SZSE:')+c:'ASX:'+c;}
+function loadTV(){if(!TVON)return;var box=$('tv');box.style.display='block';box.innerHTML='<div id="tvw" style="height:100%"></div>';
+ function mk(){new TradingView.widget({container_id:'tvw',symbol:tvSym(st.sel),interval:'D',theme:'dark',style:'1',locale:'zh_CN',autosize:true,timezone:st.m==='cn'?'Asia/Shanghai':'Australia/Sydney',
+  toolbar_bg:'#05060C',enable_publishing:false,allow_symbol_change:false,hide_side_toolbar:false,withdateranges:true,details:false,studies:['Volume@tv-basicstudies']});}
+ if(window.TradingView)mk();else{var sc=document.createElement('script');sc.src='https://s3.tradingview.com/tv.js';sc.onload=mk;sc.onerror=function(){box.innerHTML='<p class="mu" style="padding:30px">TradingView 加载失败，请检查网络。</p>';};document.head.appendChild(sc);}}
+$('tvb').onclick=function(){TVON=!TVON;this.classList.toggle('on',TVON);$('sub').style.display=TVON||st.sub==='none'?'none':'';if(TVON)loadTV();else{$('tv').style.display='none';$('tv').innerHTML='';}};
+$('fsb').onclick=function(){document.body.classList.toggle('fs');this.classList.toggle('on',document.body.classList.contains('fs'));};
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('fs')){document.body.classList.remove('fs');$('fsb').classList.remove('on');}});
+function select(c){st.sel=c;if(TVON)setTimeout(loadTV,0);lss('nt_sel_'+st.m,c);$('annhint').textContent=st.m==='cn'?'· 点一下打开原文 PDF（巨潮资讯）':'· 点一下，中文直接弹出';head();renderList();loadChart();loadRight(c);if(!Q[c])loadQuotes();}
 async function boot(){mkCharts();try{var s=await api('status');$('src').textContent=s.provider.toUpperCase()+' · '+s.latency;}catch(e){$('src').textContent='本地服务未连接';}
  [].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===st.m);});setTfs();renderBTabs();if(st.m==='cn'){$('breadth').style.display='none';$('si').placeholder='搜 A 股代码，如 600519';}
  select(lsg('nt_sel_'+st.m,st.watch[0]));loadIdx();loadQuotes();loadScan();loadCN();loadMarket();renderBottom();
