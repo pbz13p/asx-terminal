@@ -168,6 +168,68 @@ def rocket_screen(last_day, calendar):
     return out[:60]
 
 
+def watch_screen(last_day, calendar):
+    """Stocks pbz watches (watchlist.txt, one code per line). Alerts: unusual value traded, crossing the 200-day line,
+    monthly MACD histogram turning positive (round 70: the only divergence signal that held up), new announcements."""
+    p = Path("watchlist.txt")
+    codes = [c.strip().upper() for c in (p.read_text().split() if p.exists() else ["CND"]) if c.strip()]
+    out = []
+    for code in codes:
+        rows = study.load(f"{code}.AU")
+        if len(rows) < 260:
+            continue
+        by = {r[0]: r for r in rows}
+        cal = [d for d in calendar if d >= rows[0][0]]
+        cl, val, last = [], [], None
+        for d in cal:
+            r = by.get(d)
+            if r:
+                last = r
+            cl.append(last[4] if last else None)
+            val.append(r[6] * r[5] if r else 0.0)
+        med = lambda a: sorted(a)[len(a) // 2]
+        v60 = med(val[-61:-1]) or 1.0
+        ma200, ma200_y = sum(cl[-200:]) / 200, sum(cl[-201:-1]) / 200
+        months, seen = [], set()
+        for d, c in zip(cal, cl):
+            if d[:7] in seen:
+                months[-1] = c
+            else:
+                seen.add(d[:7])
+                months.append(c)
+        e12 = e26 = sig = None
+        hist = []
+        for k, c in enumerate(months):
+            e12 = c if e12 is None else e12 + 2 / 13 * (c - e12)
+            e26 = c if e26 is None else e26 + 2 / 27 * (c - e26)
+            m = (e12 - e26) / e26
+            sig = m if sig is None else sig + 0.2 * (m - sig)
+            hist.append(m - sig)
+        x = {"code": code, "price": rows[-1][6], "date": rows[-1][0], "chg_1d": round(100 * (cl[-1] / cl[-2] - 1), 1),
+             "value_today_x": round(val[-1] / v60, 1), "value_5d_x": round(sum(val[-5:]) / 5 / v60, 1),
+             "above_ma200": round(100 * (cl[-1] / ma200 - 1), 1), "macd_m_hist_pos": hist[-1] > 0,
+             "macd_m_hist_months_pos": next((k for k in range(len(hist)) if hist[-1 - k] <= 0), len(hist)), "alerts": []}
+        if val[-1] > 3 * v60:
+            x["alerts"].append(f"今天成交额是平时的 {x['value_today_x']} 倍")
+        elif sum(val[-5:]) / 5 > 2 * v60:
+            x["alerts"].append(f"近 5 天成交额是平时的 {x['value_5d_x']} 倍")
+        if cl[-1] > ma200 and cl[-2] <= ma200_y:
+            x["alerts"].append("今天站上 200 日线")
+        if hist[-1] > 0 and len(hist) > 1 and hist[-2] <= 0:
+            x["alerts"].append("月 MACD 柱子刚由负转正")
+        try:
+            import study67
+            anns = [a for a in study67.listing(code, [int(last_day[:4])])
+                    if a["date"] >= (date.fromisoformat(last_day) - timedelta(days=3)).isoformat()]
+            x["announcements"] = [{"date": a["date"], "headline": a["headline"], "sensitive": a["sensitive"]} for a in anns[:10]]
+            for a in anns[:5]:
+                x["alerts"].append(("⚠ 价格敏感公告：" if a["sensitive"] else "新公告：") + a["headline"][:80])
+        except Exception as e:
+            print("  watch announcements failed:", code, type(e).__name__)
+        out.append(x)
+    return out
+
+
 def main():
     t0 = time.time()
     refresh_cache()
@@ -273,6 +335,7 @@ def main():
            "sleeve_candidates": sorted(sleeve, key=lambda x: -x["turnover"])[:20],
            "announcements": fetch_announcements(),
            "rockets": rocket_screen(last_day, [r[0] for r in xj]),
+           "watch": watch_screen(last_day, [r[0] for r in xj]),
            "seconds": round(time.time() - t0)}
     # keep a growing archive of classified announcements for future event studies
     hist_path = Path("out/announcements_history.json")
