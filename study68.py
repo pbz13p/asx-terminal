@@ -22,7 +22,7 @@ import study67
 import volml
 
 ANN = study.DATA / "ann"
-N = int(os.environ.get("ANN_N", "600"))
+N = int(os.environ.get("ANN_N", "900"))
 BUDGET = float(os.environ.get("ANN_MINUTES", "230")) * 60
 YEARS = list(range(date.today().year - 4, date.today().year + 1))
 
@@ -47,7 +47,7 @@ def universe():
     for med, code in cands:
         mc = volml.company_info(code).get("marketCap")
         # first 300: $10M-$200M and >= $20k/day; the next ones widen to $5M-$300M and >= $10k/day
-        lo, hi, vmin = (1e7, 2e8, 2e4) if len(chosen) < 300 else (5e6, 3e8, 1e4)
+        lo, hi, vmin = (1e7, 2e8, 2e4) if len(chosen) < 300 else (5e6, 3e8, 1e4) if len(chosen) < 600 else (3e6, 5e8, 5e3)
         if mc and lo <= mc <= hi and med >= vmin:
             chosen.append({"code": code, "mcap": mc, "value_med": round(med)})
         if len(chosen) >= N:
