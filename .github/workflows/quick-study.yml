@@ -1,14 +1,14 @@
 name: quick-study
 # Runs single research rounds on the cached price data without touching the results branch or the
 # announcement download (which has its own workflow and concurrency group). Output is encrypted and
-# kept as a workflow artifact for 30 days.
+# pushed to the quick-results branch.
 on:
   workflow_dispatch:
   push:
     branches: [main]
     paths: ['.github/run-quick']
 permissions:
-  contents: read
+  contents: write
 concurrency: quick-study
 jobs:
   quick:
@@ -37,8 +37,13 @@ jobs:
           done
           python securedata.py encrypt-dir out
           ls -la out
-      - uses: actions/upload-artifact@v4
-        with:
-          name: quick-results
-          path: out
-          retention-days: 30
+      - name: Push encrypted results to the quick-results branch
+        run: |
+          cd out
+          git init -q -b quick-results
+          git config user.name "asx-study-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" quick-results && git reset -q --soft FETCH_HEAD || true
+          git add -A .
+          git commit -q -m "Quick results $(date -u +%FT%T)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results
