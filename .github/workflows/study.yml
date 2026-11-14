@@ -21,11 +21,14 @@ jobs:
           python-version: "3.12"
       - uses: actions/cache@v4
         with:
-          path: |
-            data/eod
-            data/ann
+          path: data/eod
           key: eod-${{ github.run_id }}
           restore-keys: eod-
+      - uses: actions/cache@v4
+        with:
+          path: data/ann
+          key: ann-${{ github.run_id }}
+          restore-keys: ann-
       - run: pip install numpy pandas scipy arch lightgbm pypdf
       - id: mode
         run: |
