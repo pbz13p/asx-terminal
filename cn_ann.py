@@ -1,5 +1,5 @@
 """China A-share announcement index from cninfo (巨潮资讯, the CSRC-designated disclosure site), personal research use.
-Step 1 (this script): the list of every announcement per main-board stock since 2016 -- date, title, type, PDF link.
+Step 1 (this script): the list of every announcement per stock (main board, ChiNext, STAR) since 2016 -- date, title, type, PDF link.
 Titles alone carry most of the signal in China (业绩预告, 增持/减持, 回购, 中标, 立案调查 ...). PDFs come later, selectively.
 Polite: one request at a time, small pause, resumable with a time budget; output data/cn_ann/{code}.json.gz.
 """
@@ -17,7 +17,7 @@ Q = "http://www.cninfo.com.cn/new/hisAnnouncement/query"
 STOCKS = "http://www.cninfo.com.cn/new/data/szse_stock.json"
 START = os.environ.get("CNANN_START", "2016-01-01")
 BUDGET = 60 * float(os.environ.get("CNANN_MINUTES", "170"))
-MAIN = ("60", "000", "001", "002", "003")
+MAIN = ("60", "000", "001", "002", "003", "300", "301", "688", "689")  # main board + ChiNext + STAR
 stats = {"requests": 0, "failed": 0}
 
 
