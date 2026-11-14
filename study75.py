@@ -1,18 +1,25 @@
-"""Probe: are these domain names still free? (RDAP lookup at the official registries; 404 = not registered)."""
-import json, os, urllib.request, urllib.error
-NAMES = os.environ.get("DOMAINS", "neonterminal.com,neon-terminal.com,neonterm.com,neonterm.net,pengterminal.com,fanterminal.com,pengneon.com,neondesk.net,neonterminal.net,neonterminal.app,neon.com").split(",")
-RDAP = {"com": "https://rdap.verisign.com/com/v1/domain/", "net": "https://rdap.verisign.com/net/v1/domain/", "app": "https://pubapi.registry.google/rdap/domain/"}
+"""Probe: what is howmai.com.au pointing at now (DNS, nameservers, web page)?"""
+import json, os, socket, subprocess, urllib.request
 out = {}
-for d in NAMES:
-    tld = d.rsplit(".", 1)[1]
+for h in ("howmai.com.au", "www.howmai.com.au"):
     try:
-        with urllib.request.urlopen(RDAP[tld] + d, timeout=20) as r:
-            j = json.loads(r.read())
-            ev = {e.get("eventAction"): e.get("eventDate", "")[:10] for e in j.get("events", [])}
-            out[d] = "已被注册（" + ev.get("registration", "?") + " 注册，" + ev.get("expiration", "?") + " 到期）"
-    except urllib.error.HTTPError as e:
-        out[d] = "✅ 可以注册" if e.code == 404 else f"查询出错 {e.code}"
+        out[h + " A"] = sorted({a[4][0] for a in socket.getaddrinfo(h, 443)})
     except Exception as e:
-        out[d] = "查询失败 " + type(e).__name__
+        out[h + " A"] = type(e).__name__
+try:
+    out["NS"] = subprocess.run(["dig", "+short", "NS", "howmai.com.au"], capture_output=True, text=True, timeout=20).stdout.split()
+    out["whois"] = [l for l in subprocess.run(["whois", "howmai.com.au"], capture_output=True, text=True, timeout=30).stdout.splitlines()
+                    if any(k in l for k in ("Registrar Name", "Status", "Name Server", "Last Modified", "Registrant:"))][:12]
+except Exception as e:
+    out["dig"] = repr(e)
+for u in ("https://howmai.com.au", "http://howmai.com.au"):
+    try:
+        with urllib.request.urlopen(u, timeout=20) as r:
+            body = r.read(3000).decode("utf-8", "replace")
+            import re
+            t = re.search(r"<title>(.*?)</title>", body, re.S)
+            out[u] = {"status": r.status, "final": r.geturl(), "title": t.group(1).strip()[:100] if t else None, "server": r.headers.get("server")}
+    except Exception as e:
+        out[u] = type(e).__name__ + " " + str(e)[:80]
 print(json.dumps(out, ensure_ascii=False, indent=1))
 open(os.environ.get("STUDY75_OUT", "study75_results.json"), "w").write(json.dumps(out, ensure_ascii=False))
