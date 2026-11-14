@@ -22,7 +22,7 @@ import study67
 import volml
 
 ANN = study.DATA / "ann"
-N = int(os.environ.get("ANN_N", "900"))
+N = int(os.environ.get("ANN_N", "5000"))  # 300 -> 600 -> 900 small caps first, then every other listed stock
 BUDGET = float(os.environ.get("ANN_MINUTES", "230")) * 60
 YEARS = list(range(date.today().year - 4, date.today().year + 1))
 
@@ -41,13 +41,14 @@ def universe():
             continue
         val = [r[6] * r[5] for r in rows[-250:]]
         med = statistics.median(val)
-        if med >= 1e4 and rows[-1][6] >= 0.005 and p.name[:-8] not in have:
+        if med >= 1e3 and rows[-1][6] >= 0.001 and p.name[:-8] not in have:
             cands.append((med, p.name[:-8]))
     cands.sort(reverse=True)
     for med, code in cands:
-        mc = volml.company_info(code).get("marketCap")
-        # first 300: $10M-$200M and >= $20k/day; the next ones widen to $5M-$300M and >= $10k/day
-        lo, hi, vmin = (1e7, 2e8, 2e4) if len(chosen) < 300 else (5e6, 3e8, 1e4) if len(chosen) < 600 else (3e6, 5e8, 5e3)
+        mc = volml.company_info(code).get("marketCap") or (1 if len(chosen) >= 900 else None)
+        # tiers: 300 small caps ($10M-$200M, >=$20k/day) -> 600 ($5M-$300M, >=$10k) -> 900 ($3M-$500M, >=$5k) -> everyone trading
+        n = len(chosen)
+        lo, hi, vmin = (1e7, 2e8, 2e4) if n < 300 else (5e6, 3e8, 1e4) if n < 600 else (3e6, 5e8, 5e3) if n < 900 else (0, 1e13, 1e3)
         if mc and lo <= mc <= hi and med >= vmin:
             chosen.append({"code": code, "mcap": mc, "value_med": round(med)})
         if len(chosen) >= N:
