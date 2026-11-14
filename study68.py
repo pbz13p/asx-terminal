@@ -23,7 +23,7 @@ import volml
 
 ANN = study.DATA / "ann"
 N = int(os.environ.get("ANN_N", "600"))
-BUDGET = float(os.environ.get("ANN_MINUTES", "270")) * 60
+BUDGET = float(os.environ.get("ANN_MINUTES", "230")) * 60
 YEARS = list(range(date.today().year - 4, date.today().year + 1))
 
 
@@ -73,6 +73,8 @@ def main():
     todo_total = done_now = failed = 0
     for i, u in enumerate(U):
         code = u["code"]
+        if time.time() - t0 > BUDGET:
+            continue
         d = load(code)
         if not d["listed"] or d.get("listed_on") != date.today().isoformat():
             items = study67.listing(code, YEARS)
@@ -80,8 +82,6 @@ def main():
                 d["listed"], d["listed_on"] = items, date.today().isoformat()
         todo = [it for it in d["listed"] if it["ids"] not in d["docs"]]
         todo_total += len(todo)
-        if time.time() - t0 > BUDGET:
-            continue
 
         def fetch(it):
             try:
@@ -102,10 +102,16 @@ def main():
                 save(code, d)
         if (i + 1) % 10 == 0:
             print(f"  {i + 1}/{len(U)} companies, {done_now} docs this run, {failed} failed, {(time.time() - t0) / 60:.0f} min")
-    left = sum(len([it for it in load(u["code"])["listed"] if it["ids"] not in load(u["code"])["docs"]]) for u in U)
-    total_docs = sum(len(load(u["code"])["docs"]) for u in U)
+    left = total_docs = unlisted = 0
+    for u in U:
+        d = load(u["code"])
+        if not d["listed"]:
+            unlisted += 1
+        left += len([it for it in d["listed"] if it["ids"] not in d["docs"]])
+        total_docs += len(d["docs"])
+    left += unlisted  # companies whose list was never fetched also count as unfinished
     out = {"generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "companies": len(U), "docs_total": total_docs,
-           "docs_this_run": done_now, "failed_this_run": failed, "left": left, "minutes": round((time.time() - t0) / 60, 1),
+           "docs_this_run": done_now, "companies_not_started": unlisted, "failed_this_run": failed, "left": left, "minutes": round((time.time() - t0) / 60, 1),
            "universe": U}
     p = Path(os.environ.get("STUDY68_OUT", "out/study68_results.json"))
     p.parent.mkdir(parents=True, exist_ok=True)
