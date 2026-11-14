@@ -1,9 +1,11 @@
 name: cn-daily
-# A-share model picks every weekday after the China close (round 74); full price refresh on Saturdays.
+# A-share model picks every weekday after the China close (round 74); full price refresh on Saturdays;
+# plus a daily snapshot of the whole US market (us_daily.py).
 on:
   workflow_dispatch:
   schedule:
     - cron: '20 10 * * 1-5'
+    - cron: '40 22 * * 1-5'
     - cron: '20 2 * * 6'
   push:
     branches: [main]
@@ -25,13 +27,25 @@ jobs:
           path: data/cn
           key: cn-${{ github.run_id }}
           restore-keys: cn-
+      - uses: actions/cache@v4
+        with:
+          path: data/us_daily
+          key: usd-${{ github.run_id }}
+          restore-keys: usd-
       - run: pip install numpy pandas lightgbm
+      - name: US daily snapshot (our own archive from today)
+        if: github.event.schedule == '40 22 * * 1-5' || github.event_name != 'schedule'
+        continue-on-error: true
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+        run: python us_daily.py
       - name: Full refresh on Saturdays
         if: github.event.schedule == '20 2 * * 6'
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
         run: python cn_download.py
       - name: Restore the previous results (keeps the live track record growing)
+        if: github.event.schedule != '40 22 * * 1-5'
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
         run: |
@@ -40,10 +54,12 @@ jobs:
           git reset -q
           python securedata.py decrypt-dir out
       - name: Daily picks
+        if: github.event.schedule != '40 22 * * 1-5'
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
         run: python study74.py
       - name: Publish encrypted picks to the cn-results branch
+        if: github.event.schedule != '40 22 * * 1-5'
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
         run: |
