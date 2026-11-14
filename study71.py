@@ -298,6 +298,22 @@ def main():
         D[g] = {"top10": evaluate(G[G.q > .9], g), "bottom10": evaluate(G[G.q <= .1], g),
                 "top10_by_year": {y: round(100 * float(G[(G.q > .9) & (G.date.str[:4] == y)].ex20.mean() - COST[g]), 2)
                                   for y in sorted(G.date.str[:4].unique())}}
+    # realistic cost per round trip: brokerage 0.1% x2 + one ASX price step (buy at the ask, sell at the bid)
+    def tick(p):
+        return 0.001 if p < 0.10 else 0.005 if p < 2 else 0.01
+    T = T.assign(cost=0.002 + T.raw.map(tick) / T.raw, q=T.groupby(["date", "grp"]).pred.rank(pct=True))
+    bands = []
+    for lo, hi, lab in ((0, .02, "<2 分"), (.02, .1, "2–10 分"), (.1, .5, "10–50 分"), (.5, 2, "$0.5–2"), (2, 1e9, ">$2")):
+        G = T[(T.grp == "small") & (T.raw >= lo) & (T.raw < hi)]
+        top = G[G.q > .9]
+        if len(top) < 100:
+            continue
+        net = top.ex20 - top.cost
+        bands.append({"band": lab, "n": int(len(top)), "cost_median": round(100 * float(top.cost.median()), 2),
+                      "excess": round(100 * float(top.ex20.mean()), 2), "excess_net": round(100 * float(net.mean()), 2),
+                      "t_gross": tstat(top.ex20, top.date, 20)[0] and round(tstat(top.ex20, top.date, 20)[0], 2),
+                      "net_by_year": {y: round(100 * float(net[top.date.str[:4] == y].mean()), 2) for y in sorted(top.date.str[:4].unique())}})
+    D["small_top10_by_price_real_cost"] = bands
     out["D_lgb"] = D
     out["seconds"] = round(time.time() - t0)
     path = os.environ.get("STUDY71_OUT", "study71_results.json")
