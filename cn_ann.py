@@ -71,29 +71,32 @@ def main():
     codes = sorted({u["code"] for u in uni if u["code"].startswith(MAIN)})
     orgs = org_ids()
     print("[start]", len(codes), "codes,", len(orgs), "orgIds")
-    done = n_new = 0
+    done = sum(1 for c in codes if (OUT / f"{c}.json.gz").exists())
+    todo = [c for c in codes if not (OUT / f"{c}.json.gz").exists()]
+    n_new = 0
     errors = []
-    for code in codes:
-        f = OUT / f"{code}.json.gz"
-        if f.exists():
-            done += 1
-            continue
+    import concurrent.futures as cf
+
+    def work(code):
         if time.time() - t0 > BUDGET:
-            break
+            return code, None
         org = orgs.get(code) or (("gssh0" if code.startswith("6") else "gssz0") + code)
-        try:
-            items = one(code, org, today)
-            f.write_bytes(gzip.compress(json.dumps(items, ensure_ascii=False, separators=(",", ":")).encode()))
-            n_new += 1
-            done += 1
-            if n_new <= 3 or n_new % 200 == 0:
-                print("[ok]", code, len(items), "items", f"{time.time() - t0:.0f}s", stats)
-        except Exception as e:
-            errors.append(f"{code} {type(e).__name__}")
-            if len(errors) >= 30 and n_new == 0:
-                print("[abort] nothing works:", errors[:5])
-                break
-        time.sleep(0.3)
+        items = one(code, org, today)
+        (OUT / f"{code}.json.gz").write_bytes(gzip.compress(json.dumps(items, ensure_ascii=False, separators=(",", ":")).encode()))
+        return code, len(items)
+
+    with cf.ThreadPoolExecutor(int(os.environ.get("CNANN_THREADS", "3"))) as pool:
+        for fu in cf.as_completed([pool.submit(work, c) for c in todo]):
+            try:
+                code, n = fu.result()
+                if n is None:
+                    continue
+                n_new += 1
+                done += 1
+                if n_new <= 3 or n_new % 200 == 0:
+                    print("[ok]", code, n, "items", f"{time.time() - t0:.0f}s", stats, flush=True)
+            except Exception as e:
+                errors.append(type(e).__name__)
     left = len(codes) - done
     total_items = 0
     for g in OUT.glob("*.json.gz"):
