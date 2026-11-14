@@ -1,0 +1,49 @@
+name: cn-daily
+# A-share model picks every weekday after the China close (round 74); full price refresh on Saturdays.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 10 * * 1-5'
+    - cron: '20 2 * * 6'
+  push:
+    branches: [main]
+    paths: ['.github/run-cn']
+permissions:
+  contents: write
+concurrency: cn-daily
+jobs:
+  picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: data/cn
+          key: cn-${{ github.run_id }}
+          restore-keys: cn-
+      - run: pip install numpy pandas lightgbm
+      - name: Full refresh on Saturdays
+        if: github.event.schedule == '20 2 * * 6'
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+        run: python cn_download.py
+      - name: Daily picks
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+        run: python study74.py
+      - name: Publish encrypted picks to the cn-results branch
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+        run: |
+          python securedata.py encrypt-dir out
+          cd out
+          git init -q -b cn-results
+          git config user.name "asx-study-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A .
+          git commit -q -m "A-share picks $(date -u +%F)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" cn-results

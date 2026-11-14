@@ -24,10 +24,11 @@ def load_env():
 load_env()
 
 
-def fetch_result(name, timeout=30):
+def fetch_result(name, timeout=30, branch=None):
     """A results-branch file: the encrypted .enc copy when ASX_DATA_KEY is set, else the plain one."""
     import urllib.request
-    base = "https://raw.githubusercontent.com/pbz13p/asx-terminal/results/"
+    branch = branch or ("cn-results" if name.startswith("cn_") else "results")
+    base = f"https://raw.githubusercontent.com/pbz13p/asx-terminal/{branch}/"
     if os.environ.get("ASX_DATA_KEY"):
         try:
             import securedata
@@ -42,6 +43,8 @@ from providers.base import DataUnavailable  # noqa: E402
 
 provider = get_provider()
 CODE = re.compile(r"^[A-Z0-9]{1,6}$")
+CN_CODE = re.compile(r"^\d{6}$")
+_cnp = None
 TF = {"1D", "5D", "1M", "6M", "1Y"}
 
 
@@ -132,6 +135,13 @@ class Handler(SimpleHTTPRequestHandler):
             today["vol_alerts"] = [{"code": r["code"], "note": f"20 天预测波动 {r.get('vol20')}%（历史 {r.get('pct20')} 分位）"} for r in v.get("alerts") or []][:30]
         except Exception:
             pass
+        try:
+            picks = fetch_result("cn_picks.json")
+            today["cn_top"] = [{"code": r["code"], "note": (r.get("name") or "") + f" · 模型分 {r.get('score')}"} for r in picks.get("top") or []]
+            today["cn_avoid"] = [{"code": r["code"], "note": r.get("name") or ""} for r in picks.get("avoid") or []][:40]
+            reg["cn_day"] = picks.get("date")
+        except Exception:
+            pass
         for c in reg.get("cards", []):
             c["hits"] = today.get(c.get("today") or "", []) if c.get("today") else None
         reg["scan_day"] = scan_day
@@ -160,7 +170,48 @@ class Handler(SimpleHTTPRequestHandler):
             pass
         return out
 
+    def route_cn(self, name, q):
+        """A-share mode (?m=cn): same endpoints, China data and rules."""
+        from providers.eodhd_cn import CnProvider
+        global _cnp
+        if _cnp is None:
+            _cnp = CnProvider()
+        if name == "market":
+            return _cnp.market()
+        if name == "indices":
+            return _cnp.indices()
+        if name == "quotes":
+            codes = [c for c in q.get("codes", "").split(",") if c]
+            if not codes or len(codes) > 40 or not all(CN_CODE.match(c) for c in codes):
+                raise ValueError("A 股代码是 6 位数字")
+            return _cnp.quotes(codes)
+        code = q.get("code", "")
+        if not CN_CODE.match(code):
+            raise ValueError("A 股代码是 6 位数字")
+        if name == "candles":
+            if q.get("tf") not in TF:
+                raise ValueError("周期不正确")
+            return _cnp.candles(code, q["tf"])
+        if name == "insight":
+            return _cnp.insight(code)
+        if name == "ann":
+            return _cnp.announcements(code)
+        if name == "profile":
+            out = {"code": code, "lists": [], "watch": None, "vol": None}
+            try:
+                picks = fetch_result("cn_picks.json")
+                for key, label in (("top", "A 股模型选股（前 10%）"), ("avoid", "A 股模型避开（后 10%）")):
+                    for r in picks.get(key) or []:
+                        if r.get("code") == code:
+                            out["lists"].append({"list": label, **r})
+            except Exception:
+                pass
+            return out
+        raise ValueError("A 股模式暂不支持这个功能")
+
     def route(self, name, q):
+        if q.get("m") == "cn" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
+            return self.route_cn(name, q)
         if name == "status":
             return {"provider": provider.name, "latency": provider.latency,
                     "capabilities": provider.capabilities}
@@ -205,6 +256,11 @@ class Handler(SimpleHTTPRequestHandler):
             return data
         if name == "research":
             return self.research()
+        if name == "cnpicks":
+            try:
+                return fetch_result("cn_picks.json")
+            except Exception:
+                raise DataUnavailable("A 股每日选股还没生成") from None
         if name == "market":
             return provider.market()
         if name == "indices":
@@ -243,7 +299,7 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py")
 
 
@@ -275,6 +331,8 @@ def restart():
 
 
 def auto_update():
+    if os.environ.get("ASX_DESK_NO_UPDATE"):  # developer test runs: never overwrite local edits
+        return
     while True:
         time.sleep(60)
         if do_update():  # program code changed: restart in place so new features work
