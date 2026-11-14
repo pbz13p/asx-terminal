@@ -57,6 +57,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def end_headers(self):
         self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Robots-Tag", "noindex, nofollow")  # private site: never in Google
         super().end_headers()
 
     def send_json(self, body, status=200):
