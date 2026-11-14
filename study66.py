@@ -210,6 +210,9 @@ def main():
         rule = T[(T.value_surge > np.log(2)) & (T.above_ma200 > 0) & (T.from_high_3y < -.5)]
         res["rule"] = cohort(rule, "规则：跌过 50% + 放量 2 倍 + 站上 200 日线")
     out["picking"] = res
+    allrule = P[(P.value_surge > np.log(2)) & (P.above_ma200 > 0) & (P.from_high_3y < -.5)]
+    out["rule_count_by_month"] = {m: int(n) for m, n in allrule.groupby("month").size().tail(30).items()}
+    out["rule_latest"] = sorted(allrule[allrule.month == P.month.max()].code.tolist())
     # current candidates
     last = P[P.month == P.month.max()].copy()
     if len(T):
