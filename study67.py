@@ -66,8 +66,11 @@ def pdf_text(item):
         calls["pdf"] += 1
     from pypdf import PdfReader
     reader = PdfReader(io.BytesIO(body))
-    text = "\n".join((p.extract_text() or "") for p in reader.pages[:12])
-    return re.sub(r"[ \t]+", " ", text).strip(), final, len(reader.pages)
+    pages = reader.pages
+    head = "\n".join((p.extract_text() or "") for p in pages[:8])
+    tail = "\n".join((p.extract_text() or "") for p in pages[max(8, len(pages) - 5):]) if len(pages) > 8 else ""
+    clean = lambda t: re.sub(r"[ \t]+", " ", t).strip()
+    return clean(head)[:8000] + ("\n[...]\n" + clean(tail)[-7000:] if tail else ""), final, len(pages)
 
 
 def main():
@@ -99,7 +102,7 @@ def main():
             try:
                 text, url, pages = pdf_text(it)
                 got.append({**{k: it[k] for k in ("date", "headline", "sensitive")}, "url": url, "pages": pages,
-                            "text": text[:9000]})
+                            "text": text})
             except Exception as e:
                 calls["failed"] += 1
                 got.append({**{k: it[k] for k in ("date", "headline", "sensitive")}, "error": f"{type(e).__name__}: {e}"[:200]})
