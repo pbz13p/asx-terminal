@@ -77,6 +77,8 @@ td.w{white-space:normal;min-width:260px}
 .nums{display:flex;flex-wrap:wrap;gap:6px}.nums span{background:var(--p2);border-radius:6px;padding:3px 8px;font-size:11.5px;color:var(--mu)}.nums b{color:var(--ink);margin-left:4px}
 .hits{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}.hits button{all:unset;cursor:pointer;padding:2px 8px;border-radius:5px;background:#10183A;border:1px solid #23306A;font-size:12px}.hits button:hover{border-color:var(--c)}
 .cd .ft{color:var(--mu2);font-size:11px;margin-top:auto}
+#rcn{background:linear-gradient(90deg,rgba(25,255,156,.08),transparent);border:1px solid rgba(25,255,156,.35);border-radius:10px;padding:10px 14px;margin-bottom:12px}#rcn h3{margin:0 0 6px;font:700 14px var(--disp);color:var(--up)}#rcn div{font-size:12.5px;line-height:1.7;color:#C6CEEE}#rcn b{color:var(--y);font-weight:500;margin-right:6px}
+.newdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--dn);box-shadow:0 0 8px var(--dn);margin-left:5px;vertical-align:middle}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#1A2244;border-radius:4px}::-webkit-scrollbar-track{background:transparent}
 @media (max-width:1100px){main{grid-template-columns:1fr}aside{max-height:260px}aside.r{max-height:none}#app{height:auto}#chart{height:380px;flex:none}}
 </style>
@@ -120,7 +122,7 @@ td.w{white-space:normal;min-width:260px}
   </aside>
 </main>
 </div>
-<div id="rc" role="dialog" aria-label="研究中心"><div class="rch"><h2>🔬 研究中心</h2><div class="rcs num" id="rcs"></div><div class="tabs" id="rcf" style="border:0;white-space:nowrap"><button data-f="all" class="on">全部</button><button data-f="ASX">澳股</button><button data-f="A股">A 股</button><button data-f="无效">测过无效</button></div><span style="flex:1"></span><button class="btn" id="rcx">关闭 ✕</button></div><div class="cards" id="rcc"></div></div>
+<div id="rc" role="dialog" aria-label="研究中心"><div class="rch"><h2>🔬 研究中心</h2><div class="rcs num" id="rcs"></div><div class="tabs" id="rcf" style="border:0;white-space:nowrap"><button data-f="all" class="on">全部</button><button data-f="ASX">澳股</button><button data-f="A股">A 股</button><button data-f="无效">测过无效</button></div><span style="flex:1"></span><button class="btn" id="rcx">关闭 ✕</button></div><div id="rcn"></div><div class="cards" id="rcc"></div></div>
 <div id="dr" role="dialog" aria-label="公告"><div class="dh"><b id="drt"></b><button class="btn" id="dro">原文页</button><button class="btn" id="drx" aria-label="关闭">✕</button></div><div class="db" id="drb"></div></div>
 <script>
 var $=function(i){return document.getElementById(i);};
@@ -344,7 +346,7 @@ async function openAnn(code,ids,tr){DR={code:code,ids:ids};$('dr').classList.add
  catch(e){$('drb').innerHTML='<p class="y">'+esc(e.message)+'</p><p class="mu">没有设置 AI 密钥时，可以点右上角“原文页”，用 Chrome 自带翻译免费翻成中文。</p>'+enHtml;}}
 var RC=null,rcf=null;
 async function openRC(){$('rc').classList.add('on');if(!RC){$('rcc').innerHTML='<div class="empty">读取研究结论…</div>';try{RC=await api('research');}catch(e){$('rcc').innerHTML='<div class="empty">'+esc(e.message)+'</div>';return;}}renderRC();}
-function renderRC(){if(!rcf)rcf=st.m==='cn'?'A股':'ASX';[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b.getAttribute('data-f')===rcf);});var C=RC.cards||[],ok=C.filter(function(c){return c.verdict==='有效';}),hits=0;C.forEach(function(c){if(c.hits)hits+=c.hits.length;});
+function renderRC(){var N=(RC.news||[]).filter(function(n){return n.market===(st.m==='cn'?'A股':'ASX')||rcf==='all';}).slice(0,8);$('rcn').innerHTML=N.length?'<h3>🆕 最新更新</h3>'+N.map(function(n){return '<div><b>'+esc(n.date)+' · '+esc(n.market)+'</b>'+esc(n.text)+'</div>';}).join(''):'';if(RC.news&&RC.news[0])lss('nt_seen_news',RC.news[0].date+RC.news[0].text.slice(0,20));$('rcb').innerHTML='🔬 研究中心';if(!rcf)rcf=st.m==='cn'?'A股':'ASX';[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b.getAttribute('data-f')===rcf);});var C=RC.cards||[],ok=C.filter(function(c){return c.verdict==='有效';}),hits=0;C.forEach(function(c){if(c.hits)hits+=c.hits.length;});
  $('rcs').innerHTML='<div><b class="up">'+ok.length+'</b>条有效规律</div><div><b class="y">'+hits+'</b>只今日命中</div><div class="mu">扫描 '+esc(RC.scan_day||'—')+' · 结论更新 '+esc(RC.updated||'')+'</div>';
  var V={'有效':'ok','无效':'bad','工具':'tool','一般':'mid'},order={'有效':0,'工具':1,'一般':2,'无效':3};
  var L=C.filter(function(c){return rcf==='all'?true:rcf==='无效'?c.verdict==='无效':c.market===rcf&&c.verdict!=='无效';}).sort(function(a,b){var oa=a.verdict in order?order[a.verdict]:9,ob=b.verdict in order?order[b.verdict]:9;return oa-ob||((b.hits||[]).length-(a.hits||[]).length);});
@@ -414,7 +416,8 @@ $('mkt').addEventListener('click',function(e){var m=e.target.getAttribute('data-
 $('fsb').onclick=function(){document.body.classList.toggle('fs');this.classList.toggle('on',document.body.classList.contains('fs'));};
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('fs')){document.body.classList.remove('fs');$('fsb').classList.remove('on');}});
 function select(c){st.sel=c;ANNS=[];SIGS=[];DM=null;if(typeof markTool==='function')markTool();loadDraws();lss('nt_sel_'+st.m,c);$('annhint').textContent=st.m==='cn'?'· 点一下打开原文 PDF（巨潮资讯）':'· 点一下，中文直接弹出';head();renderList();loadChart();loadRight(c);if(!Q[c])loadQuotes();}
-async function boot(){mkCharts();try{var s=await api('status');$('src').textContent=s.provider.toUpperCase()+' · '+s.latency;}catch(e){$('src').textContent='本地服务未连接';}
+async function checkNews(){try{var r=await api('research');var k=r.news&&r.news[0]?r.news[0].date+r.news[0].text.slice(0,20):'';if(k&&k!==lsg('nt_seen_news',''))$('rcb').innerHTML='🔬 研究中心<span class="newdot"></span>';}catch(e){}}
+async function boot(){mkCharts();checkNews();try{var s=await api('status');$('src').textContent=s.provider.toUpperCase()+' · '+s.latency;}catch(e){$('src').textContent='本地服务未连接';}
  [].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===st.m);});setTfs();renderBTabs();if(st.m==='cn'){$('breadth').style.display='none';$('si').placeholder='搜 A 股代码，如 600519';}
  select(lsg('nt_sel_'+st.m,st.watch[0]));loadIdx();loadQuotes();loadScan();loadCN();loadMarket();renderBottom();
  setInterval(loadQuotes,60000);setInterval(loadIdx,120000);setInterval(loadMarket,1800000);setInterval(loadScan,1800000);setInterval(loadCN,1800000);

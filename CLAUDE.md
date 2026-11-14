@@ -11,6 +11,7 @@
    - `round`、`market`（ASX / A股）
    - `today`：如果有每日命中名单，填数据来源的键（如 rockets、vol_alerts、watch_alerts）；没有就填 null
    - 同时把文件顶部的 `updated` 改成当天日期
+   - 在 `news` 列表**最前面**加一条大白话更新（日期、市场、一句话说新发现了什么）。爸爸在中国看网页时，研究中心按钮会亮红点，打开就能看到最新更新，不用另外截图解释
 2. **加密后提交**：
    `python -c "import securedata;open('research/findings.json.enc','wb').write(securedata.encrypt(open('research/findings.json','rb').read()))"`
    （需要环境变量 ASX_DATA_KEY）。只提交 `.enc` 文件，`findings.json` 已在 .gitignore 里。
