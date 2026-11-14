@@ -110,6 +110,26 @@ def main():
     out = {"date": day, "generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "universe": int(len(B)),
            "top": [rec(r) for r in top.itertuples()], "avoid": [rec(r) for r in avoid.itertuples()],
            "note": "第 72 轮模型：成交额前 1000 的主板股票，模型分前 10% / 后 10%，持有约 20 个交易日。", "seconds": round(time.time() - t0)}
+    # live track record (tracklog.py): all 100 picks and the avoid list, followed forward
+    try:
+        import tracklog
+        idx = None
+        try:
+            with urllib.request.urlopen(f"https://eodhd.com/api/eod/000300.SHG?api_token={KEY}&fmt=json&from=2010-01-01", timeout=60) as r:
+                rows = json.loads(r.read())
+                idx = {x["date"]: x["close"] for x in rows}
+        except Exception:
+            pass
+        bench = idx.get(day) if idx else None
+        tracklog.record("cn", "cn_top", day, [{"code": r["code"], "px": r["price"]} for r in out["top"]], bench)
+        tracklog.record("cn", "cn_avoid", day, [{"code": r["code"], "px": r["price"]} for r in out["avoid"]], bench)
+        def since(code, d):
+            f = next(iter(CN.glob(f"{code}.*.json.gz")), None)
+            df = s72.load(f) if f else None
+            return tracklog.adj_return(list(zip(df.index, df.c)), d) if df is not None else None
+        out["track"] = tracklog.summarise("cn", since, bench, {"cn_top": "A 股模型前 10%", "cn_avoid": "A 股模型后 10%（避开）"})
+    except Exception as e:
+        print("[track failed]", type(e).__name__, e)
     path = os.environ.get("STUDY74_OUT", "out/cn_picks.json")
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     Path(path).write_text(json.dumps(out, ensure_ascii=False))

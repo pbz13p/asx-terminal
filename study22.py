@@ -352,6 +352,21 @@ def main():
                 hist.append({"bucket": bucket, **a})
     hist_path.parent.mkdir(parents=True, exist_ok=True)
     hist_path.write_text(json.dumps(hist, ensure_ascii=False), encoding="utf-8")
+    # live track record: every new rocket signal and every watch alert, followed forward (tracklog.py)
+    try:
+        import tracklog
+        bench = xj[-1][4]
+        tracklog.record("au", "rockets", last_day, [{"code": r["code"], "px": r["price"]} for r in out["rockets"] if r.get("days") == 0], bench)
+        tracklog.record("au", "rockets_tradable", last_day,
+                        [{"code": r["code"], "px": r["price"]} for r in out["rockets"] if r.get("days") == 0 and r.get("tradable")], bench)
+
+        def since(code, day):
+            rows = study.load(f"{code}.AU")
+            return tracklog.adj_return([(r[0], r[4]) for r in rows if r[4]], day)
+        out["track"] = tracklog.summarise("au", since, bench, {"rockets": "爆拉候选（全部）", "rockets_tradable": "爆拉候选（可交易）"})
+        print("  track record:", json.dumps(out["track"], ensure_ascii=False)[:300])
+    except Exception as e:
+        print("  track record failed:", type(e).__name__, e)
     print("  announcement archive:", len(hist))
     p = Path(os.environ.get("STUDY22_OUT", study.DATA / "scan.json"))
     p.parent.mkdir(parents=True, exist_ok=True)

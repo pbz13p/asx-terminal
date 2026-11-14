@@ -194,6 +194,7 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             scan = self.route("scan", {})
             scan_day = scan.get("last_day")
+            reg.setdefault("track", {})["au"] = scan.get("track")
             today["rockets"] = [{"code": r["code"], "note": ("今天" if r.get("days") == 0 else f"{r.get('days')} 天前") + (" · 可交易" if r.get("tradable") else "")}
                                 for r in scan.get("rockets") or []]
             today["watch_alerts"] = [{"code": r["code"], "note": "；".join(r.get("alerts") or [])} for r in scan.get("watch") or [] if r.get("alerts")]
@@ -210,6 +211,7 @@ class Handler(SimpleHTTPRequestHandler):
             today["cn_top"] = [{"code": r["code"], "note": (r.get("name") or "") + f" · 模型分 {r.get('score')}"} for r in picks.get("top") or []]
             today["cn_avoid"] = [{"code": r["code"], "note": r.get("name") or ""} for r in picks.get("avoid") or []][:40]
             reg["cn_day"] = picks.get("date")
+            reg.setdefault("track", {})["cn"] = picks.get("track")
         except Exception:
             pass
         for c in reg.get("cards", []):

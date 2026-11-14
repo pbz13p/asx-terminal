@@ -31,6 +31,14 @@ jobs:
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
         run: python cn_download.py
+      - name: Restore the previous results (keeps the live track record growing)
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+        run: |
+          mkdir -p out
+          git fetch -q origin cn-results && git --work-tree=out checkout origin/cn-results -- . || true
+          git reset -q
+          python securedata.py decrypt-dir out
       - name: Daily picks
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
