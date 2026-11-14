@@ -106,6 +106,55 @@ def refresh_cache():
     print("  bulk rows added:", added)
 
 
+def rocket_screen(last_day):
+    """Round 66 rule: fell >= 50% from its 3-year high, value traded (20-day median) >= 2x its 1-year median, and
+    back above the 200-day line. Historically 34% of such stocks doubled at some point within 12 months, ~20% lost
+    half; average basket +30% (after 3% costs), vs +10% for all small caps."""
+    out = []
+    for f in study.CACHE.glob("*.AU.json"):
+        rows = study.load(f.name[:-5])
+        if len(rows) < 260 or rows[-1][0] != last_day:
+            continue
+        cl = [r[4] for r in rows]
+        val = [r[6] * r[5] for r in rows]
+        raw = rows[-1][6]
+        v60 = sorted(val[-60:])[30]
+        if raw < 0.005 or v60 < 1e4:
+            continue
+
+        def ok(i):
+            if i < 252:
+                return False
+            hi3 = max(cl[max(0, i - 755):i + 1])
+            ma200 = sum(cl[i - 199:i + 1]) / 200
+            v20 = sorted(val[i - 19:i + 1])[10]
+            v250 = sorted(val[max(0, i - 249):i + 1])[len(val[max(0, i - 249):i + 1]) // 2]
+            return cl[i] / hi3 - 1 < -0.5 and cl[i] > ma200 and v250 > 0 and v20 / v250 > 2, hi3, ma200, v20, v250
+        n = len(rows)
+        today = ok(n - 1)
+        if not today or not today[0]:
+            continue
+        first = n - 1
+        while first - 1 >= n - 120 and (lambda x: x and x[0])(ok(first - 1)):
+            first -= 1
+        _, hi3, ma200, v20, v250 = today
+        out.append({"code": f.name[:-8], "price": raw, "from_high_3y": round(100 * (cl[-1] / hi3 - 1)),
+                    "above_ma200": round(100 * (cl[-1] / ma200 - 1)), "value_x": round(v20 / v250, 1),
+                    "value_k": round(v60 / 1e3), "since": rows[first][0], "days": n - 1 - first,
+                    "ret_since": round(100 * (cl[-1] / cl[first] - 1), 1),
+                    "tradable": raw >= 0.02 and v60 >= 3e4})
+    out.sort(key=lambda x: (x["days"] > 20, -x["value_x"]))
+    try:
+        import volml
+        for x in out[:60]:
+            ci = volml.company_info(x["code"])
+            x.update({"name": ci.get("displayName"), "sector": ci.get("sector"), "mcap": ci.get("marketCap"),
+                      "about": (ci.get("description") or "")[:200]})
+    except Exception as e:
+        print("  company info failed:", type(e).__name__)
+    return out[:60]
+
+
 def main():
     t0 = time.time()
     refresh_cache()
@@ -210,6 +259,7 @@ def main():
            "halt_reopen_down": sorted(halts, key=lambda x: -x["turnover"])[:30],
            "sleeve_candidates": sorted(sleeve, key=lambda x: -x["turnover"])[:20],
            "announcements": fetch_announcements(),
+           "rockets": rocket_screen(last_day),
            "seconds": round(time.time() - t0)}
     # keep a growing archive of classified announcements for future event studies
     hist_path = Path("out/announcements_history.json")
