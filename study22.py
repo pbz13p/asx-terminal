@@ -106,7 +106,7 @@ def refresh_cache():
     print("  bulk rows added:", added)
 
 
-def rocket_screen(last_day):
+def rocket_screen(last_day, calendar):
     """Round 66 rule: fell >= 50% from its 3-year high, value traded (20-day median) >= 2x its 1-year median, and
     back above the 200-day line. Historically 34% of such stocks doubled at some point within 12 months, ~20% lost
     half; average basket +30% (after 3% costs), vs +10% for all small caps."""
@@ -115,9 +115,22 @@ def rocket_screen(last_day):
         rows = study.load(f.name[:-5])
         if len(rows) < 260 or rows[-1][0] < (date.fromisoformat(last_day) - timedelta(days=7)).isoformat():
             continue  # thinly traded stocks often skip days
-        cl = [r[4] for r in rows]
-        val = [r[6] * r[5] for r in rows]
-        raw = rows[-1][6]
+        # put the stock on the ASX 200 trading calendar like the backtest: no trade = $0 value, price carried
+        by = {r[0]: r for r in rows}
+        cal = [d for d in calendar if d >= rows[0][0]]
+        cl, val, last = [], [], None
+        for d in cal:
+            r = by.get(d)
+            if r:
+                last = r
+            cl.append(last[4] if last else None)
+            val.append(r[6] * r[5] if r else 0.0)
+        k0 = next((k for k, x in enumerate(cl) if x is not None), len(cl))
+        cl, val, cal = cl[k0:], val[k0:], cal[k0:]
+        if len(cl) < 260:
+            continue
+        rows = [(d,) for d in cal]
+        raw = by[max(by)][6]
         v60 = sorted(val[-60:])[30]
         if raw < 0.005 or v60 < 1e4:
             continue
@@ -259,7 +272,7 @@ def main():
            "halt_reopen_down": sorted(halts, key=lambda x: -x["turnover"])[:30],
            "sleeve_candidates": sorted(sleeve, key=lambda x: -x["turnover"])[:20],
            "announcements": fetch_announcements(),
-           "rockets": rocket_screen(last_day),
+           "rockets": rocket_screen(last_day, [r[0] for r in xj]),
            "seconds": round(time.time() - t0)}
     # keep a growing archive of classified announcements for future event studies
     hist_path = Path("out/announcements_history.json")
