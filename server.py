@@ -104,6 +104,29 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def profile(self, code):
+        """What our research says about one stock: today's scan lists it appears in, volatility model, watch alerts."""
+        out = {"code": code, "lists": [], "watch": None, "vol": None}
+        try:
+            scan = self.route("scan", {})
+            for key, label in (("rockets", "爆拉候选"), ("breakouts", "放量突破"), ("sleeve_candidates", "小仓位候选"),
+                               ("season_gap_up", "业绩季跳空高开"), ("season_gap_down", "业绩季跳空低开"), ("halt_reopen_down", "复牌下跌")):
+                for r in scan.get(key) or []:
+                    if r.get("code") == code:
+                        out["lists"].append({"list": label, **r})
+            for r in scan.get("watch") or []:
+                if r.get("code") == code:
+                    out["watch"] = r
+            out["scan_day"] = scan.get("last_day")
+        except Exception:
+            pass
+        try:
+            v = self.route("volml", {})
+            out["vol"] = next((r for r in v.get("latest") or [] if r.get("code") == code), None)
+        except Exception:
+            pass
+        return out
+
     def route(self, name, q):
         if name == "status":
             return {"provider": provider.name, "latency": provider.latency,
@@ -172,12 +195,20 @@ class Handler(SimpleHTTPRequestHandler):
             return provider.candles(code, q["tf"])
         if name == "sales":
             return provider.sales(code)
+        if name in ("ann", "anntext", "anntr"):
+            import annsvc
+            if name == "ann":
+                return annsvc.listing(code)
+            ids = q.get("ids", "")
+            return annsvc.text(code, ids) if name == "anntext" else annsvc.translate(code, ids)
+        if name == "profile":
+            return self.profile(code)
         if name == "book":
             return provider.book(code)
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "securedata.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py")
 
 
