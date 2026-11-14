@@ -31,7 +31,7 @@ K = int(os.environ.get("S63_K", "20"))
 FWD = 60
 MINVAL = float(os.environ.get("S63_MINVAL", "1"))       # 60-day median $ traded per day
 PRICE_MIN = float(os.environ.get("S63_PRICE", "0.5"))
-COST = 0.002
+COST = float(os.environ.get("S63_COST", "0.002"))
 FEATS = ["up_cap", "down_cap", "cap_ratio", "skew", "updown_vol", "down_vol", "vol60", "beta", "maxdd_1y",
          "from_high", "from_low", "mom_12_1", "ret_1m", "log_value", "value_trend"]
 
