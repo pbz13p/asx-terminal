@@ -24,14 +24,21 @@ jobs:
           path: data/eod
           key: eod-none
           restore-keys: eod-
+      - uses: actions/cache@v4
+        with:
+          path: data/cn
+          key: cn-${{ github.run_id }}
+          restore-keys: cn-
       - run: pip install numpy pandas scipy lightgbm
       - name: Run rounds
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
         run: |
           ls data/eod | wc -l
           mkdir -p out
-          ROUNDS=$(grep -oP '(?<=rounds=)[0-9,]+' .github/run-quick)
+          if grep -q "cn" .github/run-quick; then STUDYCN_OUT=out/cn_download_summary.json python cn_download.py || echo "cn download failed"; fi
+          ROUNDS=$(grep -oP '(?<=rounds=)[0-9,]+' .github/run-quick || true)
           for n in $(echo "$ROUNDS" | tr ',' ' '); do
             echo "=== round $n"; env STUDY${n}_OUT=out/study${n}_results.json python study$n.py || echo "round $n failed"
           done
