@@ -80,7 +80,9 @@ def main():
             items = study67.listing(code, YEARS)
             if items:
                 d["listed"], d["listed_on"] = items, date.today().isoformat()
-        todo = [it for it in d["listed"] if it["ids"] not in d["docs"]]
+        # new announcements, plus earlier failures (up to 3 tries each)
+        todo = [it for it in d["listed"] if it["ids"] not in d["docs"]
+                or ("error" in d["docs"][it["ids"]] and d["docs"][it["ids"]].get("tries", 1) < 3)]
         todo_total += len(todo)
 
         def fetch(it):
@@ -89,8 +91,9 @@ def main():
                 return it["ids"], {"date": it["date"], "headline": it["headline"], "sensitive": it["sensitive"],
                                    "pages": pages, "text": text}
             except Exception as e:
+                prev = d["docs"].get(it["ids"], {})
                 return it["ids"], {"date": it["date"], "headline": it["headline"], "sensitive": it["sensitive"],
-                                   "error": f"{type(e).__name__}"[:60]}
+                                   "error": f"{type(e).__name__}"[:60], "tries": prev.get("tries", 1) + ("error" in prev)}
         with ThreadPoolExecutor(max_workers=4) as ex:
             for k in range(0, len(todo), 40):
                 if time.time() - t0 > BUDGET:
@@ -107,10 +110,12 @@ def main():
         d = load(u["code"])
         if not d["listed"]:
             unlisted += 1
-        left += len([it for it in d["listed"] if it["ids"] not in d["docs"]])
+        left += len([it for it in d["listed"] if it["ids"] not in d["docs"]
+                     or ("error" in d["docs"][it["ids"]] and d["docs"][it["ids"]].get("tries", 1) < 3)])
         total_docs += len(d["docs"])
     left += unlisted  # companies whose list was never fetched also count as unfinished
-    out = {"generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "companies": len(U), "docs_total": total_docs,
+    failed_now = sum(1 for u in U for doc in load(u["code"])["docs"].values() if "error" in doc)
+    out = {"failed_total": failed_now, "generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "companies": len(U), "docs_total": total_docs,
            "docs_this_run": done_now, "companies_not_started": unlisted, "failed_this_run": failed, "left": left, "minutes": round((time.time() - t0) / 60, 1),
            "universe": U}
     p = Path(os.environ.get("STUDY68_OUT", "out/study68_results.json"))
