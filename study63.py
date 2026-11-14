@@ -29,6 +29,8 @@ import study
 N = int(os.environ.get("S63_N", "200"))
 K = int(os.environ.get("S63_K", "20"))
 FWD = 60
+MINVAL = float(os.environ.get("S63_MINVAL", "1"))       # 60-day median $ traded per day
+PRICE_MIN = float(os.environ.get("S63_PRICE", "0.5"))
 COST = 0.002
 FEATS = ["up_cap", "down_cap", "cap_ratio", "skew", "updown_vol", "down_vol", "vol60", "beta", "maxdd_1y",
          "from_high", "from_low", "mom_12_1", "ret_1m", "log_value", "value_trend"]
@@ -107,9 +109,9 @@ def main():
         if t0 < 260:
             continue
         v = V.iloc[t0 - 59:t0 + 1].median()
-        ok = (v > 0) & (C.iloc[t0] >= 0.5) & R.iloc[t0 - 251:t0 + 1].notna().sum().ge(200)
+        ok = (v >= MINVAL) & (C.iloc[t0] >= PRICE_MIN) & R.iloc[t0 - 251:t0 + 1].notna().sum().ge(200)
         codes = list(v[ok].sort_values(ascending=False).index[:N])
-        if len(codes) < N * .8:
+        if len(codes) < min(N, 150) * .8:
             continue
         X = features_at(t0, C, V, R, mr, codes)
         X["size_rank"] = range(1, len(codes) + 1)
@@ -205,7 +207,8 @@ def main():
         out["models"][nm] = {"full_period": full, "common_period": same}
         print(nm, json.dumps(same["all"], ensure_ascii=False), "picks asym rank", same["picks_asym_rank"])
         for gname, gm in (("大盘（成交额前 50）", lambda G: (G.size_rank <= 50) & (G.month >= first_lgb)),
-                          ("中小盘（51–200）", lambda G: (G.size_rank > 50) & (G.month >= first_lgb))):
+                          ("中盘（51–200）", lambda G: (G.size_rank > 50) & (G.size_rank <= 200) & (G.month >= first_lgb)),
+                          ("小盘（200 名以后）", lambda G: (G.size_rank > 200) & (G.month >= first_lgb))):
             gr, _ = portfolio(s, gm, k=max(2, K // 2))
             out["groups"].setdefault(gname, {})[nm] = {"all": gr["all"], "picks_asym_rank": gr["picks_asym_rank"],
                                                        "bench_cagr": gr["bench"]["cagr"]}
