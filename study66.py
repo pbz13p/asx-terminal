@@ -184,7 +184,11 @@ def main():
         return {"label": label, "n": int(len(S)), "p_2x_peak": round(100 * S.hit2.mean(), 1), "p_10x_peak": round(100 * S.hit10.mean(), 2),
                 "p_end_2x": round(100 * (S.end_mult >= 2).mean(), 1), "p_end_lose_half": round(100 * (S.end_mult <= .5).mean(), 1),
                 "mean_12m_net": round(100 * net.mean(), 1), "median_12m_net": round(100 * net.median(), 1),
-                "mean_of_monthly_cohorts": round(100 * by_m.mean(), 1), "share_cohorts_positive": round(100 * (by_m > 0).mean()),
+                "mean_of_monthly_cohorts": round(100 * by_m.mean(), 1),
+                "mean_12m_cost8": round(100 * (S.end_mult * 0.92 - 1).mean(), 1),
+                "mean_12m_cap10x": round(100 * (S.end_mult.clip(upper=10) * (1 - COST) - 1).mean(), 1),
+                "mean_12m_cap5x_cost8": round(100 * (S.end_mult.clip(upper=5) * 0.92 - 1).mean(), 1),
+                "t_cohorts": round(float(by_m.mean() / (by_m.std() / math.sqrt(max(1, len(by_m) / 12)))), 2) if len(by_m) > 12 else None, "share_cohorts_positive": round(100 * (by_m > 0).mean()),
                 "bench_12m": round(100 * S.groupby("month").bench_12m.first().mean(), 1),
                 "by_period": {lab: round(100 * net[(S.month >= lo) & (S.month <= hi)].mean(), 1)
                               for lab, lo, hi in (("2016–21", "2016", "2021-12"), ("2022–23", "2022", "2023-12"), ("2024–25", "2024", "9999"))}}
@@ -196,6 +200,12 @@ def main():
         res["lgb_top30"] = cohort(top, "模型每月前 30")
         top_s = T[T.log_value < np.log(1e6)].sort_values("p_lgb", ascending=False).groupby("month").head(30)
         res["lgb_top30_small"] = cohort(top_s, "模型每月前 30（只选日成交 <$100 万）")
+        L = T[(T.log_price >= np.log(0.02)) & (T.log_value >= np.log(3e4))]
+        top_l = L.sort_values("p_lgb", ascending=False).groupby("month").head(30)
+        res["lgb_top30_tradable"] = cohort(top_l, "模型每月前 30（股价 ≥2 分、日成交 ≥$3 万）")
+        res["all_tradable"] = cohort(L, "全部（股价 ≥2 分、日成交 ≥$3 万）")
+        top20 = L.sort_values("p_lgb", ascending=False).groupby("month").head(20)
+        res["lgb_top20_tradable"] = cohort(top20, "模型每月前 20（股价 ≥2 分、日成交 ≥$3 万）")
         # simple rule from the lift tables: >= 2x volume surge and price above the 200-day line, after a deep fall
         rule = T[(T.value_surge > np.log(2)) & (T.above_ma200 > 0) & (T.from_high_3y < -.5)]
         res["rule"] = cohort(rule, "规则：跌过 50% + 放量 2 倍 + 站上 200 日线")
