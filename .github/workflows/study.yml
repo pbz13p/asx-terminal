@@ -23,7 +23,7 @@ jobs:
           path: data/eod
           key: eod-${{ github.run_id }}
           restore-keys: eod-
-      - run: pip install numpy pandas scipy arch lightgbm
+      - run: pip install numpy pandas scipy arch lightgbm pypdf
       - id: mode
         run: |
           echo "mode=$(cat .github/run-study)" >> $GITHUB_OUTPUT
