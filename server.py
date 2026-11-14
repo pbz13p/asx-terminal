@@ -104,6 +104,39 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def research(self):
+        """Research centre: the findings registry (research/findings.json.enc, updated after every round) plus today's
+        stocks that match each finding, taken from the daily scan and the volatility model."""
+        import securedata
+        f = ROOT / "research" / "findings.json.enc"
+        plain = ROOT / "research" / "findings.json"
+        try:
+            reg = json.loads(securedata.decrypt(f.read_bytes()))
+        except Exception:
+            if plain.exists():
+                reg = json.loads(plain.read_text(encoding="utf-8"))
+            else:
+                raise DataUnavailable("研究结论是加密的：请在 .env 里加上 ASX_DATA_KEY") from None
+        today, scan_day = {}, None
+        try:
+            scan = self.route("scan", {})
+            scan_day = scan.get("last_day")
+            today["rockets"] = [{"code": r["code"], "note": ("今天" if r.get("days") == 0 else f"{r.get('days')} 天前") + (" · 可交易" if r.get("tradable") else "")}
+                                for r in scan.get("rockets") or []]
+            today["watch_alerts"] = [{"code": r["code"], "note": "；".join(r.get("alerts") or [])} for r in scan.get("watch") or [] if r.get("alerts")]
+            today["breakouts"] = [{"code": r["code"], "note": f"放量 {r.get('vol_x')}×"} for r in scan.get("breakouts") or []]
+        except Exception:
+            pass
+        try:
+            v = self.route("volml", {})
+            today["vol_alerts"] = [{"code": r["code"], "note": f"20 天预测波动 {r.get('vol20')}%（历史 {r.get('pct20')} 分位）"} for r in v.get("alerts") or []][:30]
+        except Exception:
+            pass
+        for c in reg.get("cards", []):
+            c["hits"] = today.get(c.get("today") or "", []) if c.get("today") else None
+        reg["scan_day"] = scan_day
+        return reg
+
     def profile(self, code):
         """What our research says about one stock: today's scan lists it appears in, volatility model, watch alerts."""
         out = {"code": code, "lists": [], "watch": None, "vol": None}
@@ -170,6 +203,8 @@ class Handler(SimpleHTTPRequestHandler):
             data.pop("results_per_stock", None)
             self.server._volml = (time.time(), data)
             return data
+        if name == "research":
+            return self.research()
         if name == "market":
             return provider.market()
         if name == "indices":

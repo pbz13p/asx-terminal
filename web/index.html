@@ -61,6 +61,18 @@ td.w{white-space:normal;min-width:260px}
 #dr.on{transform:none}#dr .dh{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--ln)}#dr .dh b{flex:1;font-size:13px}
 #dr .db{overflow-y:auto;padding:14px 18px;font:14px/1.8 "Segoe UI",system-ui,sans-serif;color:#DCE3FF}#dr .db p{margin:0 0 10px}#dr .db .en{color:#8590B8;font-size:13px;border-top:1px dashed var(--ln2);margin-top:14px;padding-top:12px}
 .ann .tr{all:unset;cursor:pointer;float:right;margin-left:6px;padding:0 6px;border:1px solid var(--ln2);border-radius:4px;color:var(--c);font-size:11px}.ann .tr:hover{border-color:var(--c)}
+#rc{position:fixed;top:46px;left:0;right:0;bottom:0;background:rgba(5,6,12,.97);z-index:40;display:none;overflow-y:auto;padding:16px 22px 40px}
+#rc.on{display:block}.rch{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}.rch h2{margin:0;font:700 20px var(--disp)}
+.rcs{display:flex;gap:10px}.rcs div{background:var(--p2);border:1px solid var(--ln);border-radius:8px;padding:6px 12px}.rcs b{font:700 18px var(--disp);margin-right:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:12px}
+.cd{background:linear-gradient(160deg,#0D1124,#080A15);border:1px solid var(--ln2);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.cd.ok{border-color:rgba(25,255,156,.45);box-shadow:0 0 14px rgba(25,255,156,.08)}.cd.bad{opacity:.72}.cd.tool{border-color:rgba(34,228,245,.4)}
+.cd h4{margin:0;font:700 15px var(--disp);display:flex;gap:8px;align-items:center}.vd{font:500 11px var(--mono);padding:1px 7px;border-radius:9px;border:1px solid}
+.vd.ok{color:var(--up)}.vd.bad{color:var(--dn)}.vd.tool{color:var(--c)}.vd.mid{color:var(--y)}
+.cd .rl{color:#C6CEEE;font-size:12.5px;line-height:1.6}.cd .us{color:var(--y);font-size:12.5px;line-height:1.6}
+.nums{display:flex;flex-wrap:wrap;gap:6px}.nums span{background:var(--p2);border-radius:6px;padding:3px 8px;font-size:11.5px;color:var(--mu)}.nums b{color:var(--ink);margin-left:4px}
+.hits{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}.hits button{all:unset;cursor:pointer;padding:2px 8px;border-radius:5px;background:#10183A;border:1px solid #23306A;font-size:12px}.hits button:hover{border-color:var(--c)}
+.cd .ft{color:var(--mu2);font-size:11px;margin-top:auto}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#1A2244;border-radius:4px}::-webkit-scrollbar-track{background:transparent}
 @media (max-width:1100px){main{grid-template-columns:1fr}aside{max-height:260px}aside.r{max-height:none}#app{height:auto}#chart{height:380px;flex:none}}
 </style>
@@ -71,7 +83,7 @@ td.w{white-space:normal;min-width:260px}
   <div class="brand"><i></i>NEON <b>TERMINAL</b></div>
   <form id="sf" role="search"><input id="si" placeholder="搜索代码，如 CND" maxlength="6" autocomplete="off" aria-label="搜索股票代码"></form>
   <div class="idx num" id="idx"></div>
-  <div class="hb"><span class="mu" id="breadth"></span><a class="btn" href="/report.html" target="_blank">研究报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:11px"></span></div>
+  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:11px"></span></div>
 </header>
 <main>
   <aside>
@@ -103,6 +115,7 @@ td.w{white-space:normal;min-width:260px}
   </aside>
 </main>
 </div>
+<div id="rc" role="dialog" aria-label="研究中心"><div class="rch"><h2>🔬 研究中心</h2><div class="rcs num" id="rcs"></div><div class="tabs" id="rcf" style="border:0;white-space:nowrap"><button data-f="all" class="on">全部</button><button data-f="ASX">澳股</button><button data-f="A股">A 股</button><button data-f="无效">测过无效</button></div><span style="flex:1"></span><button class="btn" id="rcx">关闭 ✕</button></div><div class="cards" id="rcc"></div></div>
 <div id="dr" role="dialog" aria-label="公告"><div class="dh"><b id="drt"></b><button class="btn" id="dro">原文页</button><button class="btn" id="drx" aria-label="关闭">✕</button></div><div class="db" id="drb"></div></div>
 <script>
 var $=function(i){return document.getElementById(i);};
@@ -208,9 +221,23 @@ async function openAnn(code,ids,tr){DR={code:code,ids:ids};$('dr').classList.add
  try{var z=await api('anntr?code='+code+'&ids='+ids);if(DR.ids!==ids)return;
   $('drb').innerHTML='<p class="mu" style="font-size:12px">'+(z.cached?'已翻译过，直接读取，未再收费':'AI 翻译完成 · '+(z.tokens_in||0)+' + '+(z.tokens_out||0)+' token')+(z.truncated?' · 公告太长，只翻译了前约 8 万字':'')+'</p>'+paras(z.zh)+enHtml;$('drb').scrollTop=0;}
  catch(e){$('drb').innerHTML='<p class="y">'+esc(e.message)+'</p><p class="mu">没有设置 AI 密钥时，可以点右上角“原文页”，用 Chrome 自带翻译免费翻成中文。</p>'+enHtml;}}
+var RC=null,rcf='all';
+async function openRC(){$('rc').classList.add('on');if(!RC){$('rcc').innerHTML='<div class="empty">读取研究结论…</div>';try{RC=await api('research');}catch(e){$('rcc').innerHTML='<div class="empty">'+esc(e.message)+'</div>';return;}}renderRC();}
+function renderRC(){var C=RC.cards||[],ok=C.filter(function(c){return c.verdict==='有效';}),hits=0;C.forEach(function(c){if(c.hits)hits+=c.hits.length;});
+ $('rcs').innerHTML='<div><b class="up">'+ok.length+'</b>条有效规律</div><div><b class="y">'+hits+'</b>只今日命中</div><div class="mu">扫描 '+esc(RC.scan_day||'—')+' · 结论更新 '+esc(RC.updated||'')+'</div>';
+ var V={'有效':'ok','无效':'bad','工具':'tool','一般':'mid'},order={'有效':0,'工具':1,'一般':2,'无效':3};
+ var L=C.filter(function(c){return rcf==='all'?true:rcf==='无效'?c.verdict==='无效':c.market===rcf&&c.verdict!=='无效';}).sort(function(a,b){var oa=a.verdict in order?order[a.verdict]:9,ob=b.verdict in order?order[b.verdict]:9;return oa-ob||((b.hits||[]).length-(a.hits||[]).length);});
+ $('rcc').innerHTML=L.map(function(c){var k=V[c.verdict]||'mid';
+  return '<div class="cd '+k+'"><h4>'+esc(c.title)+'<span class="vd '+k+'">'+esc(c.verdict)+'</span><span class="mu" style="font:400 11px var(--mono);margin-left:auto">'+esc(c.market)+' · 第 '+esc(c.round)+' 轮</span></h4>'+
+  '<div class="rl">'+esc(c.rule)+'</div><div class="us">👉 '+esc(c.use)+'</div>'+
+  ((c.numbers||[]).length?'<div class="nums num">'+c.numbers.map(function(n){return '<span>'+esc(n[0])+'<b>'+esc(n[1])+'</b></span>';}).join('')+'</div>':'')+
+  (c.hits?'<div class="ft">今日命中 '+c.hits.length+' 只'+(c.hits.length?'，点代码看图：':'')+'</div><div class="hits">'+c.hits.slice(0,40).map(function(h){return '<button data-c="'+esc(h.code)+'" title="'+esc(h.note||'')+'">'+esc(h.code)+'</button>';}).join('')+'</div>':'')+'</div>';}).join('')||'<div class="empty">没有</div>';}
+$('rcb').onclick=openRC;$('rcx').onclick=function(){$('rc').classList.remove('on');};
+$('rcf').addEventListener('click',function(e){var f=e.target.getAttribute('data-f');if(!f)return;rcf=f;[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b===e.target);});renderRC();});
+$('rcc').addEventListener('click',function(e){var c=e.target.getAttribute('data-c');if(c){$('rc').classList.remove('on');select(c);}});
 $('drx').onclick=function(){$('dr').classList.remove('on');};
 $('dro').onclick=function(){if(DR.ids)window.open('/ann.html?code='+encodeURIComponent(DR.code)+'&ids='+DR.ids,'_blank');};
-document.addEventListener('keydown',function(e){if(e.key==='Escape')$('dr').classList.remove('on');});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){$('dr').classList.remove('on');$('rc').classList.remove('on');}});
 async function research(c,ins){var h='';
  try{var p=await api('profile?code='+c);if(st.sel!==c)return;
   (p.lists||[]).forEach(function(r){var t=r.list==='爆拉候选'?'第 66 轮规则：跌过 50%、成交放大 2 倍、重新站上 200 日线。历史上约 34% 一年内碰到翻倍、20% 腰斩。'+(r.days!=null?'信号已 '+r.days+' 天，之后 '+(r.ret_since>=0?'+':'')+r.ret_since+'%。':''):'今日扫描名单';
@@ -222,7 +249,7 @@ async function research(c,ins){var h='';
  $('rres').innerHTML=h||'<div class="empty">今天没有相关信号</div>';}
 
 /* ---------- bottom panel ---------- */
-var FIND='<div class="find">'+
+var FIND='<div class="find"><p class="y">完整的研究结论和今日命中的股票，请看右上角「🔬 研究中心」。下面是摘要：</p>'+
 '<h4>ASX · 技术指标（第 71 轮，2,900 只股票）</h4><p>大股票：34 个指标全部无效。小股票：只有趋势类有用（站上 200 日线、多头排列、12 个月动量），KDJ / MACD 金叉反而偏负。扣掉价差后单个指标基本不赚钱。</p>'+
 '<h4>爆拉候选（第 66 轮）</h4><p>跌过 50% + 成交放大 2 倍 + 重新站上 200 日线：一年内约 34% 碰到翻倍、20% 腰斩；扣 8% 成本、收益封顶 5 倍后仍平均 +15%。小仓位分散打，翻倍先卖一半。</p>'+
 '<h4>月 MACD 背离（第 70 轮）</h4><p>月柱刚翻正 1–11 个月、股价还在跌：之后一年多赚 11–13%（t≈2.3）。背离超过 24 个月反而无效。</p>'+
@@ -238,7 +265,7 @@ function renderBottom(){var t=st.bt,S=SCAN||{},h='';
  if(t==='watchalerts')h=tbl([['代码',function(r){return '<b>'+esc(r.code)+'</b>';}],['股价',function(r){return '$'+r.price;}],['今日',function(r){return pc(r.chg_1d);}],['成交 / 平时',function(r){return r.value_today_x+'× · 5日 '+r.value_5d_x+'×';}],['离 200 日线',function(r){return r.above_ma200+'%';}],['月 MACD',function(r){return r.macd_m_hist_pos?'正 '+r.macd_m_hist_months_pos+' 个月':'负';}],['提醒',function(r){return r.alerts&&r.alerts.length?'<span class="y">'+r.alerts.map(esc).join('；')+'</span>':'<span class="mu">无</span>';},1]],S.watch,1);
  if(t==='mkt'){var A=[];Object.keys(S.announcements||{}).forEach(function(k){(S.announcements[k]||[]).forEach(function(a){A.push(Object.assign({bucket:k},a));});});A.sort(function(a,b){return a.time<b.time?1:-1;});
   h=tbl([['时间',function(r){return esc(r.time);}],['类别',function(r){return '<span class="y">'+esc(r.bucket)+'</span>';}],['代码',function(r){return '<b>'+esc(r.code)+'</b>';}],['标题',function(r){return esc(r.headline);},1]],A,1);}
- if(t==='find')h=FIND;
+ if(t==='find'){openRC();h=FIND;}
  $('btbl').innerHTML=h;}
 $('btabs').addEventListener('click',function(e){var t=e.target.getAttribute('data-t');if(!t)return;st.bt=t;[].forEach.call($('btabs').children,function(b){b.classList.toggle('on',b===e.target);});renderBottom();});
 $('btbl').addEventListener('click',function(e){var tr=e.target.closest('tr.cl');if(tr)select(tr.getAttribute('data-c'));});
