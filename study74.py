@@ -75,7 +75,7 @@ def latest_features():
         x["limit_up"] = r1.iloc[-1] >= 0.097
         rows.append(x)
         last_day = max(last_day or "", df.index[-1])
-    L = pd.DataFrame(rows)
+    L = pd.DataFrame(rows).reset_index(drop=True)
     L = L[L.date == last_day]  # traded on the latest day (suspended stocks drop out)
     return L.replace([np.inf, -np.inf], np.nan), last_day
 
@@ -101,14 +101,52 @@ def main():
     B["q"] = B.pred.rank(pct=True)
     names = cn_names()
 
-    def rec(r):
+    # why: per-stock feature contributions from the model itself (LightGBM pred_contrib), top 3 in plain Chinese
+    contrib = mdl.predict(B[feats].astype(float), pred_contrib=True)
+    CB = pd.DataFrame(contrib[:, :-1], columns=feats, index=B.index)
+    LABEL = {"roc20": "20 天涨跌", "roc10": "10 天涨跌", "ret5": "5 天涨跌", "mom_12_1": "过去一年涨跌", "vol20": "波动大小", "atr_pct": "每天振幅",
+             "boll_width": "布林带宽度", "bw_rank_250": "布林带收窄程度", "above_ma20": "离 20 日线", "above_ma50": "离 50 日线", "above_ma200": "离 200 日线",
+             "ma5_20": "5 日线对 20 日线", "ma20_60": "20 日线对 60 日线", "ma50_200": "50 日线对 200 日线", "bias6": "6 日乖离率", "rsi14": "RSI",
+             "kdj_k": "KDJ-K", "kdj_d": "KDJ-D", "kdj_j": "KDJ-J", "williams_r": "威廉指标", "cci20": "CCI", "boll_pctb": "在布林带的位置", "adx14": "趋势强度 ADX",
+             "di_diff": "多空力量差", "macd_ppo": "MACD", "macd_hist": "MACD 柱", "ema12_26": "12/26 日均线差", "obv_slope20": "资金流 OBV", "mfi14": "资金流 MFI",
+             "vol_ratio": "量比（近 5 天 / 近 60 天）", "psy12": "心理线", "trix": "TRIX", "aroon_osc": "Aroon", "donchian_pos": "在 20 日区间的位置",
+             "from_high_250": "离一年高点", "log_price": "股价高低", "log_value": "成交额大小"}
+    PCT = {"roc20", "roc10", "ret5", "mom_12_1", "vol20", "atr_pct", "boll_width", "above_ma20", "above_ma50", "above_ma200", "ma5_20", "ma20_60",
+           "ma50_200", "bias6", "from_high_250", "macd_ppo", "ema12_26"}
+
+    def show(f, v):
+        if pd.isna(v):
+            return ""
+        if f in ("vol20", "atr_pct", "boll_width"):
+            return f"{100 * v:.0f}%"
+        if f in PCT:
+            return f"{100 * v:+.0f}%"
+        if f == "log_price":
+            return f"{float(np.exp(v)):.2f} 元"
+        if f == "log_value":
+            return f"日成交约 {float(np.exp(v)) / 1e8:.1f} 亿"
+        if f in ("vol_ratio",):
+            return f"{v:.1f} 倍"
+        if f in ("bw_rank_250", "boll_pctb", "donchian_pos"):
+            return f"{100 * v:.0f}%"
+        return f"{v:.0f}"
+
+    def why(idx, sign):
+        c = CB.loc[idx]
+        c = c[c * sign > 0].sort_values(ascending=sign < 0)[:3]
+        x = B.loc[idx]
+        return [{"f": LABEL.get(f, f), "v": show(f, x[f]), "w": round(float(abs(c[f])) * 100, 2)} for f in c.index]
+
+    def rec(r, sign=1):
         return {"code": r.code, "name": names.get(r.code, ""), "price": round(float(r.raw), 2), "score": round(100 * float(r.q)),
                 "ret20": round(100 * float(r.roc20), 1) if pd.notna(r.roc20) else None,
-                "vol20": round(100 * float(r.vol20)) if pd.notna(r.vol20) else None}
+                "vol20": round(100 * float(r.vol20)) if pd.notna(r.vol20) else None, "why": why(r.Index, sign)}
     top = B[(B.q > .9) & ~B.limit_up.astype(bool)].sort_values("q", ascending=False)
     avoid = B[B.q <= .1].sort_values("q")
     out = {"date": day, "generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "universe": int(len(B)),
-           "top": [rec(r) for r in top.itertuples()], "avoid": [rec(r) for r in avoid.itertuples()],
+           "top": [rec(r, 1) for r in top.itertuples()], "avoid": [rec(r, -1) for r in avoid.itertuples()],
+           "drivers": [{"f": LABEL.get(f, f), "share": round(float(v), 1)} for f, v in
+                       (100 * CB.abs().mean() / CB.abs().mean().sum()).sort_values(ascending=False)[:8].items()],
            "note": "第 72 轮模型：成交额前 1000 的主板股票，模型分前 10% / 后 10%，持有约 20 个交易日。", "seconds": round(time.time() - t0)}
     # live track record (tracklog.py): all 100 picks and the avoid list, followed forward
     try:
