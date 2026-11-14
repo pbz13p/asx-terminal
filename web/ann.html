@@ -14,7 +14,7 @@ button:hover,a.b:hover{color:var(--ink);border-color:var(--c)}button.main{color:
 .wrap{max-width:900px;margin:0 auto;padding:20px}
 h1{font-size:20px;line-height:1.4;margin:6px 0 4px}.meta{color:var(--mu);font-size:13px}
 pre{white-space:pre-wrap;font:inherit;margin:0}
-.zh{background:#0B1022;border:1px solid #1C2650;border-radius:10px;padding:16px 18px;margin:14px 0}
+#en p{margin:0 0 12px}.zh{background:#0B1022;border:1px solid #1C2650;border-radius:10px;padding:16px 18px;margin:14px 0}
 .note{color:var(--mu);font-size:13px}.err{color:var(--dn)}
 </style>
 </head>
@@ -27,20 +27,20 @@ pre{white-space:pre-wrap;font:inherit;margin:0}
 <div class="wrap">
 <h1 id="hl">Loading…</h1><div class="meta" id="meta"></div>
 <div id="zh" class="zh" lang="zh-CN" translate="no" style="display:none"></div>
-<pre id="en"></pre>
+<div id="en"></div>
 </div>
 <script>
 var $=function(i){return document.getElementById(i);},P=new URLSearchParams(location.search),code=P.get('code'),ids=P.get('ids');
 async function api(p){var r=await fetch('/api/'+p);var j=await r.json();if(!j.ok)throw new Error(j.error||'error');return j.data;}
 $('code').textContent=code;
 api('anntext?code='+encodeURIComponent(code)+'&ids='+encodeURIComponent(ids)).then(function(d){
-  $('hl').textContent=d.headline;$('date').textContent=d.date;$('meta').textContent=d.pages+' pages';$('en').textContent=d.text||'(No text could be extracted - open the PDF)';$('pdf').href=d.pdf;document.title=code+' · '+d.headline;
+  $('hl').textContent=d.headline;$('date').textContent=d.date;$('meta').textContent=d.pages+' pages';var en=$('en');en.innerHTML='';(d.text||'(No text could be extracted - open the PDF)').split(/\n\s*\n|\n(?=[A-Z0-9•\-])/).forEach(function(t){t=t.replace(/\s*\n\s*/g,' ').trim();if(!t)return;var p=document.createElement('p');p.textContent=t;en.appendChild(p);});$('pdf').href=d.pdf;document.title=code+' · '+d.headline;
 }).catch(function(e){$('hl').textContent='读取失败：'+e.message;});
 $('tr').onclick=async function(){$('msg').textContent='翻译中，长公告大约需要 30–60 秒…';$('tr').disabled=true;
   try{var d=await api('anntr?code='+encodeURIComponent(code)+'&ids='+encodeURIComponent(ids));$('zh').style.display='';$('zh').innerHTML='';var pre=document.createElement('pre');pre.textContent=d.zh;$('zh').appendChild(pre);
     $('msg').textContent=d.cached?'已从缓存读取，未再收费':'完成 · 用了 '+(d.tokens_in||0)+' + '+(d.tokens_out||0)+' token'+(d.truncated?' · 公告太长，只翻译了前面约 3 万字':'');window.scrollTo(0,0);}
   catch(e){$('msg').innerHTML='<span class="err">'+e.message+'</span>';}$('tr').disabled=false;};
-$('gt').onclick=function(){$('msg').textContent='免费方法：在这页空白处点鼠标右键 →「翻译成中文」，Chrome 会把整篇英文翻成中文。';};
+$('gt').onclick=function(){$('msg').textContent='免费方法：点地址栏右边的翻译图标 → 选中文，并勾选「一律翻译英语」。以后点开任何公告都会自动变成中文。';};
 </script>
 </body>
 </html>
