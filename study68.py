@@ -89,7 +89,14 @@ def save(code, d):
 def main():
     t0 = time.time()
     U = universe()
-    print("universe", len(U), "companies")
+    k, n = (int(x) for x in os.environ.get("ANN_SHARD", "0/1").split("/"))   # N jobs side by side, each every N-th company
+    U = [u for i, u in enumerate(U) if i % n == k]
+    if n > 1:   # each shard's cache holds only its own companies, so restoring all shard caches never puts back a stale copy
+        mine = {u["code"] for u in U}
+        for f in ANN.glob("*.json.gz"):
+            if f.name[:-8] not in mine:
+                f.unlink()
+    print("universe", len(U), "companies (shard", f"{k}/{n})")
     todo_total = done_now = failed = 0
     for i, u in enumerate(U):
         code = u["code"]
@@ -141,7 +148,9 @@ def main():
         if not d["listed"]:
             unlisted += 1
         left += len([it for it in d["listed"] if it["ids"] not in d["docs"]
-                     or ("error" in d["docs"][it["ids"]] and d["docs"][it["ids"]].get("tries", 1) < 3)])
+                     or ("error" in d["docs"][it["ids"]] and d["docs"][it["ids"]].get("tries", 1) < 3)
+                     or (it["sensitive"] and not d["docs"][it["ids"]].get("full") and "error" not in d["docs"][it["ids"]]
+                         and (d["docs"][it["ids"]].get("pages", 0) > 8 or len(d["docs"][it["ids"]].get("text", "")) >= 7900))])
         total_docs += len(d["docs"])
     left += unlisted  # companies whose list was never fetched also count as unfinished
     failed_now = sum(1 for u in U for doc in load(u["code"])["docs"].values() if "error" in doc)

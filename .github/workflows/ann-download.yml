@@ -1,0 +1,73 @@
+name: ann-download
+# ASX announcements (study68.py): listing + full text of every announcement for the 1,497-company universe.
+# Two jobs side by side (each every 2nd company, own cache); restarts itself until done, then daily top-up.
+# Kept at 2 lanes (8 requests at a time) to stay polite to asx.com.au; raise only if no 403/429 errors appear.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 9 * * 1-5'
+  push:
+    branches: [main]
+    paths: ['study68.py', 'study67.py', '.github/workflows/ann-download.yml']
+permissions:
+  contents: read
+  actions: write
+concurrency: ann-download
+jobs:
+  ann:
+    runs-on: ubuntu-latest
+    timeout-minutes: 280
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/eod
+          key: eod-none
+          restore-keys: eod-
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/ann
+          key: ann-s${{ matrix.shard }}-${{ github.run_id }}
+          restore-keys: |
+            ann-s${{ matrix.shard }}-
+            ann-
+      - run: pip install numpy pandas scipy arch pypdf
+      - run: mkdir -p out && python study68.py
+        env:
+          ANN_SHARD: ${{ matrix.shard }}/2
+          ANN_MINUTES: "230"
+          STUDY68_OUT: out/study68_s${{ matrix.shard }}.json
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+      - if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/ann
+          key: ann-s${{ matrix.shard }}-${{ github.run_id }}
+      - if: always()
+        run: mkdir -p left && cp data/.ann_left left/${{ matrix.shard }} 2>/dev/null || echo 0 > left/${{ matrix.shard }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: left-${{ matrix.shard }}
+          path: left/
+  continue:
+    needs: ann
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: left
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LEFT=$(cat left/*/* 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          echo "announcements left: $LEFT"
+          if [ "$LEFT" -gt 0 ]; then gh workflow run ann-download.yml --ref main -R ${{ github.repository }}; fi
