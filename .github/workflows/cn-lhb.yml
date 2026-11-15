@@ -1,0 +1,28 @@
+name: cn-lhb
+# A-share 龙虎榜 archive (cn_lhb.py): full history once, then the last two months every weekday after the close.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 10 * * 1-5'
+  push:
+    branches: [main]
+    paths: ['cn_lhb.py', '.github/workflows/cn-lhb.yml']
+permissions:
+  contents: read
+concurrency: cn-lhb
+jobs:
+  lhb:
+    runs-on: ubuntu-latest
+    timeout-minutes: 170
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: data/cn_lhb
+          key: cnlhb-${{ github.run_id }}
+          restore-keys: cnlhb-
+      - run: python cn_lhb.py
+      - run: du -sh data/cn_lhb/* || true
