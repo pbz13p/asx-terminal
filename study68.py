@@ -58,19 +58,20 @@ def universe():
         lo, hi, vmin = (1e7, 2e8, 2e4) if n < 300 else (5e6, 3e8, 1e4) if n < 600 else (3e6, 5e8, 5e3)
         if mc and lo <= mc <= hi and med >= vmin:
             chosen.append({"code": code, "mcap": mc, "value_med": round(med), "tier": 1 + n // 300})
-    if len(chosen) >= 900:
-        taken = {u["code"] for u in chosen}
-        rest = [c for c in cands if c[1] not in taken]
-        # tier 4: stocks that rose >= 5x from a low within 5 years (small-to-big stories), biggest rise first
-        # tier 5: everything else still trading, by turnover (mega caps end up last-ish)
-        t4 = sorted([c for c in rest if c[2] >= 5], key=lambda c: -c[2])
-        t5 = [c for c in rest if c[2] < 5]
-        for tier, group in ((4, t4), (5, t5)):
-            for med, code, peak in group:
-                if len(chosen) >= N:
-                    break
-                chosen.append({"code": code, "mcap": volml.company_info(code).get("marketCap"), "value_med": round(med),
-                               "tier": tier, "peak_multiple_5y": round(peak, 1)})
+    # after the small-cap tiers (even when fewer than 900 qualified -- that bug stopped the queue at 864):
+    taken = {u["code"] for u in chosen}
+    rest = [c for c in cands if c[1] not in taken]
+    # tier 4: stocks that rose >= 5x from a low to a later high within 5 years (small-to-big stories), biggest rise first
+    # tier 5: everything else still trading, by turnover (mega caps end up last-ish)
+    t4 = sorted([c for c in rest if c[2] >= 5], key=lambda c: -c[2])
+    t5 = [c for c in rest if c[2] < 5]
+    print(f"[universe] small caps {len(chosen)}, tier 4 (>=5x in 5y) {len(t4)}, tier 5 {len(t5)}", flush=True)
+    for tier, group in ((4, t4), (5, t5)):
+        for med, code, peak in group:
+            if len(chosen) >= N:
+                break
+            chosen.append({"code": code, "mcap": volml.company_info(code).get("marketCap"), "value_med": round(med),
+                           "tier": tier, "peak_multiple_5y": round(peak, 1)})
     ANN.mkdir(parents=True, exist_ok=True)
     f.write_text(json.dumps(chosen))
     return chosen
