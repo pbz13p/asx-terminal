@@ -266,7 +266,9 @@ def pilot(all_docs, common):
     for x in all_docs:
         by_code[x["code"]].append(x)
     full = [x for x in all_docs if x["full"]]       # only docs stored in full give a true cost estimate
-    pool = full if len(full) >= 400 else all_docs
+    if len(full) < 400:
+        return {"stage": "pilot", "status": f"waiting: only {len(full)} price-sensitive docs stored in full text (need 400)"}
+    pool = full
     sample = rnd.sample(pool, min(200, len(pool)))
     deanon = rnd.sample(all_docs, min(200, len(all_docs)))
     recall_pool = [x for x in all_docs if x["date"] < "2026-06"]
