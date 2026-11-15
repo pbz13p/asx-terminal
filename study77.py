@@ -160,6 +160,27 @@ def judge(P, x, g):
             "months_out": int(len(ic_out))}
 
 
+STYLES = ["aca_size_value", "aca_rev1m", "aca_mom12_1", "aca_vol20", "aca_abturn", "aca_lowprice", "aca_beta"]
+EPISODES = {"2015 股灾 (2015-06~09)": ("2015-06", "2015-09"), "2016 熔断 (2016-01~02)": ("2016-01", "2016-02"),
+            "2017 一九行情 (2017)": ("2017-01", "2017-12"), "2020 疫情 (2020-01~03)": ("2020-01", "2020-03"),
+            "2024 微盘股踩踏 (2024-01~02)": ("2024-01", "2024-02")}
+
+
+def style_residual(P, X, cat):
+    """九坤讲的"纯超额"：每个月把 20 天超额收益对风格（规模、反转、动量、波动、换手、低价、贝塔）做横截面回归，
+    剩下的残差才是不靠风格押注赚的钱。"""
+    ids = [e["id"] for e in cat]
+    cols = [ids.index(s) for s in STYLES if s in ids]
+    res = np.full(len(P), np.nan)
+    for d, idx in P.groupby("date").indices.items():
+        Z = pd.DataFrame(X[idx][:, cols]).rank(pct=True).fillna(0.5).values - 0.5
+        A = np.column_stack([np.ones(len(idx)), Z])
+        y = P.ex20.values[idx].clip(-1, 5)
+        beta, *_ = np.linalg.lstsq(A, y, rcond=None)
+        res[idx] = y - A @ beta
+    return res
+
+
 def lgb_eval(P, X, feats, label):
     import lightgbm as lgb
     params = dict(objective="regression", learning_rate=0.03, num_leaves=31, min_data_in_leaf=1000, feature_fraction=0.5,
@@ -184,7 +205,11 @@ def lgb_eval(P, X, feats, label):
         top = G[G.q > .9]
         pm = (top.ex20 - top.cost).groupby(top.date).mean()
         oos = pm[pm.index >= SPLIT]
+        pr = (top.ex20_res - top.cost).groupby(top.date).mean()
+        epi = {k: round(100 * float(pm[(pm.index >= a) & (pm.index <= b + "-31")].mean()), 2) for k, (a, b) in EPISODES.items()}
         out[g] = {"top10_net_month": round(100 * float(pm.mean()), 2), "t": round(tstat(pm) or 0, 2),
+                  "style_neutral_net_month": round(100 * float(pr.mean()), 2), "style_neutral_t": round(tstat(pr) or 0, 2),
+                  "episodes": epi, "worst_month": round(100 * float(pm.min()), 2),
                   "top10_net_month_2019on": round(100 * float(oos.mean()), 2), "t_2019on": round(tstat(oos) or 0, 2),
                   "by_year": {y: round(100 * float(v), 2) for y, v in pm.groupby(pm.index.str[:4]).mean().items()},
                   "positive_years": f"{int((pm.groupby(pm.index.str[:4]).mean() > 0).sum())}/{pm.index.str[:4].nunique()}"}
@@ -233,6 +258,7 @@ def main():
         if len(E.cache) > 40:
             E.cache = {kk: vv for kk, vv in E.cache.items() if kk in ("vwap", "amount", "returns")}
     del E, B
+    P["ex20_res"] = style_residual(P, X, cat)
     ok = [r for r in results if r["status"] == "ok"]
     summary = {}
     for g in ("big", "small"):
