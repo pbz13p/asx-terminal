@@ -1,7 +1,7 @@
 name: ann-download
 # ASX announcements (study68.py): listing + full text of every announcement for the 1,497-company universe.
-# Two jobs side by side (each every 2nd company, own cache); restarts itself until done, then daily top-up.
-# Kept at 2 lanes (8 requests at a time) to stay polite to asx.com.au; raise only if no 403/429 errors appear.
+# Three jobs side by side (each every 3rd company, own cache "ann3-s<k>"); restarts itself until done, then daily top-up.
+# 3 lanes (12 requests at a time) since 2 lanes saw no 403/429 at all (2026-11-16); brakes stop a run on refusals.
 on:
   workflow_dispatch:
   schedule:
@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1]
+        shard: [0, 1, 2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,17 +31,22 @@ jobs:
           path: data/eod
           key: eod-none
           restore-keys: eod-
-      - uses: actions/cache/restore@v4
+      - id: own
+        uses: actions/cache/restore@v4
         with:
           path: data/ann
-          key: ann-s${{ matrix.shard }}-${{ github.run_id }}
-          restore-keys: |
-            ann-s${{ matrix.shard }}-
-            ann-
+          key: ann3-s${{ matrix.shard }}-${{ github.run_id }}
+          restore-keys: ann3-s${{ matrix.shard }}-
+      - if: steps.own.outputs.cache-matched-key == ''   # first 3-lane run: merge both old 2-lane caches, then study68 keeps only this shard's companies
+        uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann-s0-}
+      - if: steps.own.outputs.cache-matched-key == ''
+        uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann-s1-}
       - run: pip install numpy pandas scipy arch pypdf
       - run: mkdir -p out && python study68.py
         env:
-          ANN_SHARD: ${{ matrix.shard }}/2
+          ANN_SHARD: ${{ matrix.shard }}/3
           ANN_MINUTES: "230"
           STUDY68_OUT: out/study68_s${{ matrix.shard }}.json
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
@@ -49,7 +54,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: data/ann
-          key: ann-s${{ matrix.shard }}-${{ github.run_id }}
+          key: ann3-s${{ matrix.shard }}-${{ github.run_id }}
       - if: always()
         run: |
           mkdir -p left

@@ -30,6 +30,12 @@ jobs:
         with: {path: data/ann, key: ann-none, restore-keys: ann-s0-}
       - uses: actions/cache/restore@v4
         with: {path: data/ann, key: ann-none, restore-keys: ann-s1-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s0-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s1-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s2-}
       - run: pip install numpy pandas scipy arch lightgbm pypdf
       - id: mode
         run: |

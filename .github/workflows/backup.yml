@@ -28,6 +28,15 @@ jobs:
       - name: Restore ASX announcements (shard 1)
         uses: actions/cache/restore@v4
         with: {path: data/ann, key: ann-none, restore-keys: ann-s1-}
+      - name: Restore ASX announcements (3-lane shard 0)
+        uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s0-}
+      - name: Restore ASX announcements (3-lane shard 1)
+        uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s1-}
+      - name: Restore ASX announcements (3-lane shard 2)
+        uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s2-}
       - name: Restore A-share prices
         uses: actions/cache/restore@v4
         with: {path: data/cn, key: cn-none, restore-keys: cn-}
