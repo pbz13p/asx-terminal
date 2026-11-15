@@ -126,7 +126,9 @@ def call(url, body=None):
 
 
 def req(cid, user, system=None, max_tokens=400):
-    p = {"model": MODEL, "max_tokens": max_tokens, "temperature": 0, "messages": [{"role": "user", "content": user}]}
+    # temperature is rejected by this model; thinking off + low effort keeps output short and cheap
+    p = {"model": MODEL, "max_tokens": max_tokens, "thinking": {"type": "disabled"}, "output_config": {"effort": "low"},
+         "messages": [{"role": "user", "content": user}]}
     if system:
         p["system"] = [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}]
     return {"custom_id": cid, "params": p}
