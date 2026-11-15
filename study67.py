@@ -9,6 +9,7 @@ import json
 import os
 import re
 import time
+import urllib.error
 import urllib.request
 from datetime import date, timedelta
 from html import unescape
@@ -19,10 +20,26 @@ HDR = {"Accept": "text/html,application/pdf,*/*"}
 calls = {"list": 0, "pdf": 0, "failed": 0}
 
 
+# Brake (2026-11-15): if ASX starts refusing us (403/429/503), slow right down; after 20 refusals in one run, stop the
+# run cleanly (progress is saved) so we never get locked out. The workflow then waits an hour before the next run.
+BRAKE = {"hits": 0, "stop": False}
+_brake_lock = __import__("threading").Lock()
+
+
 def get(url, timeout=40):
     req = urllib.request.Request(url, headers=HDR)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.read(), r.geturl(), r.headers.get("Content-Type", "")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            return r.read(), r.geturl(), r.headers.get("Content-Type", "")
+    except urllib.error.HTTPError as e:
+        if e.code in (403, 429, 503):
+            with _brake_lock:
+                BRAKE["hits"] += 1
+                BRAKE["stop"] = BRAKE["stop"] or BRAKE["hits"] >= 20
+                wait = min(600, 30 * 2 ** (min(BRAKE["hits"], 5) - 1))
+                print(f"  ASX refused ({e.code}), refusal #{BRAKE['hits']}, pausing {wait}s", flush=True)
+                time.sleep(wait)
+        raise
 
 
 def listing(code, years):

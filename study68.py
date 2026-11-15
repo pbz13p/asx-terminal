@@ -100,7 +100,7 @@ def main():
     todo_total = done_now = failed = 0
     for i, u in enumerate(U):
         code = u["code"]
-        if time.time() - t0 > BUDGET:
+        if time.time() - t0 > BUDGET or study67.BRAKE["stop"]:
             continue
         d = load(code)
         if not d["listed"] or d.get("listed_on") != date.today().isoformat() or not d.get("flag_v2"):
@@ -133,7 +133,7 @@ def main():
                                    "error": f"{type(e).__name__}"[:60], "tries": prev.get("tries", 1) + ("error" in prev)}
         with ThreadPoolExecutor(max_workers=4) as ex:
             for k in range(0, len(todo), 40):
-                if time.time() - t0 > BUDGET:
+                if time.time() - t0 > BUDGET or study67.BRAKE["stop"]:
                     break
                 for ids, doc in ex.map(fetch, todo[k:k + 40]):
                     d["docs"][ids] = doc
@@ -161,6 +161,9 @@ def main():
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
     (study.DATA / ".ann_left").write_text(str(left))
+    (study.DATA / ".ann_brake").write_text("1" if study67.BRAKE["stop"] else "0")
+    if study67.BRAKE["stop"]:
+        print("[brake] ASX refused us 20 times this run; stopped early, progress saved", flush=True)
     print("[done]", json.dumps({k: out[k] for k in out if k != "universe"}))
 
 

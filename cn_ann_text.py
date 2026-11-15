@@ -56,10 +56,23 @@ def kind(title):
     return None
 
 
+BRAKE = {"hits": 0, "stop": False}
+_brake_lock = __import__("threading").Lock()
+
+
 def pdf_text(url):
     from pypdf import PdfReader
-    with urllib.request.urlopen(urllib.request.Request(BASE + url, headers={"Accept": "application/pdf"}), timeout=60) as r:
-        body = r.read()
+    import urllib.error
+    try:
+        with urllib.request.urlopen(urllib.request.Request(BASE + url, headers={"Accept": "application/pdf"}), timeout=60) as r:
+            body = r.read()
+    except urllib.error.HTTPError as e:   # cninfo refusing us: slow right down; after 20 refusals stop this run cleanly
+        if e.code in (403, 429, 503):
+            with _brake_lock:
+                BRAKE["hits"] += 1
+                BRAKE["stop"] = BRAKE["stop"] or BRAKE["hits"] >= 20
+                time.sleep(min(600, 30 * 2 ** (min(BRAKE["hits"], 5) - 1)))
+        raise
     rd = PdfReader(io.BytesIO(body))
     n = len(rd.pages)
     # 2026-11-15 (cache raised to 100GB): keep every page, tagged with its number, so nothing on page 7+ is missed.
@@ -105,7 +118,7 @@ def main():
             stats["have"] += len(sel) - len(todo)
             if not todo:
                 continue
-            if time.time() - t0 > BUDGET:
+            if time.time() - t0 > BUDGET or BRAKE["stop"]:
                 left += len(todo)
                 continue
 
@@ -123,7 +136,7 @@ def main():
                 time.sleep(0.2)
                 return str(a["id"]), rec
             for i in range(0, len(todo), 40):
-                if time.time() - t0 > BUDGET:
+                if time.time() - t0 > BUDGET or BRAKE["stop"]:
                     left += len(todo) - i
                     break
                 for ids, rec in ex.map(get, todo[i:i + 40]):

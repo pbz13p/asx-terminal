@@ -51,7 +51,10 @@ jobs:
           path: data/ann
           key: ann-s${{ matrix.shard }}-${{ github.run_id }}
       - if: always()
-        run: mkdir -p left && cp data/.ann_left left/${{ matrix.shard }} 2>/dev/null || echo 0 > left/${{ matrix.shard }}
+        run: |
+          mkdir -p left
+          cp data/.ann_left left/${{ matrix.shard }} 2>/dev/null || echo 0 > left/${{ matrix.shard }}
+          cp data/.ann_brake left/brake-${{ matrix.shard }} 2>/dev/null || true
       - if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -61,6 +64,7 @@ jobs:
     needs: ann
     if: always()
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -68,6 +72,8 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          LEFT=$(cat left/*/* 2>/dev/null | awk '{s+=$1} END{print s+0}')
-          echo "announcements left: $LEFT"
+          LEFT=$(cat left/*/[0-9]* 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          BRAKE=$(cat left/*/brake-* 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          echo "announcements left: $LEFT, braked shards: $BRAKE"
+          if [ "$BRAKE" -gt 0 ]; then echo "ASX was refusing us: waiting an hour before the next run"; sleep 3600; fi
           if [ "$LEFT" -gt 0 ]; then gh workflow run ann-download.yml --ref main -R ${{ github.repository }}; fi
