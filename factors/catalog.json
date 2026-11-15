@@ -1,0 +1,2880 @@
+[
+ {
+  "id": "gtja001",
+  "lib": "国泰君安191",
+  "formula": "(-1 * CORR(RANK(DELTA(LOG(VOLUME), 1)), RANK(((CLOSE - OPEN) / OPEN)), 6))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja002",
+  "lib": "国泰君安191",
+  "formula": "(-1 * DELTA((((CLOSE-LOW)-(HIGH-CLOSE))/(HIGH-LOW)),1))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)",
+  "note": "原文笔误或缺参数，已按原意修正"
+ },
+ {
+  "id": "gtja003",
+  "lib": "国泰君安191",
+  "formula": "SUM((CLOSE=DELAY(CLOSE,1)?0:CLOSE-(CLOSE>DELAY(CLOSE,1)?MIN(LOW,DELAY(CLOSE,1)):MAX(HIGH,DELAY(CLOSE,1)))),6)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja004",
+  "lib": "国泰君安191",
+  "formula": "((((SUM(CLOSE, 8) / 8) + STD(CLOSE, 8)) < (SUM(CLOSE, 2) / 2)) ? (-1 * 1) : (((SUM(CLOSE, 2) / 2) <((SUM(CLOSE, 8) / 8) - STD(CLOSE, 8))) ? 1 : (((1 < (VOLUME / MEAN(VOLUME,20))) || ((VOLUME /MEAN(VOLUME,20)) == 1)) ? 1 : (-1 * 1))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja005",
+  "lib": "国泰君安191",
+  "formula": "(-1 * TSMAX(CORR(TSRANK(VOLUME, 5), TSRANK(HIGH, 5), 5), 3))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja006",
+  "lib": "国泰君安191",
+  "formula": "(RANK(SIGN(DELTA((((OPEN * 0.85) + (HIGH * 0.15))), 4)))* -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja007",
+  "lib": "国泰君安191",
+  "formula": "((RANK(MAX((VWAP - CLOSE), 3)) + RANK(MIN((VWAP - CLOSE), 3))) * RANK(DELTA(VOLUME, 3)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja008",
+  "lib": "国泰君安191",
+  "formula": "RANK(DELTA(((((HIGH + LOW) / 2) * 0.2) + (VWAP * 0.8)), 4) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja009",
+  "lib": "国泰君安191",
+  "formula": "SMA(((HIGH+LOW)/2-(DELAY(HIGH,1)+DELAY(LOW,1))/2)*(HIGH-LOW)/VOLUME,7,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja010",
+  "lib": "国泰君安191",
+  "formula": "(RANK(MAX(((RET < 0) ? STD(RET, 20) : CLOSE)^2,5)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)",
+  "note": "原文笔误或缺参数，已按原意修正"
+ },
+ {
+  "id": "gtja011",
+  "lib": "国泰君安191",
+  "formula": "SUM(((CLOSE-LOW)-(HIGH-CLOSE))/(HIGH-LOW)*VOLUME,6)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja012",
+  "lib": "国泰君安191",
+  "formula": "(RANK((OPEN - (SUM(VWAP, 10) / 10)))) * (-1 * (RANK(ABS((CLOSE - VWAP)))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja013",
+  "lib": "国泰君安191",
+  "formula": "(((HIGH * LOW)^0.5) - VWAP)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja014",
+  "lib": "国泰君安191",
+  "formula": "CLOSE-DELAY(CLOSE,5)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja015",
+  "lib": "国泰君安191",
+  "formula": "OPEN/DELAY(CLOSE,1)-1",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja016",
+  "lib": "国泰君安191",
+  "formula": "(-1 * TSMAX(RANK(CORR(RANK(VOLUME), RANK(VWAP), 5)), 5))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja017",
+  "lib": "国泰君安191",
+  "formula": "RANK((VWAP - MAX(VWAP, 15)))^DELTA(CLOSE, 5)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja018",
+  "lib": "国泰君安191",
+  "formula": "CLOSE/DELAY(CLOSE,5)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja019",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE<DELAY(CLOSE,5)?(CLOSE-DELAY(CLOSE,5))/DELAY(CLOSE,5):(CLOSE=DELAY(CLOSE,5)?0:(CLOSE-DELAY(CLOSE,5))/CLOSE))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja020",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE-DELAY(CLOSE,6))/DELAY(CLOSE,6)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja021",
+  "lib": "国泰君安191",
+  "formula": "REGBETA(MEAN(CLOSE,6),SEQUENCE(6))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja022",
+  "lib": "国泰君安191",
+  "formula": "SMA(((CLOSE-MEAN(CLOSE,6))/MEAN(CLOSE,6)-DELAY((CLOSE-MEAN(CLOSE,6))/MEAN(CLOSE,6),3)),12,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja023",
+  "lib": "国泰君安191",
+  "formula": "SMA((CLOSE>DELAY(CLOSE,1)?STD(CLOSE,20):0),20,1) / (SMA((CLOSE>DELAY(CLOSE,1)?STD(CLOSE,20):0),20,1) + SMA((CLOSE<=DELAY(CLOSE,1)?STD(CLOSE,20):0),20,1))*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja024",
+  "lib": "国泰君安191",
+  "formula": "SMA(CLOSE-DELAY(CLOSE,5),5,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja025",
+  "lib": "国泰君安191",
+  "formula": "((-1 * RANK((DELTA(CLOSE, 7) * (1 - RANK(DECAYLINEAR((VOLUME / MEAN(VOLUME,20)), 9)))))) * (1 + RANK(SUM(RET, 250))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja026",
+  "lib": "国泰君安191",
+  "formula": "((((SUM(CLOSE, 7) / 7) - CLOSE)) + ((CORR(VWAP, DELAY(CLOSE, 5), 230))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja027",
+  "lib": "国泰君安191",
+  "formula": "WMA((CLOSE-DELAY(CLOSE,3))/DELAY(CLOSE,3)*100+(CLOSE-DELAY(CLOSE,6))/DELAY(CLOSE,6)*100,12)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja028",
+  "lib": "国泰君安191",
+  "formula": "3*SMA((CLOSE-TSMIN(LOW,9))/(TSMAX(HIGH,9)-TSMIN(LOW,9))*100,3,1)-2*SMA(SMA((CLOSE-TSMIN(LOW,9))/(MAX(HIGH,9)-TSMAX(LOW,9))*100,3,1),3,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja029",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE-DELAY(CLOSE,6))/DELAY(CLOSE,6)*VOLUME",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja030",
+  "lib": "国泰君安191",
+  "formula": "WMA((REGRESI(CLOSE/DELAY(CLOSE)-1,MKT,SMB,HML， 60))^2,20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja031",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE-MEAN(CLOSE,12))/MEAN(CLOSE,12)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja032",
+  "lib": "国泰君安191",
+  "formula": "(-1 * SUM(RANK(CORR(RANK(HIGH), RANK(VOLUME), 3)), 3))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja033",
+  "lib": "国泰君安191",
+  "formula": "((((-1 * TSMIN(LOW, 5)) + DELAY(TSMIN(LOW, 5), 5)) * RANK(((SUM(RET, 240) - SUM(RET, 20)) / 220))) *TSRANK(VOLUME, 5))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja034",
+  "lib": "国泰君安191",
+  "formula": "MEAN(CLOSE,12)/CLOSE",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja035",
+  "lib": "国泰君安191",
+  "formula": "(MIN(RANK(DECAYLINEAR(DELTA(OPEN, 1), 15)), RANK(DECAYLINEAR(CORR((VOLUME), ((OPEN * 0.65) +(OPEN *0.35)), 17),7))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja036",
+  "lib": "国泰君安191",
+  "formula": "RANK(SUM(CORR(RANK(VOLUME), RANK(VWAP),6), 2))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja037",
+  "lib": "国泰君安191",
+  "formula": "(-1 * RANK(((SUM(OPEN, 5) * SUM(RET, 5)) - DELAY((SUM(OPEN, 5) * SUM(RET, 5)), 10))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja038",
+  "lib": "国泰君安191",
+  "formula": "(((SUM(HIGH, 20) / 20) < HIGH) ? (-1 * DELTA(HIGH, 2)) : 0)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja039",
+  "lib": "国泰君安191",
+  "formula": "((RANK(DECAYLINEAR(DELTA((CLOSE), 2),8)) - RANK(DECAYLINEAR(CORR(((VWAP * 0.3) + (OPEN * 0.7)),SUM(MEAN(VOLUME,180), 37), 14), 12))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja040",
+  "lib": "国泰君安191",
+  "formula": "SUM((CLOSE>DELAY(CLOSE,1)?VOLUME:0),26)/SUM((CLOSE<=DELAY(CLOSE,1)?VOLUME:0),26)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja041",
+  "lib": "国泰君安191",
+  "formula": "(RANK(MAX(DELTA((VWAP), 3), 5))* -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja042",
+  "lib": "国泰君安191",
+  "formula": "((-1 * RANK(STD(HIGH, 10))) * CORR(HIGH, VOLUME, 10))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja043",
+  "lib": "国泰君安191",
+  "formula": "SUM((CLOSE>DELAY(CLOSE,1)?VOLUME:(CLOSE<DELAY(CLOSE,1)?-VOLUME:0)),6)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja044",
+  "lib": "国泰君安191",
+  "formula": "(TSRANK(DECAYLINEAR(CORR(((LOW )), MEAN(VOLUME,10), 7), 6),4) + TSRANK(DECAYLINEAR(DELTA((VWAP),3), 10), 15))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja045",
+  "lib": "国泰君安191",
+  "formula": "(RANK(DELTA((((CLOSE * 0.6) + (OPEN *0.4))), 1)) * RANK(CORR(VWAP, MEAN(VOLUME,150), 15)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja046",
+  "lib": "国泰君安191",
+  "formula": "(MEAN(CLOSE,3)+MEAN(CLOSE,6)+MEAN(CLOSE,12)+MEAN(CLOSE,24))/(4*CLOSE)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja047",
+  "lib": "国泰君安191",
+  "formula": "SMA((TSMAX(HIGH,6)-CLOSE)/(TSMAX(HIGH,6)-TSMIN(LOW,6))*100,9,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja048",
+  "lib": "国泰君安191",
+  "formula": "(-1*((RANK(((SIGN((CLOSE - DELAY(CLOSE, 1))) + SIGN((DELAY(CLOSE, 1) - DELAY(CLOSE, 2)))) + SIGN((DELAY(CLOSE, 2) - DELAY(CLOSE, 3)))))) * SUM(VOLUME, 5)) / SUM(VOLUME, 20))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja049",
+  "lib": "国泰君安191",
+  "formula": "SUM(((HIGH+LOW)>=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12) / (SUM(((HIGH+LOW)>=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12) + SUM(((HIGH+LOW)<=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja050",
+  "lib": "国泰君安191",
+  "formula": "SUM(((HIGH+LOW)<=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12)/(SUM(((HIGH+LOW)<=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12)+SUM(((HIGH+LOW)>=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12))-SUM(((HIGH+LOW)>=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12)/(SUM(((HIGH+LOW)>=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12)+SUM(((HIGH+LOW)<=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja051",
+  "lib": "国泰君安191",
+  "formula": "SUM(((HIGH+LOW)<=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12) / (SUM(((HIGH+LOW)<=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12)+SUM(((HIGH+LOW)>=(DELAY(HIGH,1)+DELAY(LOW,1))?0:MAX(ABS(HIGH-DELAY(HIGH,1)),ABS(LOW-DELAY(LOW,1)))),12))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja052",
+  "lib": "国泰君安191",
+  "formula": "SUM(MAX(0,HIGH-DELAY((HIGH+LOW+CLOSE)/3,1)),26)/SUM(MAX(0,DELAY((HIGH+LOW+CLOSE)/3,1)-L),26)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja053",
+  "lib": "国泰君安191",
+  "formula": "COUNT(CLOSE>DELAY(CLOSE,1),12)/12*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja054",
+  "lib": "国泰君安191",
+  "formula": "(-1 * RANK((STD(ABS(CLOSE - OPEN),10) + (CLOSE - OPEN)) + CORR(CLOSE, OPEN,10)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)",
+  "note": "原文笔误或缺参数，已按原意修正"
+ },
+ {
+  "id": "gtja055",
+  "lib": "国泰君安191",
+  "formula": "SUM(16*(CLOSE-DELAY(CLOSE,1)+(CLOSE-OPEN)/2+DELAY(CLOSE,1)-DELAY(OPEN,1))/((ABS(HIGH-DELAY(CLOSE,1))>ABS(LOW-DELAY(CLOSE,1)) & ABS(HIGH-DELAY(CLOSE,1))>ABS(HIGH-DELAY(LOW,1))?ABS(HIGH-DELAY(CLOSE,1))+ABS(LOW-DELAY(CLOSE,1))/2 + ABS(DELAY(CLOSE,1)-DELAY(OPEN,1))/4:(ABS(LOW-DELAY(CLOSE,1))>ABS(HIGH-DELAY(LOW,1)) & ABS(LOW-DELAY(CLOSE,1))>ABS(HIGH-DELAY(CLOSE,1))?ABS(LOW-DELAY(CLOSE,1))+ABS(HIGH-DELAY(CLOSE,1))/2+ABS(DELAY(CLOSE,1)-DELAY(OPEN,1))/4:ABS(HIGH-DELAY(LOW,1))+ABS(DELAY(CLOSE,1)-DELAY(OPEN,1))/4)))*MAX(ABS(HIGH-DELAY(CLOSE,1)),ABS(LOW-DELAY(CLOSE,1))),20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja056",
+  "lib": "国泰君安191",
+  "formula": "(RANK((OPEN - TSMIN(OPEN, 12))) < RANK((RANK(CORR(SUM(((HIGH + LOW) / 2), 19),SUM(MEAN(VOLUME,40), 19), 13))^5)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja057",
+  "lib": "国泰君安191",
+  "formula": "SMA((CLOSE-TSMIN(LOW,9))/(TSMAX(HIGH,9)-TSMIN(LOW,9))*100,3,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja058",
+  "lib": "国泰君安191",
+  "formula": "COUNT(CLOSE>DELAY(CLOSE,1),20)/20*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja059",
+  "lib": "国泰君安191",
+  "formula": "SUM((CLOSE=DELAY(CLOSE,1)?0:CLOSE-(CLOSE>DELAY(CLOSE,1)?MIN(LOW,DELAY(CLOSE,1)):MAX(HIGH,DELAY(CLOSE,1)))),20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja060",
+  "lib": "国泰君安191",
+  "formula": "SUM(((CLOSE-LOW)-(HIGH-CLOSE))/(HIGH-LOW)*VOLUME,20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja061",
+  "lib": "国泰君安191",
+  "formula": "(MAX(RANK(DECAYLINEAR(DELTA(VWAP, 1), 12)),RANK(DECAYLINEAR(RANK(CORR((LOW),MEAN(VOLUME,80), 8)), 17))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja062",
+  "lib": "国泰君安191",
+  "formula": "(-1 * CORR(HIGH, RANK(VOLUME), 5))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja063",
+  "lib": "国泰君安191",
+  "formula": "SMA(MAX(CLOSE-DELAY(CLOSE,1),0),6,1)/SMA(ABS(CLOSE-DELAY(CLOSE,1)),6,1)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja064",
+  "lib": "国泰君安191",
+  "formula": "(MAX(RANK(DECAYLINEAR(CORR(RANK(VWAP), RANK(VOLUME), 4), 4)),RANK(DECAYLINEAR(MAX(CORR(RANK(CLOSE), RANK(MEAN(VOLUME,60)), 4), 13), 14))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja065",
+  "lib": "国泰君安191",
+  "formula": "MEAN(CLOSE,6)/CLOSE",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja066",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE-MEAN(CLOSE,6))/MEAN(CLOSE,6)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja067",
+  "lib": "国泰君安191",
+  "formula": "SMA(MAX(CLOSE-DELAY(CLOSE,1),0),24,1)/SMA(ABS(CLOSE-DELAY(CLOSE,1)),24,1)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja068",
+  "lib": "国泰君安191",
+  "formula": "SMA(((HIGH+LOW)/2-(DELAY(HIGH,1)+DELAY(LOW,1))/2)*(HIGH-LOW)/VOLUME,15,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja069",
+  "lib": "国泰君安191",
+  "formula": "(SUM(DTM,20)>SUM(DBM,20)？ (SUM(DTM,20)-SUM(DBM,20))/SUM(DTM,20)： (SUM(DTM,20)=SUM(DBM,20)？0： (SUM(DTM,20)-SUM(DBM,20))/SUM(DBM,20)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja070",
+  "lib": "国泰君安191",
+  "formula": "STD(AMOUNT,6)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja071",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE-MEAN(CLOSE,24))/MEAN(CLOSE,24)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja072",
+  "lib": "国泰君安191",
+  "formula": "SMA((TSMAX(HIGH,6)-CLOSE)/(TSMAX(HIGH,6)-TSMIN(LOW,6))*100,15,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja073",
+  "lib": "国泰君安191",
+  "formula": "((TSRANK(DECAYLINEAR(DECAYLINEAR(CORR((CLOSE), VOLUME, 10), 16), 4), 5) - RANK(DECAYLINEAR(CORR(VWAP, MEAN(VOLUME,30), 4),3))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja074",
+  "lib": "国泰君安191",
+  "formula": "(RANK(CORR(SUM(((LOW * 0.35) + (VWAP * 0.65)), 20), SUM(MEAN(VOLUME,40), 20), 7)) + RANK(CORR(RANK(VWAP), RANK(VOLUME), 6)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja075",
+  "lib": "国泰君安191",
+  "formula": "COUNT(CLOSE>OPEN & BANCHMARKINDEXCLOSE<BANCHMARKINDEXOPEN,50)/COUNT(BANCHMARKINDEXCLOSE<BANCHMARKINDEXOPEN,50)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja076",
+  "lib": "国泰君安191",
+  "formula": "STD(ABS((CLOSE/DELAY(CLOSE,1)-1))/VOLUME,20)/MEAN(ABS((CLOSE/DELAY(CLOSE,1)-1))/VOLUME,20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja077",
+  "lib": "国泰君安191",
+  "formula": "MIN(RANK(DECAYLINEAR(((((HIGH + LOW) / 2) + HIGH) - (VWAP + HIGH)), 20)),RANK(DECAYLINEAR(CORR(((HIGH + LOW) / 2), MEAN(VOLUME,40), 3), 6)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja078",
+  "lib": "国泰君安191",
+  "formula": "((HIGH+LOW+CLOSE)/3-MA((HIGH+LOW+CLOSE)/3,12))/(0.015*MEAN(ABS(CLOSE-MEAN((HIGH+LOW+CLOSE)/3,12)),12))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja079",
+  "lib": "国泰君安191",
+  "formula": "SMA(MAX(CLOSE-DELAY(CLOSE,1),0),12,1)/SMA(ABS(CLOSE-DELAY(CLOSE,1)),12,1)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja080",
+  "lib": "国泰君安191",
+  "formula": "(VOLUME-DELAY(VOLUME,5))/DELAY(VOLUME,5)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja081",
+  "lib": "国泰君安191",
+  "formula": "SMA(VOLUME,21,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja082",
+  "lib": "国泰君安191",
+  "formula": "SMA((TSMAX(HIGH,6)-CLOSE)/(TSMAX(HIGH,6)-TSMIN(LOW,6))*100,20,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja083",
+  "lib": "国泰君安191",
+  "formula": "(-1 * RANK(COVIANCE(RANK(HIGH), RANK(VOLUME), 5)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja084",
+  "lib": "国泰君安191",
+  "formula": "SUM((CLOSE>DELAY(CLOSE,1)?VOLUME:(CLOSE<DELAY(CLOSE,1)?-VOLUME:0)),20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja085",
+  "lib": "国泰君安191",
+  "formula": "(TSRANK((VOLUME / MEAN(VOLUME,20)), 20) * TSRANK((-1 * DELTA(CLOSE, 7)), 8))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja086",
+  "lib": "国泰君安191",
+  "formula": "((0.25 < (((DELAY(CLOSE, 20) - DELAY(CLOSE, 10)) / 10) - ((DELAY(CLOSE, 10) - CLOSE) / 10))) ? (-1 * 1) :(((((DELAY(CLOSE, 20) - DELAY(CLOSE, 10)) / 10) - ((DELAY(CLOSE, 10) - CLOSE) / 10)) < 0) ?1 : ((-1 * 1) *(CLOSE - DELAY(CLOSE, 1)))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja087",
+  "lib": "国泰君安191",
+  "formula": "((RANK(DECAYLINEAR(DELTA(VWAP, 4), 7)) + TSRANK(DECAYLINEAR(((((LOW * 0.9) + (LOW * 0.1)) - VWAP) /(OPEN - ((HIGH + LOW) / 2))), 11), 7)) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja088",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE-DELAY(CLOSE,20))/DELAY(CLOSE,20)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja089",
+  "lib": "国泰君安191",
+  "formula": "2*(SMA(CLOSE,13,2)-SMA(CLOSE,27,2)-SMA(SMA(CLOSE,13,2)-SMA(CLOSE,27,2),10,2))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja090",
+  "lib": "国泰君安191",
+  "formula": "(RANK(CORR(RANK(VWAP), RANK(VOLUME), 5)) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja091",
+  "lib": "国泰君安191",
+  "formula": "((RANK((CLOSE - MAX(CLOSE, 5)))*RANK(CORR((MEAN(VOLUME,40)), LOW, 5))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja092",
+  "lib": "国泰君安191",
+  "formula": "(MAX(RANK(DECAYLINEAR(DELTA(((CLOSE * 0.35) + (VWAP *0.65)), 2), 3)),TSRANK(DECAYLINEAR(ABS(CORR((MEAN(VOLUME,180)), CLOSE, 13)), 5), 15)) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja093",
+  "lib": "国泰君安191",
+  "formula": "SUM((OPEN>=DELAY(OPEN,1)?0:MAX((OPEN-LOW),(OPEN-DELAY(OPEN,1)))),20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja094",
+  "lib": "国泰君安191",
+  "formula": "SUM((CLOSE>DELAY(CLOSE,1)?VOLUME:(CLOSE<DELAY(CLOSE,1)?-VOLUME:0)),30)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja095",
+  "lib": "国泰君安191",
+  "formula": "STD(AMOUNT,20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja096",
+  "lib": "国泰君安191",
+  "formula": "SMA(SMA((CLOSE-TSMIN(LOW,9))/(TSMAX(HIGH,9)-TSMIN(LOW,9))*100,3,1),3,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja097",
+  "lib": "国泰君安191",
+  "formula": "STD(VOLUME,10)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja098",
+  "lib": "国泰君安191",
+  "formula": "((((DELTA((SUM(CLOSE, 100) / 100), 100) / DELAY(CLOSE, 100)) < 0.05) || ((DELTA((SUM(CLOSE, 100) / 100), 100) /DELAY(CLOSE, 100)) == 0.05)) ? (-1 * (CLOSE - TSMIN(CLOSE, 100))) : (-1 * DELTA(CLOSE, 3)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja099",
+  "lib": "国泰君安191",
+  "formula": "(-1 * Rank(Cov(Rank(self.close), Rank(self.volume), 5)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja100",
+  "lib": "国泰君安191",
+  "formula": "Std(self.volume,20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja101",
+  "lib": "国泰君安191",
+  "formula": "((RANK(CORR(CLOSE, SUM(MEAN(VOLUME,30), 37), 15)) < RANK(CORR(RANK(((HIGH * 0.1) + (VWAP * 0.9))),RANK(VOLUME), 11))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja102",
+  "lib": "国泰君安191",
+  "formula": "SMA(MAX(VOLUME-DELAY(VOLUME,1),0),6,1)/SMA(ABS(VOLUME-DELAY(VOLUME,1)),6,1)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja103",
+  "lib": "国泰君安191",
+  "formula": "((20-LOWDAY(LOW,20))/20)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja104",
+  "lib": "国泰君安191",
+  "formula": "(-1 * (DELTA(CORR(HIGH, VOLUME, 5), 5) * RANK(STD(CLOSE, 20))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja105",
+  "lib": "国泰君安191",
+  "formula": "(-1 * CORR(RANK(OPEN), RANK(VOLUME), 10))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja106",
+  "lib": "国泰君安191",
+  "formula": "CLOSE-DELAY(CLOSE,20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja107",
+  "lib": "国泰君安191",
+  "formula": "(((-1 * RANK((OPEN - DELAY(HIGH, 1)))) * RANK((OPEN - DELAY(CLOSE, 1)))) * RANK((OPEN - DELAY(LOW, 1))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja108",
+  "lib": "国泰君安191",
+  "formula": "((RANK((HIGH - MIN(HIGH, 2)))^RANK(CORR((VWAP), (MEAN(VOLUME,120)), 6))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja109",
+  "lib": "国泰君安191",
+  "formula": "SMA(HIGH-LOW,10,2)/SMA(SMA(HIGH-LOW,10,2),10,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja110",
+  "lib": "国泰君安191",
+  "formula": "SUM(MAX(0,HIGH-DELAY(CLOSE,1)),20)/SUM(MAX(0,DELAY(CLOSE,1)-LOW),20)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja111",
+  "lib": "国泰君安191",
+  "formula": "SMA(VOL*((CLOSE-LOW)-(HIGH-CLOSE))/(HIGH-LOW),11,2)-SMA(VOL*((CLOSE-LOW)-(HIGH-CLOSE))/(HIGH-LOW),4,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja112",
+  "lib": "国泰君安191",
+  "formula": "(SUM((CLOSE-DELAY(CLOSE,1)>0? CLOSE-DELAY(CLOSE,1):0),12) - SUM((CLOSE-DELAY(CLOSE,1)<0?ABS(CLOSE-DELAY(CLOSE,1)):0),12))/(SUM((CLOSE-DELAY(CLOSE,1)>0?CLOSE-DELAY(CLOSE,1):0),12) + SUM((CLOSE-DELAY(CLOSE,1)<0?ABS(CLOSE-DELAY(CLOSE,1)):0),12))*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja113",
+  "lib": "国泰君安191",
+  "formula": "(-1 * ((RANK((SUM(DELAY(CLOSE, 5), 20) / 20)) * CORR(CLOSE, VOLUME, 2)) * RANK(CORR(SUM(CLOSE, 5),SUM(CLOSE, 20), 2))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja114",
+  "lib": "国泰君安191",
+  "formula": "((RANK(DELAY(((HIGH - LOW) / (SUM(CLOSE, 5) / 5)), 2)) * RANK(RANK(VOLUME))) / (((HIGH - LOW) /(SUM(CLOSE, 5) / 5)) / (VWAP - CLOSE)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja115",
+  "lib": "国泰君安191",
+  "formula": "(RANK(CORR(((HIGH * 0.9) + (CLOSE * 0.1)), MEAN(VOLUME,30), 10))^RANK(CORR(TSRANK(((HIGH + LOW) /2), 4), TSRANK(VOLUME, 10), 7)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja116",
+  "lib": "国泰君安191",
+  "formula": "REGBETA(CLOSE,SEQUENCE(20),20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)",
+  "note": "原文笔误或缺参数，已按原意修正"
+ },
+ {
+  "id": "gtja117",
+  "lib": "国泰君安191",
+  "formula": "((TSRANK(VOLUME, 32) * (1 - TSRANK(((CLOSE + HIGH) - LOW), 16))) * (1 - TSRANK(RET, 32)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja118",
+  "lib": "国泰君安191",
+  "formula": "SUM(HIGH-OPEN,20)/SUM(OPEN-LOW,20)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja119",
+  "lib": "国泰君安191",
+  "formula": "(RANK(DECAYLINEAR(CORR(VWAP, SUM(MEAN(VOLUME,5), 26), 5), 7)) - RANK(DECAYLINEAR(TSRANK(MIN(CORR(RANK(OPEN), RANK(MEAN(VOLUME,15)), 21), 9), 7), 8)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja120",
+  "lib": "国泰君安191",
+  "formula": "(RANK((VWAP - CLOSE)) / RANK((VWAP + CLOSE)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja121",
+  "lib": "国泰君安191",
+  "formula": "((RANK((VWAP - MIN(VWAP, 12)))^TSRANK(CORR(TSRANK(VWAP, 20), TSRANK(MEAN(VOLUME,60), 2), 18), 3)) *-1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja122",
+  "lib": "国泰君安191",
+  "formula": "(SMA(SMA(SMA(LOG(CLOSE),13,2),13,2),13,2)-DELAY(SMA(SMA(SMA(LOG(CLOSE),13,2),13,2),13,2),1))/DELAY(SMA(SMA(SMA(LOG(CLOSE),13,2),13,2),13,2),1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja123",
+  "lib": "国泰君安191",
+  "formula": "((RANK(CORR(SUM(((HIGH + LOW) / 2), 20), SUM(MEAN(VOLUME,60), 20), 9)) < RANK(CORR(LOW, VOLUME,6))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja124",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE - VWAP) / DECAYLINEAR(RANK(TSMAX(CLOSE, 30)),2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja125",
+  "lib": "国泰君安191",
+  "formula": "(RANK(DECAYLINEAR(CORR((VWAP), MEAN(VOLUME,80),17), 20)) / RANK(DECAYLINEAR(DELTA(((CLOSE * 0.5) + (VWAP * 0.5)), 3), 16)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja126",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE+HIGH+LOW)/3",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja127",
+  "lib": "国泰君安191",
+  "formula": "(MEAN((100*(CLOSE-MAX(CLOSE,12))/(MAX(CLOSE,12)))^2,12))^(1/2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)",
+  "note": "原文笔误或缺参数，已按原意修正"
+ },
+ {
+  "id": "gtja128",
+  "lib": "国泰君安191",
+  "formula": "100-(100/(1+SUM(((HIGH+LOW+CLOSE)/3>DELAY((HIGH+LOW+CLOSE)/3,1)?(HIGH+LOW+CLOSE)/3*VOLUME:0),14)/SUM(((HIGH+LOW+CLOSE)/3<DELAY((HIGH+LOW+CLOSE)/3,1)?(HIGH+LOW+CLOSE)/3*VOLUME:0),14)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja129",
+  "lib": "国泰君安191",
+  "formula": "SUM((CLOSE-DELAY(CLOSE,1)<0?ABS(CLOSE-DELAY(CLOSE,1)):0),12)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja130",
+  "lib": "国泰君安191",
+  "formula": "(RANK(DECAYLINEAR(CORR(((HIGH + LOW) / 2), MEAN(VOLUME,40), 9), 10)) / RANK(DECAYLINEAR(CORR(RANK(VWAP), RANK(VOLUME), 7),3)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja131",
+  "lib": "国泰君安191",
+  "formula": "(RANK(DELAT(VWAP, 1))^TSRANK(CORR(CLOSE,MEAN(VOLUME,50), 18), 18))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja132",
+  "lib": "国泰君安191",
+  "formula": "MEAN(AMOUNT,20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja133",
+  "lib": "国泰君安191",
+  "formula": "((20-HIGHDAY(HIGH,20))/20)*100-((20-LOWDAY(LOW,20))/20)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja134",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE-DELAY(CLOSE,12))/DELAY(CLOSE,12)*VOLUME",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja135",
+  "lib": "国泰君安191",
+  "formula": "SMA(DELAY(CLOSE/DELAY(CLOSE,20),1),20,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja136",
+  "lib": "国泰君安191",
+  "formula": "((-1 * RANK(DELTA(RET, 3))) * CORR(OPEN, VOLUME, 10))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja137",
+  "lib": "国泰君安191",
+  "formula": "16*(CLOSE-DELAY(CLOSE,1)+(CLOSE-OPEN)/2+DELAY(CLOSE,1)-DELAY(OPEN,1))/((ABS(HIGH-DELAY(CLOSE,1))>ABS(LOW-DELAY(CLOSE,1)) & ABS(HIGH-DELAY(CLOSE,1))>ABS(HIGH-DELAY(LOW,1))?ABS(HIGH-DELAY(CLOSE,1))+ABS(LOW-DELAY(CLOSE,1))/2+ABS(DELAY(CLOSE,1)-DELAY(OPEN,1))/4:(ABS(LOW-DELAY(CLOSE,1))>ABS(HIGH-DELAY(LOW,1)) & ABS(LOW-DELAY(CLOSE,1))>ABS(HIGH-DELAY(CLOSE,1))?ABS(LOW-DELAY(CLOSE,1))+ABS(HIGH-DELAY(CLOSE,1))/2+ABS(DELAY(CLOSE,1)-DELAY(OPEN,1))/4:ABS(HIGH-DELAY(LOW,1))+ABS(DELAY(CLOSE,1)-DELAY(OPEN,1))/4)))*MAX(ABS(HIGH-DELAY(CLOSE,1)),ABS(LOW-DELAY(CLOSE,1)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja138",
+  "lib": "国泰君安191",
+  "formula": "((RANK(DECAYLINEAR(DELTA((((LOW * 0.7) + (VWAP *0.3))), 3), 20)) - TSRANK(DECAYLINEAR(TSRANK(CORR(TSRANK(LOW, 8), TSRANK(MEAN(VOLUME,60), 17), 5), 19), 16), 7)) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja139",
+  "lib": "国泰君安191",
+  "formula": "(-1 * CORR(OPEN, VOLUME, 10))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja140",
+  "lib": "国泰君安191",
+  "formula": "MIN(RANK(DECAYLINEAR(((RANK(OPEN) + RANK(LOW)) - (RANK(HIGH) + RANK(CLOSE))), 8)), TSRANK(DECAYLINEAR(CORR(TSRANK(CLOSE, 8), TSRANK(MEAN(VOLUME,60), 20), 8), 7), 3))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja141",
+  "lib": "国泰君安191",
+  "formula": "(RANK(CORR(RANK(HIGH), RANK(MEAN(VOLUME,15)), 9))* -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja142",
+  "lib": "国泰君安191",
+  "formula": "(((-1 * RANK(TSRANK(CLOSE, 10))) * RANK(DELTA(DELTA(CLOSE, 1), 1))) * RANK(TSRANK((VOLUME/MEAN(VOLUME,20)), 5)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja143",
+  "lib": "国泰君安191",
+  "formula": "CLOSE>DELAY(CLOSE,1)?(CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1)*SELF:SELF",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja144",
+  "lib": "国泰君安191",
+  "formula": "SUMIF(ABS(CLOSE/DELAY(CLOSE,1)-1)/AMOUNT,20,CLOSE<DELAY(CLOSE,1))/COUNT(CLOSE<DELAY(CLOSE,1),20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja145",
+  "lib": "国泰君安191",
+  "formula": "(MEAN(VOLUME,9)-MEAN(VOLUME,26))/MEAN(VOLUME,12)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja146",
+  "lib": "国泰君安191",
+  "formula": "MEAN((CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1)-SMA((CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1),61,2),20)*((CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1)-SMA((CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1),61,2))/SMA(((CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1)-((CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1)-SMA((CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1),61,2)))^2,61,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja147",
+  "lib": "国泰君安191",
+  "formula": "REGBETA(MEAN(CLOSE,12),SEQUENCE(12))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja148",
+  "lib": "国泰君安191",
+  "formula": "((RANK(CORR((OPEN), SUM(MEAN(VOLUME,60), 9), 6)) < RANK((OPEN - TSMIN(OPEN, 14)))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja149",
+  "lib": "国泰君安191",
+  "formula": "REGBETA(FILTER(CLOSE/DELAY(CLOSE,1)-1,BANCHMARKINDEXCLOSE<DELAY(BANCHMARKINDEXCLOSE,1)),FILTER(BANCHMARKINDEXCLOSE/DELAY(BANCHMARKINDEXCLOSE,1)-1,BANCHMARKINDEXCLOSE<DELAY(BANCHMARKINDEXCLOSE,1)),252)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja150",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE+HIGH+LOW)/3*VOLUME",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja151",
+  "lib": "国泰君安191",
+  "formula": "SMA(CLOSE-DELAY(CLOSE,20),20,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja152",
+  "lib": "国泰君安191",
+  "formula": "SMA(MEAN(DELAY(SMA(DELAY(CLOSE/DELAY(CLOSE,9),1),9,1),1),12)-MEAN(DELAY(SMA(DELAY(CLOSE/DELAY(CLOSE,9),1),9,1),1),26),9,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja153",
+  "lib": "国泰君安191",
+  "formula": "(MEAN(CLOSE,3)+MEAN(CLOSE,6)+MEAN(CLOSE,12)+MEAN(CLOSE,24))/4",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja154",
+  "lib": "国泰君安191",
+  "formula": "(((VWAP - MIN(VWAP, 16))) < (CORR(VWAP, MEAN(VOLUME,180), 18)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja155",
+  "lib": "国泰君安191",
+  "formula": "SMA(VOLUME,13,2)-SMA(VOLUME,27,2)-SMA(SMA(VOLUME,13,2)-SMA(VOLUME,27,2),10,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja156",
+  "lib": "国泰君安191",
+  "formula": "(MAX(RANK(DECAYLINEAR(DELTA(VWAP, 5), 3)), RANK(DECAYLINEAR(((DELTA(((OPEN * 0.15) + (LOW *0.85)),2) / ((OPEN * 0.15) + (LOW * 0.85))) * -1), 3))) * -1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja157",
+  "lib": "国泰君安191",
+  "formula": "(MIN(PROD(RANK(RANK(LOG(SUM(TSMIN(RANK(RANK((-1 * RANK(DELTA((CLOSE - 1), 5))))), 2), 1)))), 1), 5) + TSRANK(DELAY((-1 * RET), 6), 5))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja158",
+  "lib": "国泰君安191",
+  "formula": "((HIGH-SMA(CLOSE,15,2))-(LOW-SMA(CLOSE,15,2)))/CLOSE",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja159",
+  "lib": "国泰君安191",
+  "formula": "((CLOSE-SUM(MIN(LOW,DELAY(CLOSE,1)),6))/SUM(MAX(HGIH,DELAY(CLOSE,1))-MIN(LOW,DELAY(CLOSE,1)),6)*12*24+(CLOSE-SUM(MIN(LOW,DELAY(CLOSE,1)),12))/SUM(MAX(HGIH,DELAY(CLOSE,1))-MIN(LOW,DELAY(CLOSE,1)),12)*6*24+(CLOSE-SUM(MIN(LOW,DELAY(CLOSE,1)),24))/SUM(MAX(HGIH,DELAY(CLOSE,1))-MIN(LOW,DELAY(CLOSE,1)),24)*6*24)*100/(6*12+6*24+12*24)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja160",
+  "lib": "国泰君安191",
+  "formula": "SMA((CLOSE<=DELAY(CLOSE,1)?STD(CLOSE,20):0),20,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja161",
+  "lib": "国泰君安191",
+  "formula": "MEAN(MAX(MAX((HIGH-LOW),ABS(DELAY(CLOSE,1)-HIGH)),ABS(DELAY(CLOSE,1)-LOW)),12)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja162",
+  "lib": "国泰君安191",
+  "formula": "(SMA(MAX(CLOSE-DELAY(CLOSE,1),0),12,1)/SMA(ABS(CLOSE-DELAY(CLOSE,1)),12,1)*100-MIN(SMA(MAX(CLOSE-DELAY(CLOSE,1),0),12,1)/SMA(ABS(CLOSE-DELAY(CLOSE,1)),12,1)*100,12))/(MAX(SMA(MAX(CLOSE-DELAY(CLOSE,1),0),12,1)/SMA(ABS(CLOSE-DELAY(CLOSE,1)),12,1)*100,12)-MIN(SMA(MAX(CLOSE-DELAY(CLOSE,1),0),12,1)/SMA(ABS(CLOSE-DELAY(CLOSE,1)),12,1)*100,12))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja163",
+  "lib": "国泰君安191",
+  "formula": "RANK(((((-1 * RET) * MEAN(VOLUME,20)) * VWAP) * (HIGH - CLOSE)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja164",
+  "lib": "国泰君安191",
+  "formula": "SMA(( ((CLOSE>DELAY(CLOSE,1))?1/(CLOSE-DELAY(CLOSE,1)):1) - MIN( ((CLOSE>DELAY(CLOSE,1))?1/(CLOSE-DELAY(CLOSE,1)):1) ,12) )/(HIGH-LOW)*100,13,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja165",
+  "lib": "国泰君安191",
+  "formula": "MAX(SUMAC(CLOSE-MEAN(CLOSE,48)))-MIN(SUMAC(CLOSE-MEAN(CLOSE,48)))/STD(CLOSE,48)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja166",
+  "lib": "国泰君安191",
+  "formula": "-20*(20-1)^1.5*SUM(CLOSE/DELAY(CLOSE,1)-1-MEAN(CLOSE/DELAY(CLOSE,1)-1,20),20)/((20-1)*(20-2)*(SUM((CLOSE/DELAY(CLOSE,1)-1)^2,20))^1.5)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)",
+  "note": "原文笔误或缺参数，已按原意修正"
+ },
+ {
+  "id": "gtja167",
+  "lib": "国泰君安191",
+  "formula": "SUM((CLOSE-DELAY(CLOSE,1)>0?CLOSE-DELAY(CLOSE,1):0),12)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja168",
+  "lib": "国泰君安191",
+  "formula": "(-1*VOLUME/MEAN(VOLUME,20))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja169",
+  "lib": "国泰君安191",
+  "formula": "SMA(MEAN(DELAY(SMA(CLOSE-DELAY(CLOSE,1),9,1),1),12)-MEAN(DELAY(SMA(CLOSE-DELAY(CLOSE,1),9,1),1),26),10,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja170",
+  "lib": "国泰君安191",
+  "formula": "((((RANK((1 / CLOSE)) * VOLUME) / MEAN(VOLUME,20)) * ((HIGH * RANK((HIGH - CLOSE))) / (SUM(HIGH, 5) /5))) - RANK((VWAP - DELAY(VWAP, 5))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja171",
+  "lib": "国泰君安191",
+  "formula": "((-1 * ((LOW - CLOSE) * (OPEN^5))) / ((CLOSE - HIGH) * (CLOSE^5)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja172",
+  "lib": "国泰君安191",
+  "formula": "MEAN(ABS(SUM((LD>0 & LD>HD)?LD:0,14)*100/SUM(TR,14)-SUM((HD>0 &HD>LD)?HD:0,14)*100/SUM(TR,14))/(SUM((LD>0 & LD>HD)?LD:0,14)*100/SUM(TR,14)+SUM((HD>0 &HD>LD)?HD:0,14)*100/SUM(TR,14))*100,6)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja173",
+  "lib": "国泰君安191",
+  "formula": "3*SMA(CLOSE,13,2)-2*SMA(SMA(CLOSE,13,2),13,2)+SMA(SMA(SMA(LOG(CLOSE),13,2),13,2),13,2)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja174",
+  "lib": "国泰君安191",
+  "formula": "SMA((CLOSE>DELAY(CLOSE,1)?STD(CLOSE,20):0),20,1)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja175",
+  "lib": "国泰君安191",
+  "formula": "MEAN(MAX(MAX((HIGH-LOW),ABS(DELAY(CLOSE,1)-HIGH)),ABS(DELAY(CLOSE,1)-LOW)),6)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja176",
+  "lib": "国泰君安191",
+  "formula": "CORR(RANK(((CLOSE - TSMIN(LOW, 12)) / (TSMAX(HIGH, 12) - TSMIN(LOW,12)))), RANK(VOLUME), 6)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja177",
+  "lib": "国泰君安191",
+  "formula": "((20-HIGHDAY(HIGH,20))/20)*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja178",
+  "lib": "国泰君安191",
+  "formula": "(CLOSE-DELAY(CLOSE,1))/DELAY(CLOSE,1)*VOLUME",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja179",
+  "lib": "国泰君安191",
+  "formula": "(RANK(CORR(VWAP, VOLUME, 4)) *RANK(CORR(RANK(LOW), RANK(MEAN(VOLUME,50)), 12)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja180",
+  "lib": "国泰君安191",
+  "formula": "((MEAN(VOLUME,20) < VOLUME) ? ((-1 * TSRANK(ABS(DELTA(CLOSE, 7)), 60)) * SIGN(DELTA(CLOSE, 7))) : (-1 * VOLUME))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)",
+  "note": "原文笔误或缺参数，已按原意修正"
+ },
+ {
+  "id": "gtja181",
+  "lib": "国泰君安191",
+  "formula": "SUM(((CLOSE/DELAY(CLOSE,1)-1)-MEAN((CLOSE/DELAY(CLOSE,1)-1),20))-(BANCHMARKINDEXCLOSE-MEAN(BANCHMARKINDEXCLOSE,20))^2,20)/SUM((BANCHMARKINDEXCLOSE-MEAN(BANCHMARKINDEXCLOSE,20))^3,20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)",
+  "note": "原文笔误或缺参数，已按原意修正"
+ },
+ {
+  "id": "gtja182",
+  "lib": "国泰君安191",
+  "formula": "COUNT((CLOSE>OPEN & BANCHMARKINDEXCLOSE>BANCHMARKINDEXOPEN)OR(CLOSE<OPEN & BANCHMARKINDEXCLOSE<BANCHMARKINDEXOPEN),20)/20",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja183",
+  "lib": "国泰君安191",
+  "formula": "MAX(SUMAC(CLOSE-MEAN(CLOSE,24)))-MIN(SUMAC(CLOSE-MEAN(CLOSE,24)))/STD(CLOSE,24)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja184",
+  "lib": "国泰君安191",
+  "formula": "(RANK(CORR(DELAY((OPEN - CLOSE), 1), CLOSE, 200)) + RANK((OPEN - CLOSE)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja185",
+  "lib": "国泰君安191",
+  "formula": "RANK((-1 * ((1 - (OPEN / CLOSE))^2)))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja186",
+  "lib": "国泰君安191",
+  "formula": "(MEAN(ABS(SUM((LD>0 & LD>HD)?LD:0,14)*100/SUM(TR,14)-SUM((HD>0 & HD>LD)?HD:0,14)*100/SUM(TR,14))/(SUM((LD>0 & LD>HD)?LD:0,14)*100/SUM(TR,14)+SUM((HD>0 & HD>LD)?HD:0,14)*100/SUM(TR,14))*100,6)+DELAY(MEAN(ABS(SUM((LD>0 & LD>HD)?LD:0,14)*100/SUM(TR,14)-SUM((HD>0 & HD>LD)?HD:0,14)*100/SUM(TR,14))/(SUM((LD>0 & LD>HD)?LD:0,14)*100/SUM(TR,14)+SUM((HD>0 & HD>LD)?HD:0,14)*100/SUM(TR,14))*100,6),6))/2",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja187",
+  "lib": "国泰君安191",
+  "formula": "SUM((OPEN<=DELAY(OPEN,1)?0:MAX((HIGH-OPEN),(OPEN-DELAY(OPEN,1)))),20)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja188",
+  "lib": "国泰君安191",
+  "formula": "((HIGH-LOW–SMA(HIGH-LOW,11,2))/SMA(HIGH-LOW,11,2))*100",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja189",
+  "lib": "国泰君安191",
+  "formula": "MEAN(ABS(CLOSE-MEAN(CLOSE,6)),6)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja190",
+  "lib": "国泰君安191",
+  "formula": "LOG((COUNT( CLOSE/DELAY(CLOSE,1)>((CLOSE/DELAY(CLOSE,19))^(1/20)-1) ,20)-1)*(SUMIF((CLOSE/DELAY(CLOSE,1)-((CLOSE/DELAY(CLOSE,19))^(1/20)-1))^2,20,CLOSE/DELAY(CLOSE,1)<(CLOSE/DELAY(CLOSE,19))^(1/20)-1))/((COUNT((CLOSE/DELAY(CLOSE,1)<(CLOSE/DELAY(CLOSE,19))^(1/20)-1),20))*(SUMIF((CLOSE/DELAY(CLOSE,1)-((CLOSE/DELAY(CLOSE,19))^(1/20)-1))^2,20,CLOSE/DELAY(CLOSE,1)>(CLOSE/DELAY(CLOSE,19))^(1/20)-1))))",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "gtja191",
+  "lib": "国泰君安191",
+  "formula": "((CORR(MEAN(VOLUME,20), LOW, 5) + ((HIGH + LOW) / 2)) - CLOSE)",
+  "source": "国泰君安《基于短周期价量特征的多因子选股体系》(2017)"
+ },
+ {
+  "id": "wq001",
+  "lib": "WorldQuant101",
+  "formula": "(rank(Ts_ArgMax(SignedPower(((returns < 0) ? stddev(returns, 20) : close), 2.), 5)) -0.5)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq002",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * correlation(rank(delta(log(volume), 2)), rank(((close - open) / open)), 6))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq003",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * correlation(rank(open), rank(volume), 10))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq004",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * Ts_Rank(rank(low), 9))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq005",
+  "lib": "WorldQuant101",
+  "formula": "(rank((open - (sum(vwap, 10) / 10))) * (-1 * abs(rank((close - vwap)))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq006",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * correlation(open, volume, 10))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq007",
+  "lib": "WorldQuant101",
+  "formula": "((adv20 < volume) ? ((-1 * ts_rank(abs(delta(close, 7)), 60)) * sign(delta(close, 7))) : (-1* 1))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq008",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * rank(((sum(open, 5) * sum(returns, 5)) - delay((sum(open, 5) * sum(returns, 5)),10))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq009",
+  "lib": "WorldQuant101",
+  "formula": "((0 < ts_min(delta(close, 1), 5)) ? delta(close, 1) : ((ts_max(delta(close, 1), 5) < 0) ?delta(close, 1) : (-1 * delta(close, 1))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq010",
+  "lib": "WorldQuant101",
+  "formula": "rank(((0 < ts_min(delta(close, 1), 4)) ? delta(close, 1) : ((ts_max(delta(close, 1), 4) < 0)? delta(close, 1) : (-1 * delta(close, 1)))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq011",
+  "lib": "WorldQuant101",
+  "formula": "((rank(ts_max((vwap - close), 3)) + rank(ts_min((vwap - close), 3))) *rank(delta(volume, 3)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq012",
+  "lib": "WorldQuant101",
+  "formula": "(sign(delta(volume, 1)) * (-1 * delta(close, 1)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq013",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * rank(covariance(rank(close), rank(volume), 5)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq014",
+  "lib": "WorldQuant101",
+  "formula": "((-1 * rank(delta(returns, 3))) * correlation(open, volume, 10))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq015",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * sum(rank(correlation(rank(high), rank(volume), 3)), 3))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq016",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * rank(covariance(rank(high), rank(volume), 5)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq017",
+  "lib": "WorldQuant101",
+  "formula": "(((-1 * rank(ts_rank(close, 10))) * rank(delta(delta(close, 1), 1))) *rank(ts_rank((volume / adv20), 5)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq018",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * rank(((stddev(abs((close - open)), 5) + (close - open)) + correlation(close, open,10))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq019",
+  "lib": "WorldQuant101",
+  "formula": "((-1 * sign(((close - delay(close, 7)) + delta(close, 7)))) * (1 + rank((1 + sum(returns,250)))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq020",
+  "lib": "WorldQuant101",
+  "formula": "(((-1 * rank((open - delay(high, 1)))) * rank((open - delay(close, 1)))) * rank((open -delay(low, 1))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq021",
+  "lib": "WorldQuant101",
+  "formula": "((((sum(close, 8) / 8) + stddev(close, 8)) < (sum(close, 2) / 2)) ? (-1 * 1) : (((sum(close,2) / 2) < ((sum(close, 8) / 8) - stddev(close, 8))) ? 1 : (((1 < (volume / adv20)) || ((volume /adv20) == 1)) ? 1 : (-1 * 1))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq022",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * (delta(correlation(high, volume, 5), 5) * rank(stddev(close, 20))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq023",
+  "lib": "WorldQuant101",
+  "formula": "(((sum(high, 20) / 20) < high) ? (-1 * delta(high, 2)) : 0)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq024",
+  "lib": "WorldQuant101",
+  "formula": "((((delta((sum(close, 100) / 100), 100) / delay(close, 100)) < 0.05) ||((delta((sum(close, 100) / 100), 100) / delay(close, 100)) == 0.05)) ? (-1 * (close - ts_min(close,100))) : (-1 * delta(close, 3)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq025",
+  "lib": "WorldQuant101",
+  "formula": "rank(((((-1 * returns) * adv20) * vwap) * (high - close)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq026",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * ts_max(correlation(ts_rank(volume, 5), ts_rank(high, 5), 5), 3))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq027",
+  "lib": "WorldQuant101",
+  "formula": "((0.5 < rank((sum(correlation(rank(volume), rank(vwap), 6), 2) / 2.0))) ? (-1 * 1) : 1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq028",
+  "lib": "WorldQuant101",
+  "formula": "scale(((correlation(adv20, low, 5) + ((high + low) / 2)) - close))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq029",
+  "lib": "WorldQuant101",
+  "formula": "(min(product(rank(rank(scale(log(sum(ts_min(rank(rank((-1 * rank(delta((close - 1),5))))), 2), 1))))), 1), 5) + ts_rank(delay((-1 * returns), 6), 5))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq030",
+  "lib": "WorldQuant101",
+  "formula": "(((1.0 - rank(((sign((close - delay(close, 1))) + sign((delay(close, 1) - delay(close, 2)))) +sign((delay(close, 2) - delay(close, 3)))))) * sum(volume, 5)) / sum(volume, 20))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq031",
+  "lib": "WorldQuant101",
+  "formula": "((rank(rank(rank(decay_linear((-1 * rank(rank(delta(close, 10)))), 10)))) + rank((-1 *delta(close, 3)))) + sign(scale(correlation(adv20, low, 12))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq032",
+  "lib": "WorldQuant101",
+  "formula": "(scale(((sum(close, 7) / 7) - close)) + (20 * scale(correlation(vwap, delay(close, 5),230))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq033",
+  "lib": "WorldQuant101",
+  "formula": "rank((-1 * ((1 - (open / close))^1)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq034",
+  "lib": "WorldQuant101",
+  "formula": "rank(((1 - rank((stddev(returns, 2) / stddev(returns, 5)))) + (1 - rank(delta(close, 1)))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq035",
+  "lib": "WorldQuant101",
+  "formula": "((Ts_Rank(volume, 32) * (1 - Ts_Rank(((close + high) - low), 16))) * (1 -Ts_Rank(returns, 32)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq036",
+  "lib": "WorldQuant101",
+  "formula": "(((((2.21 * rank(correlation((close - open), delay(volume, 1), 15))) + (0.7 * rank((open- close)))) + (0.73 * rank(Ts_Rank(delay((-1 * returns), 6), 5)))) + rank(abs(correlation(vwap,adv20, 6)))) + (0.6 * rank((((sum(close, 200) / 200) - open) * (close - open)))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq037",
+  "lib": "WorldQuant101",
+  "formula": "(rank(correlation(delay((open - close), 1), close, 200)) + rank((open - close)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq038",
+  "lib": "WorldQuant101",
+  "formula": "((-1 * rank(Ts_Rank(close, 10))) * rank((close / open)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq039",
+  "lib": "WorldQuant101",
+  "formula": "((-1 * rank((delta(close, 7) * (1 - rank(decay_linear((volume / adv20), 9)))))) * (1 +rank(sum(returns, 250))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq040",
+  "lib": "WorldQuant101",
+  "formula": "((-1 * rank(stddev(high, 10))) * correlation(high, volume, 10))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq041",
+  "lib": "WorldQuant101",
+  "formula": "(((high * low)^0.5) - vwap)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq042",
+  "lib": "WorldQuant101",
+  "formula": "(rank((vwap - close)) / rank((vwap + close)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq043",
+  "lib": "WorldQuant101",
+  "formula": "(ts_rank((volume / adv20), 20) * ts_rank((-1 * delta(close, 7)), 8))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq044",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * correlation(high, rank(volume), 5))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq045",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * ((rank((sum(delay(close, 5), 20) / 20)) * correlation(close, volume, 2)) *rank(correlation(sum(close, 5), sum(close, 20), 2))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq046",
+  "lib": "WorldQuant101",
+  "formula": "((0.25 < (((delay(close, 20) - delay(close, 10)) / 10) - ((delay(close, 10) - close) / 10))) ?(-1 * 1) : (((((delay(close, 20) - delay(close, 10)) / 10) - ((delay(close, 10) - close) / 10)) < 0) ? 1 :((-1 * 1) * (close - delay(close, 1)))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq047",
+  "lib": "WorldQuant101",
+  "formula": "((((rank((1 / close)) * volume) / adv20) * ((high * rank((high - close))) / (sum(high, 5) /5))) - rank((vwap - delay(vwap, 5))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq048",
+  "lib": "WorldQuant101",
+  "formula": "(indneutralize(((correlation(delta(close, 1), delta(delay(close, 1), 1), 250) *delta(close, 1)) / close), IndClass.subindustry) / sum(((delta(close, 1) / delay(close, 1))^2), 250))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq049",
+  "lib": "WorldQuant101",
+  "formula": "(((((delay(close, 20) - delay(close, 10)) / 10) - ((delay(close, 10) - close) / 10)) < (-1 *0.1)) ? 1 : ((-1 * 1) * (close - delay(close, 1))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq050",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * ts_max(rank(correlation(rank(volume), rank(vwap), 5)), 5))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq051",
+  "lib": "WorldQuant101",
+  "formula": "(((((delay(close, 20) - delay(close, 10)) / 10) - ((delay(close, 10) - close) / 10)) < (-1 *0.05)) ? 1 : ((-1 * 1) * (close - delay(close, 1))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq052",
+  "lib": "WorldQuant101",
+  "formula": "((((-1 * ts_min(low, 5)) + delay(ts_min(low, 5), 5)) * rank(((sum(returns, 240) -sum(returns, 20)) / 220))) * ts_rank(volume, 5))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq053",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * delta((((close - low) - (high - close)) / (close - low)), 9))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq054",
+  "lib": "WorldQuant101",
+  "formula": "((-1 * ((low - close) * (open^5))) / ((low - high) * (close^5)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq055",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * correlation(rank(((close - ts_min(low, 12)) / (ts_max(high, 12) - ts_min(low,12)))), rank(volume), 6))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq056",
+  "lib": "WorldQuant101",
+  "formula": "(0 - (1 * (rank((sum(returns, 10) / sum(sum(returns, 2), 3))) * rank((returns * cap)))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq057",
+  "lib": "WorldQuant101",
+  "formula": "(0 - (1 * ((close - vwap) / decay_linear(rank(ts_argmax(close, 30)), 2))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq058",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * Ts_Rank(decay_linear(correlation(IndNeutralize(vwap, IndClass.sector), volume,3.92795), 7.89291), 5.50322))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq059",
+  "lib": "WorldQuant101",
+  "formula": "(-1 * Ts_Rank(decay_linear(correlation(IndNeutralize(((vwap * 0.728317) + (vwap *(1 - 0.728317))), IndClass.industry), volume, 4.25197), 16.2289), 8.19648))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq060",
+  "lib": "WorldQuant101",
+  "formula": "(0 - (1 * ((2 * scale(rank(((((close - low) - (high - close)) / (high - low)) * volume)))) -scale(rank(ts_argmax(close, 10))))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq061",
+  "lib": "WorldQuant101",
+  "formula": "(rank((vwap - ts_min(vwap, 16.1219))) < rank(correlation(vwap, adv180, 17.9282)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq062",
+  "lib": "WorldQuant101",
+  "formula": "((rank(correlation(vwap, sum(adv20, 22.4101), 9.91009)) < rank(((rank(open) +rank(open)) < (rank(((high + low) / 2)) + rank(high))))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq063",
+  "lib": "WorldQuant101",
+  "formula": "((rank(decay_linear(delta(IndNeutralize(close, IndClass.industry), 2.25164), 8.22237))- rank(decay_linear(correlation(((vwap * 0.318108) + (open * (1 - 0.318108))), sum(adv180,37.2467), 13.557), 12.2883))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq064",
+  "lib": "WorldQuant101",
+  "formula": "((rank(correlation(sum(((open * 0.178404) + (low * (1 - 0.178404))), 12.7054),sum(adv120, 12.7054), 16.6208)) < rank(delta(((((high + low) / 2) * 0.178404) + (vwap * (1 -0.178404))), 3.69741))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq065",
+  "lib": "WorldQuant101",
+  "formula": "((rank(correlation(((open * 0.00817205) + (vwap * (1 - 0.00817205))), sum(adv60,8.6911), 6.40374)) < rank((open - ts_min(open, 13.635)))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq066",
+  "lib": "WorldQuant101",
+  "formula": "((rank(decay_linear(delta(vwap, 3.51013), 7.23052)) + Ts_Rank(decay_linear(((((low* 0.96633) + (low * (1 - 0.96633))) - vwap) / (open - ((high + low) / 2))), 11.4157), 6.72611)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq067",
+  "lib": "WorldQuant101",
+  "formula": "((rank((high - ts_min(high, 2.14593)))^rank(correlation(IndNeutralize(vwap,IndClass.sector), IndNeutralize(adv20, IndClass.subindustry), 6.02936))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq068",
+  "lib": "WorldQuant101",
+  "formula": "((Ts_Rank(correlation(rank(high), rank(adv15), 8.91644), 13.9333) <rank(delta(((close * 0.518371) + (low * (1 - 0.518371))), 1.06157))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq069",
+  "lib": "WorldQuant101",
+  "formula": "((rank(ts_max(delta(IndNeutralize(vwap, IndClass.industry), 2.72412),4.79344))^Ts_Rank(correlation(((close * 0.490655) + (vwap * (1 - 0.490655))), adv20, 4.92416),9.0615)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq070",
+  "lib": "WorldQuant101",
+  "formula": "((rank(delta(vwap, 1.29456))^Ts_Rank(correlation(IndNeutralize(close,IndClass.industry), adv50, 17.8256), 17.9171)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq071",
+  "lib": "WorldQuant101",
+  "formula": "max(Ts_Rank(decay_linear(correlation(Ts_Rank(close, 3.43976), Ts_Rank(adv180,12.0647), 18.0175), 4.20501), 15.6948), Ts_Rank(decay_linear((rank(((low + open) - (vwap +vwap)))^2), 16.4662), 4.4388))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq072",
+  "lib": "WorldQuant101",
+  "formula": "(rank(decay_linear(correlation(((high + low) / 2), adv40, 8.93345), 10.1519)) /rank(decay_linear(correlation(Ts_Rank(vwap, 3.72469), Ts_Rank(volume, 18.5188), 6.86671),2.95011)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq073",
+  "lib": "WorldQuant101",
+  "formula": "(max(rank(decay_linear(delta(vwap, 4.72775), 2.91864)),Ts_Rank(decay_linear(((delta(((open * 0.147155) + (low * (1 - 0.147155))), 2.03608) / ((open *0.147155) + (low * (1 - 0.147155)))) * -1), 3.33829), 16.7411)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq074",
+  "lib": "WorldQuant101",
+  "formula": "((rank(correlation(close, sum(adv30, 37.4843), 15.1365)) <rank(correlation(rank(((high * 0.0261661) + (vwap * (1 - 0.0261661)))), rank(volume), 11.4791)))* -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq075",
+  "lib": "WorldQuant101",
+  "formula": "(rank(correlation(vwap, volume, 4.24304)) < rank(correlation(rank(low), rank(adv50),12.4413)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq076",
+  "lib": "WorldQuant101",
+  "formula": "(max(rank(decay_linear(delta(vwap, 1.24383), 11.8259)),Ts_Rank(decay_linear(Ts_Rank(correlation(IndNeutralize(low, IndClass.sector), adv81,8.14941), 19.569), 17.1543), 19.383)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq077",
+  "lib": "WorldQuant101",
+  "formula": "min(rank(decay_linear(((((high + low) / 2) + high) - (vwap + high)), 20.0451)),rank(decay_linear(correlation(((high + low) / 2), adv40, 3.1614), 5.64125)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq078",
+  "lib": "WorldQuant101",
+  "formula": "(rank(correlation(sum(((low * 0.352233) + (vwap * (1 - 0.352233))), 19.7428),sum(adv40, 19.7428), 6.83313))^rank(correlation(rank(vwap), rank(volume), 5.77492)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq079",
+  "lib": "WorldQuant101",
+  "formula": "(rank(delta(IndNeutralize(((close * 0.60733) + (open * (1 - 0.60733))),IndClass.sector), 1.23438)) < rank(correlation(Ts_Rank(vwap, 3.60973), Ts_Rank(adv150,9.18637), 14.6644)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq080",
+  "lib": "WorldQuant101",
+  "formula": "((rank(Sign(delta(IndNeutralize(((open * 0.868128) + (high * (1 - 0.868128))),IndClass.industry), 4.04545)))^Ts_Rank(correlation(high, adv10, 5.11456), 5.53756)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq081",
+  "lib": "WorldQuant101",
+  "formula": "((rank(Log(product(rank((rank(correlation(vwap, sum(adv10, 49.6054),8.47743))^4)), 14.9655))) < rank(correlation(rank(vwap), rank(volume), 5.07914))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq082",
+  "lib": "WorldQuant101",
+  "formula": "(min(rank(decay_linear(delta(open, 1.46063), 14.8717)),Ts_Rank(decay_linear(correlation(IndNeutralize(volume, IndClass.sector), ((open * 0.634196) +(open * (1 - 0.634196))), 17.4842), 6.92131), 13.4283)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq083",
+  "lib": "WorldQuant101",
+  "formula": "((rank(delay(((high - low) / (sum(close, 5) / 5)), 2)) * rank(rank(volume))) / (((high -low) / (sum(close, 5) / 5)) / (vwap - close)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq084",
+  "lib": "WorldQuant101",
+  "formula": "SignedPower(Ts_Rank((vwap - ts_max(vwap, 15.3217)), 20.7127), delta(close,4.96796))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq085",
+  "lib": "WorldQuant101",
+  "formula": "(rank(correlation(((high * 0.876703) + (close * (1 - 0.876703))), adv30,9.61331))^rank(correlation(Ts_Rank(((high + low) / 2), 3.70596), Ts_Rank(volume, 10.1595),7.11408)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq086",
+  "lib": "WorldQuant101",
+  "formula": "((Ts_Rank(correlation(close, sum(adv20, 14.7444), 6.00049), 20.4195) < rank(((open+ close) - (vwap + open)))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq087",
+  "lib": "WorldQuant101",
+  "formula": "(max(rank(decay_linear(delta(((close * 0.369701) + (vwap * (1 - 0.369701))),1.91233), 2.65461)), Ts_Rank(decay_linear(abs(correlation(IndNeutralize(adv81,IndClass.industry), close, 13.4132)), 4.89768), 14.4535)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq088",
+  "lib": "WorldQuant101",
+  "formula": "min(rank(decay_linear(((rank(open) + rank(low)) - (rank(high) + rank(close))),8.06882)), Ts_Rank(decay_linear(correlation(Ts_Rank(close, 8.44728), Ts_Rank(adv60,20.6966), 8.01266), 6.65053), 2.61957))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq089",
+  "lib": "WorldQuant101",
+  "formula": "(Ts_Rank(decay_linear(correlation(((low * 0.967285) + (low * (1 - 0.967285))), adv10,6.94279), 5.51607), 3.79744) - Ts_Rank(decay_linear(delta(IndNeutralize(vwap,IndClass.industry), 3.48158), 10.1466), 15.3012))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq090",
+  "lib": "WorldQuant101",
+  "formula": "((rank((close - ts_max(close, 4.66719)))^Ts_Rank(correlation(IndNeutralize(adv40,IndClass.subindustry), low, 5.38375), 3.21856)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq091",
+  "lib": "WorldQuant101",
+  "formula": "((Ts_Rank(decay_linear(decay_linear(correlation(IndNeutralize(close,IndClass.industry), volume, 9.74928), 16.398), 3.83219), 4.8667) -rank(decay_linear(correlation(vwap, adv30, 4.01303), 2.6809))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq092",
+  "lib": "WorldQuant101",
+  "formula": "min(Ts_Rank(decay_linear(((((high + low) / 2) + close) < (low + open)), 14.7221),18.8683), Ts_Rank(decay_linear(correlation(rank(low), rank(adv30), 7.58555), 6.94024),6.80584))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq093",
+  "lib": "WorldQuant101",
+  "formula": "(Ts_Rank(decay_linear(correlation(IndNeutralize(vwap, IndClass.industry), adv81,17.4193), 19.848), 7.54455) / rank(decay_linear(delta(((close * 0.524434) + (vwap * (1 -0.524434))), 2.77377), 16.2664)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq094",
+  "lib": "WorldQuant101",
+  "formula": "((rank((vwap - ts_min(vwap, 11.5783)))^Ts_Rank(correlation(Ts_Rank(vwap,19.6462), Ts_Rank(adv60, 4.02992), 18.0926), 2.70756)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq095",
+  "lib": "WorldQuant101",
+  "formula": "(rank((open - ts_min(open, 12.4105))) < Ts_Rank((rank(correlation(sum(((high + low)/ 2), 19.1351), sum(adv40, 19.1351), 12.8742))^5), 11.7584))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq096",
+  "lib": "WorldQuant101",
+  "formula": "(max(Ts_Rank(decay_linear(correlation(rank(vwap), rank(volume), 3.83878),4.16783), 8.38151), Ts_Rank(decay_linear(Ts_ArgMax(correlation(Ts_Rank(close, 7.45404),Ts_Rank(adv60, 4.13242), 3.65459), 12.6556), 14.0365), 13.4143)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq097",
+  "lib": "WorldQuant101",
+  "formula": "((rank(decay_linear(delta(IndNeutralize(((low * 0.721001) + (vwap * (1 - 0.721001))),IndClass.industry), 3.3705), 20.4523)) - Ts_Rank(decay_linear(Ts_Rank(correlation(Ts_Rank(low,7.87871), Ts_Rank(adv60, 17.255), 4.97547), 18.5925), 15.7152), 6.71659)) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq098",
+  "lib": "WorldQuant101",
+  "formula": "(rank(decay_linear(correlation(vwap, sum(adv5, 26.4719), 4.58418), 7.18088)) -rank(decay_linear(Ts_Rank(Ts_ArgMin(correlation(rank(open), rank(adv15), 20.8187), 8.62571),6.95668), 8.07206)))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq099",
+  "lib": "WorldQuant101",
+  "formula": "((rank(correlation(sum(((high + low) / 2), 19.8975), sum(adv60, 19.8975), 8.8136)) <rank(correlation(low, volume, 6.28259))) * -1)",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq100",
+  "lib": "WorldQuant101",
+  "formula": "(0 - (1 * (((1.5 * scale(indneutralize(indneutralize(rank(((((close - low) - (high -close)) / (high - low)) * volume)), IndClass.subindustry), IndClass.subindustry))) -scale(indneutralize((correlation(close, rank(adv20), 5) - rank(ts_argmin(close, 30))),IndClass.subindustry))) * (volume / adv20))))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "wq101",
+  "lib": "WorldQuant101",
+  "formula": "((close - open) / ((high - low) + .001))",
+  "source": "Kakushadze (2016) 101 Formulaic Alphas, arXiv:1601.00991"
+ },
+ {
+  "id": "qlib_KMID",
+  "lib": "Qlib Alpha158",
+  "formula": "($close-$open)/$open",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_KLEN",
+  "lib": "Qlib Alpha158",
+  "formula": "($high-$low)/$open",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_KMID2",
+  "lib": "Qlib Alpha158",
+  "formula": "($close-$open)/($high-$low+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_KUP",
+  "lib": "Qlib Alpha158",
+  "formula": "($high-Greater($open, $close))/$open",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_KUP2",
+  "lib": "Qlib Alpha158",
+  "formula": "($high-Greater($open, $close))/($high-$low+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_KLOW",
+  "lib": "Qlib Alpha158",
+  "formula": "(Less($open, $close)-$low)/$open",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_KLOW2",
+  "lib": "Qlib Alpha158",
+  "formula": "(Less($open, $close)-$low)/($high-$low+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_KSFT",
+  "lib": "Qlib Alpha158",
+  "formula": "(2*$close-$high-$low)/$open",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_KSFT2",
+  "lib": "Qlib Alpha158",
+  "formula": "(2*$close-$high-$low)/($high-$low+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_OPEN0",
+  "lib": "Qlib Alpha158",
+  "formula": "$open/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_HIGH0",
+  "lib": "Qlib Alpha158",
+  "formula": "$high/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_LOW0",
+  "lib": "Qlib Alpha158",
+  "formula": "$low/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VWAP0",
+  "lib": "Qlib Alpha158",
+  "formula": "$vwap/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_ROC5",
+  "lib": "Qlib Alpha158",
+  "formula": "Ref($close, 5)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_ROC10",
+  "lib": "Qlib Alpha158",
+  "formula": "Ref($close, 10)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_ROC20",
+  "lib": "Qlib Alpha158",
+  "formula": "Ref($close, 20)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_ROC30",
+  "lib": "Qlib Alpha158",
+  "formula": "Ref($close, 30)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_ROC60",
+  "lib": "Qlib Alpha158",
+  "formula": "Ref($close, 60)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MA5",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close, 5)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MA10",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close, 10)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MA20",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close, 20)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MA30",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close, 30)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MA60",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close, 60)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_STD5",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($close, 5)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_STD10",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($close, 10)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_STD20",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($close, 20)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_STD30",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($close, 30)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_STD60",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($close, 60)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_BETA5",
+  "lib": "Qlib Alpha158",
+  "formula": "Slope($close, 5)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_BETA10",
+  "lib": "Qlib Alpha158",
+  "formula": "Slope($close, 10)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_BETA20",
+  "lib": "Qlib Alpha158",
+  "formula": "Slope($close, 20)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_BETA30",
+  "lib": "Qlib Alpha158",
+  "formula": "Slope($close, 30)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_BETA60",
+  "lib": "Qlib Alpha158",
+  "formula": "Slope($close, 60)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSQR5",
+  "lib": "Qlib Alpha158",
+  "formula": "Rsquare($close, 5)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSQR10",
+  "lib": "Qlib Alpha158",
+  "formula": "Rsquare($close, 10)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSQR20",
+  "lib": "Qlib Alpha158",
+  "formula": "Rsquare($close, 20)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSQR30",
+  "lib": "Qlib Alpha158",
+  "formula": "Rsquare($close, 30)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSQR60",
+  "lib": "Qlib Alpha158",
+  "formula": "Rsquare($close, 60)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RESI5",
+  "lib": "Qlib Alpha158",
+  "formula": "Resi($close, 5)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RESI10",
+  "lib": "Qlib Alpha158",
+  "formula": "Resi($close, 10)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RESI20",
+  "lib": "Qlib Alpha158",
+  "formula": "Resi($close, 20)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RESI30",
+  "lib": "Qlib Alpha158",
+  "formula": "Resi($close, 30)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RESI60",
+  "lib": "Qlib Alpha158",
+  "formula": "Resi($close, 60)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MAX5",
+  "lib": "Qlib Alpha158",
+  "formula": "Max($high, 5)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MAX10",
+  "lib": "Qlib Alpha158",
+  "formula": "Max($high, 10)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MAX20",
+  "lib": "Qlib Alpha158",
+  "formula": "Max($high, 20)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MAX30",
+  "lib": "Qlib Alpha158",
+  "formula": "Max($high, 30)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MAX60",
+  "lib": "Qlib Alpha158",
+  "formula": "Max($high, 60)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MIN5",
+  "lib": "Qlib Alpha158",
+  "formula": "Min($low, 5)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MIN10",
+  "lib": "Qlib Alpha158",
+  "formula": "Min($low, 10)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MIN20",
+  "lib": "Qlib Alpha158",
+  "formula": "Min($low, 20)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MIN30",
+  "lib": "Qlib Alpha158",
+  "formula": "Min($low, 30)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_MIN60",
+  "lib": "Qlib Alpha158",
+  "formula": "Min($low, 60)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLU5",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 5, 0.8)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLU10",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 10, 0.8)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLU20",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 20, 0.8)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLU30",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 30, 0.8)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLU60",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 60, 0.8)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLD5",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 5, 0.2)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLD10",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 10, 0.2)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLD20",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 20, 0.2)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLD30",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 30, 0.2)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_QTLD60",
+  "lib": "Qlib Alpha158",
+  "formula": "Quantile($close, 60, 0.2)/$close",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RANK5",
+  "lib": "Qlib Alpha158",
+  "formula": "Rank($close, 5)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RANK10",
+  "lib": "Qlib Alpha158",
+  "formula": "Rank($close, 10)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RANK20",
+  "lib": "Qlib Alpha158",
+  "formula": "Rank($close, 20)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RANK30",
+  "lib": "Qlib Alpha158",
+  "formula": "Rank($close, 30)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RANK60",
+  "lib": "Qlib Alpha158",
+  "formula": "Rank($close, 60)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSV5",
+  "lib": "Qlib Alpha158",
+  "formula": "($close-Min($low, 5))/(Max($high, 5)-Min($low, 5)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSV10",
+  "lib": "Qlib Alpha158",
+  "formula": "($close-Min($low, 10))/(Max($high, 10)-Min($low, 10)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSV20",
+  "lib": "Qlib Alpha158",
+  "formula": "($close-Min($low, 20))/(Max($high, 20)-Min($low, 20)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSV30",
+  "lib": "Qlib Alpha158",
+  "formula": "($close-Min($low, 30))/(Max($high, 30)-Min($low, 30)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_RSV60",
+  "lib": "Qlib Alpha158",
+  "formula": "($close-Min($low, 60))/(Max($high, 60)-Min($low, 60)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMAX5",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMax($high, 5)/5",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMAX10",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMax($high, 10)/10",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMAX20",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMax($high, 20)/20",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMAX30",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMax($high, 30)/30",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMAX60",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMax($high, 60)/60",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMIN5",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMin($low, 5)/5",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMIN10",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMin($low, 10)/10",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMIN20",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMin($low, 20)/20",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMIN30",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMin($low, 30)/30",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMIN60",
+  "lib": "Qlib Alpha158",
+  "formula": "IdxMin($low, 60)/60",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMXD5",
+  "lib": "Qlib Alpha158",
+  "formula": "(IdxMax($high, 5)-IdxMin($low, 5))/5",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMXD10",
+  "lib": "Qlib Alpha158",
+  "formula": "(IdxMax($high, 10)-IdxMin($low, 10))/10",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMXD20",
+  "lib": "Qlib Alpha158",
+  "formula": "(IdxMax($high, 20)-IdxMin($low, 20))/20",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMXD30",
+  "lib": "Qlib Alpha158",
+  "formula": "(IdxMax($high, 30)-IdxMin($low, 30))/30",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_IMXD60",
+  "lib": "Qlib Alpha158",
+  "formula": "(IdxMax($high, 60)-IdxMin($low, 60))/60",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORR5",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close, Log($volume+1), 5)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORR10",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close, Log($volume+1), 10)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORR20",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close, Log($volume+1), 20)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORR30",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close, Log($volume+1), 30)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORR60",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close, Log($volume+1), 60)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORD5",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close/Ref($close,1), Log($volume/Ref($volume, 1)+1), 5)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORD10",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close/Ref($close,1), Log($volume/Ref($volume, 1)+1), 10)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORD20",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close/Ref($close,1), Log($volume/Ref($volume, 1)+1), 20)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORD30",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close/Ref($close,1), Log($volume/Ref($volume, 1)+1), 30)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CORD60",
+  "lib": "Qlib Alpha158",
+  "formula": "Corr($close/Ref($close,1), Log($volume/Ref($volume, 1)+1), 60)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTP5",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 5)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTP10",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 10)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTP20",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 20)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTP30",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 30)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTP60",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 60)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTN5",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close<Ref($close, 1), 5)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTN10",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close<Ref($close, 1), 10)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTN20",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close<Ref($close, 1), 20)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTN30",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close<Ref($close, 1), 30)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTN60",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close<Ref($close, 1), 60)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTD5",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 5)-Mean($close<Ref($close, 1), 5)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTD10",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 10)-Mean($close<Ref($close, 1), 10)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTD20",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 20)-Mean($close<Ref($close, 1), 20)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTD30",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 30)-Mean($close<Ref($close, 1), 30)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_CNTD60",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($close>Ref($close, 1), 60)-Mean($close<Ref($close, 1), 60)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMP5",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($close-Ref($close, 1), 0), 5)/(Sum(Abs($close-Ref($close, 1)), 5)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMP10",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($close-Ref($close, 1), 0), 10)/(Sum(Abs($close-Ref($close, 1)), 10)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMP20",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($close-Ref($close, 1), 0), 20)/(Sum(Abs($close-Ref($close, 1)), 20)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMP30",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($close-Ref($close, 1), 0), 30)/(Sum(Abs($close-Ref($close, 1)), 30)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMP60",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($close-Ref($close, 1), 0), 60)/(Sum(Abs($close-Ref($close, 1)), 60)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMN5",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($close, 1)-$close, 0), 5)/(Sum(Abs($close-Ref($close, 1)), 5)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMN10",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($close, 1)-$close, 0), 10)/(Sum(Abs($close-Ref($close, 1)), 10)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMN20",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($close, 1)-$close, 0), 20)/(Sum(Abs($close-Ref($close, 1)), 20)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMN30",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($close, 1)-$close, 0), 30)/(Sum(Abs($close-Ref($close, 1)), 30)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMN60",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($close, 1)-$close, 0), 60)/(Sum(Abs($close-Ref($close, 1)), 60)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMD5",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($close-Ref($close, 1), 0), 5)-Sum(Greater(Ref($close, 1)-$close, 0), 5))/(Sum(Abs($close-Ref($close, 1)), 5)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMD10",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($close-Ref($close, 1), 0), 10)-Sum(Greater(Ref($close, 1)-$close, 0), 10))/(Sum(Abs($close-Ref($close, 1)), 10)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMD20",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($close-Ref($close, 1), 0), 20)-Sum(Greater(Ref($close, 1)-$close, 0), 20))/(Sum(Abs($close-Ref($close, 1)), 20)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMD30",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($close-Ref($close, 1), 0), 30)-Sum(Greater(Ref($close, 1)-$close, 0), 30))/(Sum(Abs($close-Ref($close, 1)), 30)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_SUMD60",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($close-Ref($close, 1), 0), 60)-Sum(Greater(Ref($close, 1)-$close, 0), 60))/(Sum(Abs($close-Ref($close, 1)), 60)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VMA5",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($volume, 5)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VMA10",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($volume, 10)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VMA20",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($volume, 20)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VMA30",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($volume, 30)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VMA60",
+  "lib": "Qlib Alpha158",
+  "formula": "Mean($volume, 60)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSTD5",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($volume, 5)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSTD10",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($volume, 10)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSTD20",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($volume, 20)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSTD30",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($volume, 30)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSTD60",
+  "lib": "Qlib Alpha158",
+  "formula": "Std($volume, 60)/($volume+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_WVMA5",
+  "lib": "Qlib Alpha158",
+  "formula": "Std(Abs($close/Ref($close, 1)-1)*$volume, 5)/(Mean(Abs($close/Ref($close, 1)-1)*$volume, 5)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_WVMA10",
+  "lib": "Qlib Alpha158",
+  "formula": "Std(Abs($close/Ref($close, 1)-1)*$volume, 10)/(Mean(Abs($close/Ref($close, 1)-1)*$volume, 10)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_WVMA20",
+  "lib": "Qlib Alpha158",
+  "formula": "Std(Abs($close/Ref($close, 1)-1)*$volume, 20)/(Mean(Abs($close/Ref($close, 1)-1)*$volume, 20)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_WVMA30",
+  "lib": "Qlib Alpha158",
+  "formula": "Std(Abs($close/Ref($close, 1)-1)*$volume, 30)/(Mean(Abs($close/Ref($close, 1)-1)*$volume, 30)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_WVMA60",
+  "lib": "Qlib Alpha158",
+  "formula": "Std(Abs($close/Ref($close, 1)-1)*$volume, 60)/(Mean(Abs($close/Ref($close, 1)-1)*$volume, 60)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMP5",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($volume-Ref($volume, 1), 0), 5)/(Sum(Abs($volume-Ref($volume, 1)), 5)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMP10",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($volume-Ref($volume, 1), 0), 10)/(Sum(Abs($volume-Ref($volume, 1)), 10)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMP20",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($volume-Ref($volume, 1), 0), 20)/(Sum(Abs($volume-Ref($volume, 1)), 20)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMP30",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($volume-Ref($volume, 1), 0), 30)/(Sum(Abs($volume-Ref($volume, 1)), 30)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMP60",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater($volume-Ref($volume, 1), 0), 60)/(Sum(Abs($volume-Ref($volume, 1)), 60)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMN5",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($volume, 1)-$volume, 0), 5)/(Sum(Abs($volume-Ref($volume, 1)), 5)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMN10",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($volume, 1)-$volume, 0), 10)/(Sum(Abs($volume-Ref($volume, 1)), 10)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMN20",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($volume, 1)-$volume, 0), 20)/(Sum(Abs($volume-Ref($volume, 1)), 20)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMN30",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($volume, 1)-$volume, 0), 30)/(Sum(Abs($volume-Ref($volume, 1)), 30)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMN60",
+  "lib": "Qlib Alpha158",
+  "formula": "Sum(Greater(Ref($volume, 1)-$volume, 0), 60)/(Sum(Abs($volume-Ref($volume, 1)), 60)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMD5",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($volume-Ref($volume, 1), 0), 5)-Sum(Greater(Ref($volume, 1)-$volume, 0), 5))/(Sum(Abs($volume-Ref($volume, 1)), 5)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMD10",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($volume-Ref($volume, 1), 0), 10)-Sum(Greater(Ref($volume, 1)-$volume, 0), 10))/(Sum(Abs($volume-Ref($volume, 1)), 10)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMD20",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($volume-Ref($volume, 1), 0), 20)-Sum(Greater(Ref($volume, 1)-$volume, 0), 20))/(Sum(Abs($volume-Ref($volume, 1)), 20)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMD30",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($volume-Ref($volume, 1), 0), 30)-Sum(Greater(Ref($volume, 1)-$volume, 0), 30))/(Sum(Abs($volume-Ref($volume, 1)), 30)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "qlib_VSUMD60",
+  "lib": "Qlib Alpha158",
+  "formula": "(Sum(Greater($volume-Ref($volume, 1), 0), 60)-Sum(Greater(Ref($volume, 1)-$volume, 0), 60))/(Sum(Abs($volume-Ref($volume, 1)), 60)+1e-12)",
+  "source": "Microsoft Qlib (MIT) qlib/contrib/data/loader.py Alpha158"
+ },
+ {
+  "id": "aca_rev1m",
+  "lib": "学术/金工",
+  "formula": "-(CLOSE/DELAY(CLOSE,20)-1)",
+  "source": "短期反转（Jegadeesh 1990；A股最强异象之一）"
+ },
+ {
+  "id": "aca_mom12_1",
+  "lib": "学术/金工",
+  "formula": "DELAY(CLOSE,20)/DELAY(CLOSE,250)-1",
+  "source": "动量 12-1（Jegadeesh & Titman 1993；A股通常无效）"
+ },
+ {
+  "id": "aca_maxret",
+  "lib": "学术/金工",
+  "formula": "-TSMAX(RET,20)",
+  "source": "彩票效应 MAX（Bali, Cakici & Whitelaw 2011）"
+ },
+ {
+  "id": "aca_ivol",
+  "lib": "学术/金工",
+  "formula": "-STD(RET-(BANCHMARKINDEXCLOSE/DELAY(BANCHMARKINDEXCLOSE,1)-1),20)",
+  "source": "特质波动率（Ang et al. 2006）近似：相对沪深300的超额收益波动"
+ },
+ {
+  "id": "aca_beta",
+  "lib": "学术/金工",
+  "formula": "-REGBETA(RET,BANCHMARKINDEXCLOSE/DELAY(BANCHMARKINDEXCLOSE,1)-1,250)",
+  "source": "低贝塔（Frazzini & Pedersen 2014）"
+ },
+ {
+  "id": "aca_illiq",
+  "lib": "学术/金工",
+  "formula": "LOG(MEAN(ABS(RET)/AMOUNT,20)*1e9+1e-9)",
+  "source": "非流动性（Amihud 2002）"
+ },
+ {
+  "id": "aca_abturn",
+  "lib": "学术/金工",
+  "formula": "-(MEAN(VOLUME,20)/MEAN(VOLUME,250))",
+  "source": "异常换手（Liu, Stambaugh & Yuan 2019 CH-4 情绪因子，用成交量近似）"
+ },
+ {
+  "id": "aca_skew",
+  "lib": "学术/金工",
+  "formula": "-SKEW(RET,20)",
+  "source": "收益偏度（Harvey & Siddique 2000）"
+ },
+ {
+  "id": "aca_lowprice",
+  "lib": "学术/金工",
+  "formula": "-LOG(RAWCLOSE)",
+  "source": "低价股效应"
+ },
+ {
+  "id": "aca_vol20",
+  "lib": "学术/金工",
+  "formula": "-STD(RET,20)",
+  "source": "低波动（Blitz & van Vliet 2007）"
+ },
+ {
+  "id": "aca_size_value",
+  "lib": "学术/金工",
+  "formula": "-LOG(MEAN(AMOUNT,60))",
+  "source": "规模代理：成交额（无总股本数据；Liu-Stambaugh-Yuan 指出最小 30% 含壳价值）"
+ },
+ {
+  "id": "jg_amp20",
+  "lib": "学术/金工",
+  "formula": "-MEAN(HIGH/LOW-1,20)",
+  "source": "振幅因子（券商金工常见）"
+ },
+ {
+  "id": "jg_turnvol",
+  "lib": "学术/金工",
+  "formula": "-STD(VOLUME,20)/MEAN(VOLUME,20)",
+  "source": "换手率波动（券商金工常见，用成交量近似）"
+ },
+ {
+  "id": "jg_pvcorr",
+  "lib": "学术/金工",
+  "formula": "-CORR(CLOSE,VOLUME,20)",
+  "source": "量价相关性（券商金工常见）"
+ },
+ {
+  "id": "jg_upshadow",
+  "lib": "学术/金工",
+  "formula": "-MEAN((HIGH-MAX(OPEN,CLOSE))/CLOSE,20)",
+  "source": "上影线因子（券商金工常见）"
+ },
+ {
+  "id": "jg_downshadow",
+  "lib": "学术/金工",
+  "formula": "MEAN((MIN(OPEN,CLOSE)-LOW)/CLOSE,20)",
+  "source": "下影线因子"
+ },
+ {
+  "id": "jg_gap",
+  "lib": "学术/金工",
+  "formula": "-MEAN(ABS(OPEN/DELAY(CLOSE,1)-1),20)",
+  "source": "隔夜跳空幅度"
+ },
+ {
+  "id": "jg_overnight",
+  "lib": "学术/金工",
+  "formula": "MEAN(OPEN/DELAY(CLOSE,1)-1,20)",
+  "source": "隔夜收益（A股隔夜/日内收益分化，多篇金工研报）"
+ },
+ {
+  "id": "jg_intraday",
+  "lib": "学术/金工",
+  "formula": "-MEAN(CLOSE/OPEN-1,20)",
+  "source": "日内收益反转"
+ },
+ {
+  "id": "jg_smartmoney",
+  "lib": "学术/金工",
+  "formula": null,
+  "source": "聪明钱因子（方正金工）",
+  "status": "skipped",
+  "reason": "需要分钟成交数据"
+ },
+ {
+  "id": "jg_ideal_amp",
+  "lib": "学术/金工",
+  "formula": null,
+  "source": "理想振幅（开源金工）",
+  "status": "skipped",
+  "reason": "可用日线做，下一版加专门函数"
+ },
+ {
+  "id": "fund_ep",
+  "lib": "学术/金工",
+  "formula": null,
+  "source": "EP/BP 价值（Fama-French；CH-3 用 EP）",
+  "status": "skipped",
+  "reason": "EODHD 没有 A 股财务数据，待接 AKShare/BaoStock 财报"
+ },
+ {
+  "id": "fund_sue",
+  "lib": "学术/金工",
+  "formula": null,
+  "source": "盈利惊喜 SUE",
+  "status": "skipped",
+  "reason": "需要财报"
+ },
+ {
+  "id": "analyst_rev",
+  "lib": "学术/金工",
+  "formula": null,
+  "source": "分析师一致预期调整",
+  "status": "skipped",
+  "reason": "需要一致预期数据（万得/朝阳永续，收费）"
+ },
+ {
+  "id": "north_flow",
+  "lib": "学术/金工",
+  "formula": null,
+  "source": "北向资金持股变化",
+  "status": "skipped",
+  "reason": "待接免费数据源"
+ },
+ {
+  "id": "lhb_seats",
+  "lib": "学术/金工",
+  "formula": null,
+  "source": "龙虎榜席位",
+  "status": "skipped",
+  "reason": "下载中（cn_lhb.py），单独一轮研究"
+ }
+]

@@ -13,7 +13,7 @@ concurrency: quick-study
 jobs:
   quick:
     runs-on: ubuntu-latest
-    timeout-minutes: 200
+    timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -39,7 +39,7 @@ jobs:
           path: data/cn
           key: cn-${{ github.run_id }}
           restore-keys: cn-
-      - run: pip install numpy pandas scipy lightgbm
+      - run: pip install numpy pandas scipy lightgbm bottleneck
       - name: Run rounds
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
