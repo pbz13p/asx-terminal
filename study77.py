@@ -181,14 +181,13 @@ def style_residual(P, X, cat):
     return res
 
 
-def lgb_eval(P, X, feats, label):
+def lgb_preds(P, X, feats):
     import lightgbm as lgb
     params = dict(objective="regression", learning_rate=0.03, num_leaves=31, min_data_in_leaf=1000, feature_fraction=0.5,
                   bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0, verbose=-1, seed=7, num_threads=4)
     pred = np.full(len(P), np.nan)
     imp = pd.Series(0.0, index=feats)
-    years = sorted(P.date.str[:4].unique())
-    for y in years:
+    for y in sorted(P.date.str[:4].unique()):
         tr = (P.date < f"{int(y) - 1}-12-01").values
         if P.date[tr].nunique() < 36:
             continue
@@ -196,7 +195,11 @@ def lgb_eval(P, X, feats, label):
         imp += pd.Series(mdl.feature_importance("gain"), index=feats)
         te = (P.date.str[:4] == y).values
         pred[te] = mdl.predict(X[te])
-    out = {"model": label, "n_features": len(feats)}
+    return pred, imp
+
+
+def evaluate(P, pred, label, n_features=None):
+    out = {"model": label, "n_features": n_features}
     T = P.assign(pred=pred)
     T = T[T.pred.notna() & ~T.limit_up_today.astype(bool)]
     for g in ("big", "small"):
@@ -207,17 +210,26 @@ def lgb_eval(P, X, feats, label):
         oos = pm[pm.index >= SPLIT]
         pr = (top.ex20_res - top.cost).groupby(top.date).mean()
         epi = {k: round(100 * float(pm[(pm.index >= a) & (pm.index <= b + "-31")].mean()), 2) for k, (a, b) in EPISODES.items()}
+        sharpe = float(pm.mean() / pm.std() * math.sqrt(12)) if pm.std() > 0 else None
         out[g] = {"top10_net_month": round(100 * float(pm.mean()), 2), "t": round(tstat(pm) or 0, 2),
+                  "sharpe_year": round(sharpe, 2) if sharpe else None,
                   "style_neutral_net_month": round(100 * float(pr.mean()), 2), "style_neutral_t": round(tstat(pr) or 0, 2),
                   "episodes": epi, "worst_month": round(100 * float(pm.min()), 2),
                   "top10_net_month_2019on": round(100 * float(oos.mean()), 2), "t_2019on": round(tstat(oos) or 0, 2),
                   "by_year": {y: round(100 * float(v), 2) for y, v in pm.groupby(pm.index.str[:4]).mean().items()},
                   "positive_years": f"{int((pm.groupby(pm.index.str[:4]).mean() > 0).sum())}/{pm.index.str[:4].nunique()}"}
-    out["top_features"] = {k: round(float(v / imp.sum() * 100), 1) for k, v in imp.sort_values(ascending=False).head(25).items()} if imp.sum() else {}
     return out
 
 
-def main():
+def lgb_eval(P, X, feats, label):
+    pred, imp = lgb_preds(P, X, feats)
+    out = evaluate(P, pred, label, len(feats))
+    out["top_features"] = {k: round(float(v / imp.sum() * 100), 1) for k, v in imp.sort_values(ascending=False).head(25).items()} if imp.sum() else {}
+    out["_pred"] = pred
+    return out
+
+def prepare(judge_factors=True, seq_len=0):
+    """Shared by round 77 and round 78: panel, outcomes, all formula alphas (X), optional raw price sequences."""
     t0 = time.time()
     cal, cols, B, traded, base, samples = build()
     bc, bo, bname = bench(cal)
@@ -249,7 +261,8 @@ def main():
             X[:, k] = x
             done.append(k)
             r["status"] = "ok"
-            r["big"], r["small"] = judge(P, x, "big"), judge(P, x, "small")
+            if judge_factors:
+                r["big"], r["small"] = judge(P, x, "big"), judge(P, x, "small")
         except Exception as ex:
             r.update(status="skipped", reason=f"{type(ex).__name__}: {ex}"[:120])
         results.append(r)
@@ -257,8 +270,29 @@ def main():
             print("[factor]", k, len(cat), e["id"], f"{time.time() - t0:.0f}s", flush=True)
         if len(E.cache) > 40:
             E.cache = {kk: vv for kk, vv in E.cache.items() if kk in ("vwap", "amount", "returns")}
+    S = sequences(B, tt, cc, seq_len) if seq_len else None
     del E, B
     P["ex20_res"] = style_residual(P, X, cat)
+    return {"P": P, "X": X, "cat": cat, "done": done, "results": results, "S": S, "bench": bname, "t0": t0}
+
+
+def sequences(B, tt, cc, L):
+    """Last L days per sample, Alpha360 style: open/high/low/close and VWAP over today's close, volume over today's volume."""
+    c = B["close"]
+    out = np.zeros((len(tt), L, 6), dtype="float32")
+    for j, (name, den) in enumerate([("open", c), ("high", c), ("low", c), ("close", c), ("vwap", c), ("volume", B["volume"])]):
+        a = (B["high"] + B["low"] + B["close"]) / 3 if name == "vwap" else B[name]
+        for k in range(L):
+            i = np.maximum(tt - (L - 1 - k), 0)
+            with np.errstate(all="ignore"):
+                v = a[i, cc] / den[tt, cc]
+            out[:, k, j] = np.nan_to_num(np.log(np.clip(v, 1e-4, 1e4)) if name == "volume" else v - 1, nan=0.0)
+    return out
+
+
+def main():
+    d = prepare()
+    P, X, cat, done, results, bname, t0 = d["P"], d["X"], d["cat"], d["done"], d["results"], d["bench"], d["t0"]
     ok = [r for r in results if r["status"] == "ok"]
     summary = {}
     for g in ("big", "small"):
@@ -278,14 +312,14 @@ def main():
     names = [cat[k]["id"] for k in done]
     XA = X[:, done]
     models = [lgb_eval(P, XB, base_feats, "round72 features (34 textbook indicators)")]
-    print("[lgb base]", json.dumps(models[-1], ensure_ascii=False)[:600], f"{time.time() - t0:.0f}s", flush=True)
+    print("[lgb base]", json.dumps({k: v for k, v in models[-1].items() if k != "_pred"}, ensure_ascii=False)[:600], f"{time.time() - t0:.0f}s", flush=True)
     models.append(lgb_eval(P, XA, names, "all formula alphas"))
-    print("[lgb alphas]", json.dumps(models[-1], ensure_ascii=False)[:600], f"{time.time() - t0:.0f}s", flush=True)
+    print("[lgb alphas]", json.dumps({k: v for k, v in models[-1].items() if k != "_pred"}, ensure_ascii=False)[:600], f"{time.time() - t0:.0f}s", flush=True)
     models.append(lgb_eval(P, np.hstack([XB, XA]), base_feats + names, "round72 features + all formula alphas"))
-    print("[lgb both]", json.dumps(models[-1], ensure_ascii=False)[:600], f"{time.time() - t0:.0f}s", flush=True)
+    print("[lgb both]", json.dumps({k: v for k, v in models[-1].items() if k != "_pred"}, ensure_ascii=False)[:600], f"{time.time() - t0:.0f}s", flush=True)
     out = {"method": __doc__.strip(), "bench": bname, "rows": int(len(P)), "stocks": int(P.col.nunique()), "dates": int(P.date.nunique()),
            "first": P.date.min(), "last": P.date.max(), "catalog": len(cat), "computed": len(ok), "summary": summary,
-           "models": models, "factors": results, "seconds": round(time.time() - t0)}
+           "models": [{k: v for k, v in m.items() if k != "_pred"} for m in models], "factors": results, "seconds": round(time.time() - t0)}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1, default=float), encoding="utf-8")
     print("[done]", out["seconds"], "s")

@@ -39,7 +39,7 @@ jobs:
           path: data/cn
           key: cn-${{ github.run_id }}
           restore-keys: cn-
-      - run: pip install numpy pandas scipy lightgbm bottleneck
+      - run: pip install numpy pandas scipy lightgbm bottleneck && (grep -q "rounds=.*78" .github/run-quick && pip install torch --index-url https://download.pytorch.org/whl/cpu || true)
       - name: Run rounds
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
