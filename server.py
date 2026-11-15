@@ -86,6 +86,20 @@ class Handler(SimpleHTTPRequestHandler):
         secret = (os.environ.get("SITE_SECRET") or os.environ.get("ASX_DATA_KEY") or "local").encode()
         return user + "." + hmac.new(secret, user.encode(), hashlib.sha256).hexdigest()[:40]
 
+    def _user(self):
+        """Logged-in user name; 'local' on your own PC (no login)."""
+        users = self._users()
+        if not users:
+            return "local"
+        from http.cookies import SimpleCookie
+        c = SimpleCookie(self.headers.get("Cookie") or "")
+        tok = c["ntsess"].value if "ntsess" in c else ""
+        return tok.split(".", 1)[0] if self._logged_in() else None
+
+    def _is_owner(self):
+        u = self._user()
+        return u == "local" or (u is not None and u == next(iter(self._users()), None))  # first account in SITE_USERS = Frank
+
     def _logged_in(self):
         users = self._users()
         if not users:
@@ -114,7 +128,24 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_POST(self):
-        if urlparse(self.path).path != "/login":
+        path = urlparse(self.path).path
+        if path in ("/api/chat", "/api/idea"):
+            if not self._logged_in():
+                self.send_json({"ok": False, "error": "请先登录"}, 401)
+                return
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(min(n, 20000)).decode("utf-8") or "{}")
+                import aichat
+                if path == "/api/chat":
+                    data = aichat.chat(self, self._user(), body.get("text"), "cn" if body.get("m") == "cn" else "au", (body.get("code") or "")[:6])
+                else:
+                    data = aichat.send_idea(self._user(), str(body.get("id", "")), body.get("note", ""))
+                self.send_json({"ok": True, "data": data})
+            except Exception as e:
+                self.send_json({"ok": False, "error": str(e)[:300]}, 200)
+            return
+        if path != "/login":
             self.send_error(404)
             return
         from urllib.parse import parse_qs as _pq
@@ -328,6 +359,15 @@ class Handler(SimpleHTTPRequestHandler):
             return data
         if name == "research":
             return self.research()
+        if name in ("chathist", "ideas", "aiwho"):
+            import aichat
+            if name == "aiwho":
+                return {"user": self._user(), "ai": aichat.provider_for(self._user()), "owner": self._is_owner()}
+            if name == "chathist":
+                return [m for m in aichat.history(self._user(), 60) if m.get("market") == ("cn" if q.get("m") == "cn" else "au")]
+            if not self._is_owner():
+                raise ValueError("只有 Frank 能看待审核的想法")
+            return aichat.ideas()
         if name == "cnpicks":
             try:
                 return fetch_result("cn_picks.json")
@@ -371,7 +411,7 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py")
 
 

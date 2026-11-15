@@ -22,7 +22,8 @@ if [ ! -f "$DIR/.env" ]; then
   P1=$(ask "你的密码")
   read -r -p "爸爸的用户名（例如 baba）: " U2 < /dev/tty
   P2=$(ask "爸爸的密码")
-  ANT=$(ask "ANTHROPIC_API_KEY（公告 AI 翻译用，没有就直接回车）")
+  ANT=$(ask "ANTHROPIC_API_KEY（你的问 AI 和公告翻译用，没有就直接回车）")
+  DSK=$(ask "DEEPSEEK_API_KEY（爸爸的问 AI 用，没有就直接回车）")
   umask 077
   cat > "$DIR/.env" <<ENV
 EODHD_API_KEY=$EOD
@@ -30,6 +31,8 @@ ASX_DATA_KEY=$KEY
 SITE_USERS=$U1:$P1,$U2:$P2
 SITE_SECRET=$(head -c 32 /dev/urandom | base64 | tr -d '/+=')
 ANTHROPIC_API_KEY=$ANT
+DEEPSEEK_API_KEY=$DSK
+SITE_AI=$U1:claude,$U2:deepseek
 ENV
 fi
 chown -R neon:neon "$DIR"
