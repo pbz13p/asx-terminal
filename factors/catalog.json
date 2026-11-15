@@ -2897,5 +2897,12 @@
   "formula": "RANK(CORR(DELTA(CLOSE,1)/CLOSE,DELTA(VOLUME,1)/VOLUME,20)*MEAN((CLOSE-OPEN)/CLOSE,5))",
   "source": "QuantaAlpha（arXiv 2602.07085，2026）大模型自动挖出的「Institutional Momentum Score 20D」，沪深300 上 IC 约 0.013，作者自己评为不建议直接用 https://arxiv.org/pdf/2602.07085v1",
   "note": "先验弱，测着看；原式 TS_CORR/TS_MEAN 已换成本库的 CORR/MEAN"
+ },
+ {
+  "id": "new_season3y",
+  "lib": "新方法 2026-11-15",
+  "formula": "((DELAY(CLOSE,232)/DELAY(CLOSE,252))+(DELAY(CLOSE,484)/DELAY(CLOSE,504))+(DELAY(CLOSE,736)/DELAY(CLOSE,756)))/3-1",
+  "source": "个股季节性：过去 1–3 年里「接下来这 20 个交易日」对应时段的平均收益（Heston & Sadka 2008 的日线版）；本周 arXiv 2611.15657（Butler 等，2026-11）在 50 个期货市场上做日历季节性，扣成本后年内/半年内季节性夏普约 0.3–0.4，周内/月内季节性扣成本后为负 https://arxiv.org/pdf/2611.15657",
+  "note": "窗口对齐第 77 轮 H=20；要 3 年历史，上市不满 3 年的为空；原论文是期货指数，个股层面待本库自己验证"
  }
 ]
