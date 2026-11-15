@@ -6,7 +6,8 @@ Models (walk-forward, retrained every year on data up to the previous November, 
               Chinese quant teams start from); 3 seeds averaged.
   3. GRU    — recurrent network reading the raw last 60 days of open/high/low/close/VWAP/volume (Qlib Alpha360 style):
               no hand-made factors at all, the network finds its own patterns.
-  4. Ensemble — average rank of the three.
+  4. Ensemble — average rank of the three (梁文锋 2019: stack strategies on the same capital, don't split it).
+  5. Decay test — LGBM trained once on data to 2016 and never retrained, scored year by year.
 Target: next-20-day excess return ranked across stocks (-0.5..0.5). Outcome, costs, limit rules, big/small groups,
 style-neutral alpha and stress episodes exactly as round 77. Deep learning only counts if it beats LGBM after
 costs out of sample (2019 on) and in the style-neutral test.
@@ -133,6 +134,20 @@ def main():
     preds["lgbm"] = lg.pop("_pred")
     models.append(lg)
     print("[lgbm]", json.dumps({k: lg[k] for k in ("big", "small")}, ensure_ascii=False)[:500], f"{time.time() - t0:.0f}s", flush=True)
+
+    # 梁文锋 2019: "两年前有效的量化策略，现在也慢慢失效了". Test: freeze a model trained only on data to 2016-11,
+    # never retrain, and see how its edge fades year by year versus the yearly-retrained model above.
+    import lightgbm as lgb
+    tr = (P.date < "2016-12-01").values
+    mdl = lgb.train(dict(objective="regression", learning_rate=0.03, num_leaves=31, min_data_in_leaf=1000, feature_fraction=0.5,
+                         bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0, verbose=-1, seed=7, num_threads=4),
+                    lgb.Dataset(XF[tr], P.ex20[tr].clip(-.5, 1).values), num_boost_round=250)
+    fz = np.where(P.date >= "2017-01", mdl.predict(XF), np.nan)
+    m = s77.evaluate(P, fz, "LGBM frozen at 2016 (decay test, never retrained)", len(names))
+    m["retrained_by_year"] = {g: lg[g]["by_year"] for g in ("big", "small")}
+    models.append(m)
+    print("[frozen]", json.dumps({g: m[g]["by_year"] for g in ("big", "small")}), flush=True)
+    del mdl
 
     Z = rank_norm(P, XF)
     preds["mlp"] = walk(P, torch_mlp(Z, y), "mlp")
