@@ -69,18 +69,8 @@ def pdf_text(item):
     pages = reader.pages
     n = len(pages)
     clean = lambda t: re.sub(r"[ \t]+", " ", t).strip().encode("utf-8", "replace").decode("utf-8")
-    head = "\n".join((p.extract_text() or "") for p in pages[:8])
-    tail = "\n".join((p.extract_text() or "") for p in pages[max(8, n - 5):]) if n > 8 else ""
-    # 2026-11-15: the point can sit in the middle (resource tables, drill intercepts, deal terms). Scan every middle
-    # page (free) and keep the 6 richest in key terms, each tagged with its page number.
-    mid = []
-    if n > 13:
-        txt = {i: (pages[i].extract_text() or "") for i in range(8, min(n - 5, 150))}
-        best = sorted(txt, key=lambda i: -len(KEY.findall(txt[i])))[:6]
-        mid = [f"[page {i + 1}]\n" + clean(txt[i])[:2500] for i in sorted(best) if KEY.search(txt[i])]
-    return (clean(head)[:8000] + ("\n[...]\n" + "\n".join(mid) if mid else "")
-            + ("\n[...]\n" + clean(tail)[-7000:] if tail else "")), final, n
-
+    # 2026-11-15 (cache raised to 100GB): keep every page, tagged with its number, so nothing in the middle is missed.
+    return "\n".join(f"[page {i + 1}]\n" + clean(pages[i].extract_text() or "") for i in range(min(n, 400))), final, n
 
 KEY = re.compile(r"\$\s?\d|A\$|million|\bMt\b|g/t|\bppm\b|% ?(Cu|Ni|Li2O|Zn|Pb|U3O8)|intercept|resource|reserve|grade|"
                  r"revenue|cash|placement|offtake|agreement|consideration|NPV|IRR|funding|debt|risk|trial|patient|"

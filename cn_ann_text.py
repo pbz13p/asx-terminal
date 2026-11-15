@@ -3,7 +3,7 @@
 Reads the cninfo index (data/cn_ann/{code}.json.gz, from cn_ann.py), keeps announcements whose titles match the kinds
 that move prices (业绩预告/快报, 重大合同/中标, 增减持, 回购, 重组/收购, 定增, 股权激励, 立案/处罚/问询, 风险提示,
 停复牌, 诉讼, 退市 ...), drops boilerplate (法律意见书, 独立董事意见, 章程/制度, 英文版, 摘要 of long reports ...),
-downloads the PDF from cninfo's static server and keeps the first pages plus the later pages richest in key terms.
+downloads the PDF from cninfo's static server and keeps the full text of every page (up to 400).
 Newest first, resumable with a time budget; output data/cn_ann_text/{code}.json.gz = {id: {t, title, kind, pages, text}}.
 Env CNTXT_MINUTES (default 170), CNTXT_PAGES (default 6), CNTXT_SINCE (default 2016-01-01), CNTXT_SHARD (k/N, default 0/1).
 Quality: a PDF that fails is retried in later runs (up to 3 tries); an empty text is kept as an error, not as data.
@@ -24,7 +24,7 @@ BASE = "http://static.cninfo.com.cn/"
 BUDGET = 60 * float(os.environ.get("CNTXT_MINUTES", "170"))
 PAGES = int(os.environ.get("CNTXT_PAGES", "6"))
 SINCE = os.environ.get("CNTXT_SINCE", "2016-01-01")
-MAX_SCAN, EXTRA = 150, 6
+MAX_SCAN = 400   # pages kept per document (whole document for all but the rare 400+ page report)
 KEY = re.compile(r"万元|亿元|净利润|营业收入|同比|对价|交易价格|估值|业绩承诺|补偿|风险|担保|减值|亏损|违约|处罚|立案|占.{0,6}比例|%")
 KINDS = [
     ("业绩预告/快报", r"业绩预告|业绩快报|业绩预增|业绩预减|预盈|预亏|扭亏"),
@@ -62,13 +62,9 @@ def pdf_text(url):
         body = r.read()
     rd = PdfReader(io.BytesIO(body))
     n = len(rd.pages)
+    # 2026-11-15 (cache raised to 100GB): keep every page, tagged with its number, so nothing on page 7+ is missed.
     pages = [(rd.pages[i].extract_text() or "") for i in range(min(n, MAX_SCAN))]
-    keep = list(range(min(PAGES, len(pages))))
-    # The point is not always on the first pages: code scans every page (free) and also keeps the later pages
-    # that carry the most key terms (amounts, profit, consideration, risks, guarantees), so the AI reads those too.
-    later = sorted(range(len(keep), len(pages)), key=lambda i: -len(KEY.findall(pages[i])))
-    keep += sorted(i for i in later[:EXTRA] if KEY.search(pages[i]))
-    text = "\n".join((f"[第{i + 1}页]\n" if i >= PAGES else "") + pages[i] for i in keep)
+    text = "\n".join(f"[第{i + 1}页]\n{t}" for i, t in enumerate(pages))
     text = text.encode("utf-8", "replace").decode("utf-8")  # some PDFs yield lone surrogates, which crashed the save
     return re.sub(r"[ \t]+", " ", text).strip(), n
 
@@ -104,7 +100,7 @@ def main():
                     return True
                 if "error" in r:
                     return r.get("tries", 1) < 3
-                return r.get("pages", 0) > PAGES and not r.get("v2")   # long doc saved before key-page scanning: redo
+                return r.get("pages", 0) > PAGES and not r.get("full")   # long doc saved before full-text storage: redo
             todo = [(a, k) for a, k in sel if need(a)]
             stats["have"] += len(sel) - len(todo)
             if not todo:
@@ -120,7 +116,7 @@ def main():
                     text, n = pdf_text(a["url"])
                     if len(text) < 30:
                         raise ValueError("empty text (scanned PDF?)")
-                    rec.update(pages=n, text=text, v2=True)
+                    rec.update(pages=n, text=text, full=True)
                 except Exception as e:
                     prev = have.get(str(a["id"]), {})
                     rec.update(error=type(e).__name__, tries=prev.get("tries", 0) + 1)

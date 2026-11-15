@@ -108,17 +108,18 @@ def main():
                 d["flag_v2"] = True
                 save(code, d)
         # new announcements, plus earlier failures (up to 3 tries each)
-        # plus price-sensitive long docs saved before key-page scanning (2026-11-15), so the middle pages are read too
+        # plus price-sensitive docs saved before full-text storage (2026-11-15) that were cut (over 8 pages or 8000 chars)
         todo = [it for it in d["listed"] if it["ids"] not in d["docs"]
                 or ("error" in d["docs"][it["ids"]] and d["docs"][it["ids"]].get("tries", 1) < 3)
-                or (it["sensitive"] and d["docs"][it["ids"]].get("pages", 0) > 13 and not d["docs"][it["ids"]].get("kp"))]
+                or (it["sensitive"] and not d["docs"][it["ids"]].get("full") and "error" not in d["docs"][it["ids"]]
+                    and (d["docs"][it["ids"]].get("pages", 0) > 8 or len(d["docs"][it["ids"]].get("text", "")) >= 7900))]
         todo_total += len(todo)
 
         def fetch(it):
             try:
                 text, url, pages = study67.pdf_text(it)
                 return it["ids"], {"date": it["date"], "headline": it["headline"], "sensitive": it["sensitive"],
-                                   "pages": pages, "text": text, "kp": True}
+                                   "pages": pages, "text": text, "full": True}
             except Exception as e:
                 prev = d["docs"].get(it["ids"], {})
                 return it["ids"], {"date": it["date"], "headline": it["headline"], "sensitive": it["sensitive"],

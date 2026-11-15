@@ -11,7 +11,6 @@
 - 不对外发布；小红书只写草稿。
 
 ## 待 Frank 处理（傻瓜步骤）
-- 2026-11-15 GitHub 缓存扩容到 30GB（主人已同意）：①打开 https://github.com/settings/billing/plans ，升级到 Pro；②打开 https://github.com/settings/billing ，给 Actions 设一个每月预算上限（例如 10 美元）；③打开 https://github.com/pbz13p/asx-terminal/settings/actions ，找到缓存大小上限（Cache storage / cache size limit），改成 30 GB 保存；④告诉 Claude"扩好了"，Claude 改成 A 股公告整篇存。
 - 暂无。
 
 ## 排序表（影响 ÷ 工作量）
@@ -98,6 +97,11 @@
 - 终端右上角「🤖 问 AI」：输入想法，AI 用我们的研究资料回答（结论是否一致、理由、风险、怎么验证）。
 - Frank 用 Claude；爸爸在中国，按 Anthropic 的地区政策不能用 Claude，用 DeepSeek（SITE_AI 设置）。
 - 爸爸觉得好的想法点「📨 发给 Frank」，进入 Frank 的「待审核想法」；Frank 觉得值得，交给 Claude 正式回测，有效的写进研究中心并标明"爸爸的想法"。
+
+## 公告全文（2026-11-15 完成扩容）
+- 已办：GitHub Pro（每月 4 美元）、asx-terminal 缓存上限 100GB、Actions 每月预算 15 美元封顶（到了自动停）。
+- A 股、澳股公告改成整篇存（每页标页码，最多 400 页）；以前截断的价格敏感公告自动重下。
+- 待做：第 76 轮全量时 AI 按段读整篇（现在试跑只读前 CHARS 个字），长文按章节切段、每段都读，再汇总成一篇的分数。
 
 ## 第 76 轮：AI 读小盘股公告打分（主人 2026-11-15 下单，规则见 CLAUDE.md「用 AI 读文本做研究」）
 - 前置：第 69 轮先用现在的 864 家公司（约 8.2 万篇）重跑，带成本和 t 值，作为对比基准；否则"增量"没有可比的底。
