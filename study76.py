@@ -282,6 +282,13 @@ def pilot(all_docs, common):
 def main():
     if not os.environ.get("ANTHROPIC_API_KEY"):
         raise SystemExit("ANTHROPIC_API_KEY missing")
+    m = re.search(r"s76probe=(\S+)", Path(".github/run-quick").read_text()) if Path(".github/run-quick").exists() else None
+    if m:   # free: read back an earlier batch's errors
+        b = json.loads(call(f"{API}/{m.group(1)}"))
+        print("probe", b.get("processing_status"), b.get("request_counts"))
+        for line in call(b["results_url"]).decode().splitlines()[:3]:
+            print(line[:600])
+        return
     L = ledger()
     if L["total"] >= BUDGET_STOP:
         raise SystemExit(f"AI budget stop: ${L['total']} spent")
