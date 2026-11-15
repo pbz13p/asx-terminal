@@ -55,6 +55,9 @@
 - 分钟数据：Baostock 有 5 分钟 K 线，但全市场原始数据太大（几亿行，超过 GitHub 缓存上限）。做法：边下载边算出"聪明钱"等日内因子，只保存每天的因子值；先做最近 3 年。下一步做。
 - 数据到齐后：第 77 轮补测需要行业中性化、市值、基本面的 24 个因子（WorldQuant 的 IndNeutralize 类、价值、盈利惊喜等），并按 Liu-Stambaugh-Yuan 剔除最小 30% 壳股再测一遍。
 
+## 量化方法每周追踪（主人 2026-11-15）
+- 每周日自动搜一遍：幻方/梁文锋、九坤等量化私募，券商金工新研报，WorldQuant/AQR 等海外机构，arXiv/SSRN 新论文，Qlib 新版本。记在 research/quant_watch.md；公式写得清楚、用现有数据能算的，直接加进 factors/catalog.json，下一次第 77 轮重跑时一起测。
+
 ## 数据安全
 - 已做（2026-11-15）：backup.yml 每天把所有数据缓存过一遍（防止 7 天不用被清），每周日把全部原始数据加密打包存到 GitHub Release「data-backup」永久保存。
 - 待做：可选每月同步一份到主人的 Google Drive 或电脑。注意缓存总共只有 10GB，接近上限时要把旧数据只留在 Release 里。
