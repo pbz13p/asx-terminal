@@ -96,10 +96,17 @@ def main():
         if time.time() - t0 > BUDGET:
             continue
         d = load(code)
-        if not d["listed"] or d.get("listed_on") != date.today().isoformat():
+        if not d["listed"] or d.get("listed_on") != date.today().isoformat() or not d.get("flag_v2"):
             items = study67.listing(code, YEARS)
             if items:
                 d["listed"], d["listed_on"] = items, date.today().isoformat()
+                # 2026-11-15: the old parser marked every announcement price-sensitive; correct stored docs from the fresh list
+                flag = {it["ids"]: it["sensitive"] for it in items}
+                for ids, doc in d["docs"].items():
+                    if ids in flag:
+                        doc["sensitive"] = flag[ids]
+                d["flag_v2"] = True
+                save(code, d)
         # new announcements, plus earlier failures (up to 3 tries each)
         todo = [it for it in d["listed"] if it["ids"] not in d["docs"]
                 or ("error" in d["docs"][it["ids"]] and d["docs"][it["ids"]].get("tries", 1) < 3)]

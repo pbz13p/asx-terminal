@@ -44,7 +44,7 @@ def listing(code, years):
             head = re.sub(r"^\d{2}/\d{2}/\d{4}\s*(\d{1,2}:\d{2}\s*[ap]m)?\s*", "", text, flags=re.I)
             head = re.sub(r"\s*\d+\s*pages?\s*[\d.]+\s*[KM]B\s*$", "", head, flags=re.I).strip()
             items.append({"date": f"{m.group(3)}-{m.group(2)}-{m.group(1)}", "headline": head[:160],
-                          "sensitive": "pricesens" in tr.lower() or "price sensitive" in tr.lower(),
+                          "sensitive": "icon-price-sensitive" in tr or 'title="price sensitive"' in tr.lower(),  # every row has a pricesens cell; only sensitive ones hold the icon
                           "ids": link.group(2), "href": unescape(link.group(1))})
     return items
 

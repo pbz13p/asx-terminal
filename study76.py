@@ -60,6 +60,8 @@ def docs():
     out = []
     for f in sorted(ANN.glob("*.json.gz")):
         d = json.loads(gzip.decompress(f.read_bytes()))
+        if not d.get("flag_v2"):          # price-sensitive flag not yet corrected for this company
+            continue
         for ids, doc in d["docs"].items():
             if doc.get("sensitive") and doc.get("text"):
                 out.append({"id": ids, "code": d["code"], "date": doc["date"][:10], "headline": doc["headline"], "text": doc["text"]})
@@ -151,8 +153,13 @@ def run_batch(requests, label, wait_min):
     res = {}
     usage = Counter()
     per = defaultdict(Counter)
+    errs, err_examples = Counter(), []
     for line in call(b["results_url"]).decode().splitlines():
         r = json.loads(line)
+        if r["result"]["type"] != "succeeded":
+            errs[r["result"]["type"]] += 1
+            if len(err_examples) < 3:
+                err_examples.append(json.dumps(r["result"])[:400])
         if r["result"]["type"] == "succeeded":
             m = r["result"]["message"]
             res[r["custom_id"]] = "".join(c.get("text", "") for c in m["content"])
@@ -160,6 +167,7 @@ def run_batch(requests, label, wait_min):
                 if isinstance(v, int):
                     usage[k] += v
                     per[r["custom_id"][0]][k] += v
+    print("batch results:", dict(b.get("request_counts", {})), dict(errs), *err_examples, sep="\n")
     st.pop(label, None)
     STATE.write_text(json.dumps(st))
     return res, dict(usage), {k: dict(v) for k, v in per.items()}
@@ -279,6 +287,13 @@ def main():
         raise SystemExit(f"AI budget stop: ${L['total']} spent")
     all_docs = docs()
     print("price-sensitive docs", len(all_docs))
+    vals = Counter()
+    for f in sorted(ANN.glob("*.json.gz"))[:40]:
+        for doc in json.loads(gzip.decompress(f.read_bytes()))["docs"].values():
+            vals[repr(doc.get("sensitive"))] += 1
+    print("sensitive flag values (first 40 companies):", dict(vals))
+    if len(all_docs) < 2000:
+        raise SystemExit("price-sensitive flags not corrected yet for enough companies; run again after the announcement job")
     common = build_anonymiser(all_docs)
     stage = os.environ.get("S76_STAGE", "pilot")
     out = pilot(all_docs, common) if stage == "pilot" else {"stage": stage, "status": "not built yet"}
