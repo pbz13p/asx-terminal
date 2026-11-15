@@ -2883,5 +2883,19 @@
   "formula": "CLOSE/TSMAX(HIGH,250)",
   "source": "离 52 周高点的距离（George & Hwang 2004）；本周 SSRN 新论文 Chen, Stivers & Sun《Heterogeneity in Overnight-versus-Intraday Stock-Return Behavior with Asymmetric Information and 52-week Price Anchoring》以它为核心变量 https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7443340",
   "note": "越接近 52 周高点越大；A 股文献常见方向相反（锚定后反转），两个方向都看 IC 符号"
+ },
+ {
+  "id": "new_52wklow",
+  "lib": "新方法 2026-11-15",
+  "formula": "CLOSE/TSMIN(LOW,250)",
+  "source": "离 52 周低点的距离；arXiv 2602.06198（2026-02）美股微盘董事买入研究里排第 5 的特征（第 1 是离 52 周高点） https://arxiv.org/html/2602.06198v1",
+  "note": "和 new_52wkhigh 配对看"
+ },
+ {
+  "id": "new_qa_instmom20",
+  "lib": "新方法 2026-11-15",
+  "formula": "RANK(CORR(DELTA(CLOSE,1)/CLOSE,DELTA(VOLUME,1)/VOLUME,20)*MEAN((CLOSE-OPEN)/CLOSE,5))",
+  "source": "QuantaAlpha（arXiv 2602.07085，2026）大模型自动挖出的「Institutional Momentum Score 20D」，沪深300 上 IC 约 0.013，作者自己评为不建议直接用 https://arxiv.org/pdf/2602.07085v1",
+  "note": "先验弱，测着看；原式 TS_CORR/TS_MEAN 已换成本库的 CORR/MEAN"
  }
 ]
