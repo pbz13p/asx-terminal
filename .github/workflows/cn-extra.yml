@@ -1,6 +1,6 @@
 name: cn-extra
-# A-share financial statements (East Money), industry classes and daily valuation / turnover / traded value (Baostock).
-# First run builds history over several days (resumable); afterwards a daily top-up.
+# A-share financial statements (East Money, one job) and industry classes + daily valuation / turnover (Baostock,
+# 8 jobs side by side, each every 8th stock, own cache). Restarts itself until the history is complete, then daily.
 on:
   workflow_dispatch:
   schedule:
@@ -10,28 +10,80 @@ on:
     paths: ['cn_extra.py', '.github/workflows/cn-extra.yml']
 permissions:
   contents: read
+  actions: write
 concurrency: cn-extra
 jobs:
-  extra:
+  fin:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    timeout-minutes: 200
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
         with:
           path: data/cn_fin
           key: cnfin-${{ github.run_id }}
           restore-keys: cnfin-
-      - uses: actions/cache@v4
+      - run: pip install pandas
+      - run: python cn_extra.py
+        env:
+          CNX_PART: fin
+          CNX_MINUTES: "180"
+      - if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/cn_fin
+          key: cnfin-${{ github.run_id }}
+  val:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
         with:
           path: data/cn_val
-          key: cnval-${{ github.run_id }}
-          restore-keys: cnval-
+          key: cnval-s${{ matrix.shard }}-${{ github.run_id }}
+          restore-keys: |
+            cnval-s${{ matrix.shard }}-
+            cnval-
       - run: pip install baostock pandas
       - run: python cn_extra.py
         env:
-          CNX_MINUTES: "300"
-      - run: du -sh data/cn_fin data/cn_val || true
+          CNX_PART: val
+          CNX_MINUTES: "170"
+          CNX_SHARD: ${{ matrix.shard }}/8
+      - if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/cn_val
+          key: cnval-s${{ matrix.shard }}-${{ github.run_id }}
+      - if: always()
+        run: mkdir -p left && cp data/cn_val/.left left/${{ matrix.shard }} 2>/dev/null || echo 0 > left/${{ matrix.shard }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: left-${{ matrix.shard }}
+          path: left/
+  continue:
+    needs: [fin, val]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: left
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LEFT=$(cat left/*/* 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          echo "stocks left: $LEFT"
+          if [ "$LEFT" -gt 0 ]; then gh workflow run cn-extra.yml --ref main -R ${{ github.repository }}; fi

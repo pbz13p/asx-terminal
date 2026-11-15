@@ -111,10 +111,14 @@ def val():
     fi = fields.index("code")
     ti = fields.index("type")
     codes = [r[fi] for r in basic if r[ti] == "1"]           # type 1 = stock (listed or delisted)
+    k, n = (int(x) for x in os.environ.get("CNX_SHARD", "0/1").split("/"))   # N jobs side by side, each every N-th stock
+    codes = [c for i, c in enumerate(codes) if i % n == k]
     done = new = failed = 0
+    remaining = 0
     for code in codes:
         if left() < 120:
-            break
+            remaining += 1
+            continue
         f = VAL / f"{code}.json.gz"
         old = json.loads(gzip.decompress(f.read_bytes())) if f.exists() else {"rows": []}
         start = old["rows"][-1][0] if old["rows"] else "2008-01-01"
@@ -132,7 +136,8 @@ def val():
         done += 1
         new += len(rows)
     bs.logout()
-    return {"stocks_total": len(codes), "stocks_done_this_run": done, "rows_new": new, "failed": failed,
+    (VAL / ".left").write_text(str(remaining))
+    return {"stocks_total": len(codes), "stocks_left": remaining, "stocks_done_this_run": done, "rows_new": new, "failed": failed,
             "industry_rows": len(ind), "files": len(list(VAL.glob("??.*.json.gz")))}
 
 
