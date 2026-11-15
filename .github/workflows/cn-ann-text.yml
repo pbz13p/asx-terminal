@@ -30,7 +30,7 @@ jobs:
           path: data/cn_ann
           key: cnann-none
           restore-keys: cnann-
-      - uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
         with:
           path: data/cn_ann_text
           key: cnanntext-s${{ matrix.shard }}-${{ github.run_id }}
@@ -41,6 +41,11 @@ jobs:
       - run: python cn_ann_text.py
         env:
           CNTXT_SHARD: ${{ matrix.shard }}/4
+      - if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/cn_ann_text
+          key: cnanntext-s${{ matrix.shard }}-${{ github.run_id }}
       - if: always()
         run: mkdir -p left && cp data/.cn_ann_text_left left/${{ matrix.shard }} 2>/dev/null || echo 0 > left/${{ matrix.shard }}
       - if: always()

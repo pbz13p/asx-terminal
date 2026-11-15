@@ -61,6 +61,7 @@ def pdf_text(url):
     rd = PdfReader(io.BytesIO(body))
     n = len(rd.pages)
     text = "\n".join((rd.pages[i].extract_text() or "") for i in range(min(PAGES, n)))
+    text = text.encode("utf-8", "replace").decode("utf-8")  # some PDFs yield lone surrogates, which crashed the save
     return re.sub(r"[ \t]+", " ", text).strip(), n
 
 
@@ -118,7 +119,7 @@ def main():
                     have[ids] = rec
                     stats["fetched"] += 1
                     stats["failed"] += "error" in rec
-                p.write_bytes(gzip.compress(json.dumps(have, ensure_ascii=False, separators=(",", ":")).encode()))
+                p.write_bytes(gzip.compress(json.dumps(have, ensure_ascii=False, separators=(",", ":")).encode("utf-8", "replace")))
     Path("data/.cn_ann_text_left").write_text(str(left))
     stats["shard"] = shard
     stats.update(left=left, minutes=round((time.time() - t0) / 60, 1), by_kind=by_kind)
