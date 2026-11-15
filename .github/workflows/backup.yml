@@ -30,6 +30,9 @@ jobs:
       - name: Restore US daily snapshots
         uses: actions/cache/restore@v4
         with: {path: data/us_daily, key: usd-none, restore-keys: usd-}
+      - name: Restore AI reading cache and spend ledger
+        uses: actions/cache/restore@v4
+        with: {path: data/ai, key: ai-none, restore-keys: ai-}
       - name: Sizes
         run: du -sh data/* 2>/dev/null || true
       - name: Encrypted copy to the data-backup release (Sundays, or when run by hand)
@@ -39,7 +42,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%u)" != "7" ]; then echo "not Sunday: caches refreshed only"; exit 0; fi
           mkdir -p bk
-          for d in eod ann cn cn_ann us_daily; do
+          for d in eod ann cn cn_ann us_daily ai; do
             [ -d "data/$d" ] || continue
             tar czf - -C data "$d" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:ASX_DATA_KEY | split -b 1900m -d - "bk/$d.tar.gz.enc.part"
           done

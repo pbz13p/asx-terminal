@@ -24,6 +24,16 @@ jobs:
           path: data/eod
           key: eod-none
           restore-keys: eod-
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/ann
+          key: ann-none
+          restore-keys: ann-
+      - uses: actions/cache@v4
+        with:
+          path: data/ai
+          key: ai-${{ github.run_id }}
+          restore-keys: ai-
       - uses: actions/cache@v4
         with:
           path: data/cn
@@ -34,6 +44,7 @@ jobs:
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           ls data/eod | wc -l
           mkdir -p out
