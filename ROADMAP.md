@@ -11,6 +11,7 @@
 - 不对外发布；小红书只写草稿。
 
 ## 待 Frank 处理（傻瓜步骤）
+- 2026-11-15 GitHub 缓存扩容到 30GB（主人已同意）：①打开 https://github.com/settings/billing/plans ，升级到 Pro；②打开 https://github.com/settings/billing ，给 Actions 设一个每月预算上限（例如 10 美元）；③打开 https://github.com/pbz13p/asx-terminal/settings/actions ，找到缓存大小上限（Cache storage / cache size limit），改成 30 GB 保存；④告诉 Claude"扩好了"，Claude 改成 A 股公告整篇存。
 - 暂无。
 
 ## 排序表（影响 ÷ 工作量）
