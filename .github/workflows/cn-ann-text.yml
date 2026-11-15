@@ -1,0 +1,42 @@
+name: cn-ann-text
+# Full text of important A-share announcements (cn_ann_text.py), newest first; restarts itself until done, then daily.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 12 * * *'
+  push:
+    branches: [main]
+    paths: ['cn_ann_text.py', '.github/workflows/cn-ann-text.yml']
+permissions:
+  contents: read
+  actions: write
+concurrency: cn-ann-text
+jobs:
+  text:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cn_ann
+          key: cnann-none
+          restore-keys: cnann-
+      - uses: actions/cache@v4
+        with:
+          path: data/cn_ann_text
+          key: cnanntext-${{ github.run_id }}
+          restore-keys: cnanntext-
+      - run: pip install pypdf
+      - run: python cn_ann_text.py
+      - name: Continue if unfinished
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LEFT=$(cat data/.cn_ann_text_left 2>/dev/null || echo 0)
+          echo "left: $LEFT"; du -sh data/cn_ann_text || true
+          if [ "$LEFT" -gt 0 ]; then gh workflow run cn-ann-text.yml --ref main; fi

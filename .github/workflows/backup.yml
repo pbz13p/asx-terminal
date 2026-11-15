@@ -39,6 +39,9 @@ jobs:
       - name: Restore A-share valuation and turnover
         uses: actions/cache/restore@v4
         with: {path: data/cn_val, key: cnval-none, restore-keys: cnval-}
+      - name: Restore A-share announcement texts
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-}
       - name: Restore AI reading cache and spend ledger
         uses: actions/cache/restore@v4
         with: {path: data/ai, key: ai-none, restore-keys: ai-}
@@ -51,7 +54,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%u)" != "7" ]; then echo "not Sunday: caches refreshed only"; exit 0; fi
           mkdir -p bk
-          for d in eod ann cn cn_ann us_daily ai cn_lhb cn_fin cn_val; do
+          for d in eod ann cn cn_ann us_daily ai cn_lhb cn_fin cn_val cn_ann_text; do
             [ -d "data/$d" ] || continue
             tar czf - -C data "$d" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:ASX_DATA_KEY | split -b 1900m -d - "bk/$d.tar.gz.enc.part"
           done
