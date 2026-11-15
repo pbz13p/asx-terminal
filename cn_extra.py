@@ -28,7 +28,7 @@ URL = "https://datacenter-web.eastmoney.com/api/data/v1/get"
 SEC = '(SECURITY_TYPE_CODE in ("058001001","058001008"))(TRADE_MARKET_CODE!="069001017")'
 FIN_TABLES = {"yjbb": ("RPT_LICO_FN_CPD", "REPORTDATE", ""), "balance": ("RPT_DMSK_FN_BALANCE", "REPORT_DATE", SEC),
               "income": ("RPT_DMSK_FN_INCOME", "REPORT_DATE", SEC), "cashflow": ("RPT_DMSK_FN_CASHFLOW", "REPORT_DATE", SEC)}
-VAL_FIELDS = "date,open,high,low,close,volume,amount,turn,tradestatus,pctChg,peTTM,pbMRQ,psTTM,pcfNcfTTM,isST"
+VAL_FIELDS = "date,close,volume,amount,turn,tradestatus,peTTM,pbMRQ,psTTM,pcfNcfTTM,isST"  # only what EODHD lacks; close+volume kept to derive market cap and to spot-check EODHD
 T0 = time.time()
 BUDGET = float(os.environ.get("CNX_MINUTES", "300")) * 60
 
