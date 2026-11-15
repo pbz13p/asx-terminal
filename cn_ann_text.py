@@ -5,7 +5,8 @@ that move prices (业绩预告/快报, 重大合同/中标, 增减持, 回购, �
 停复牌, 诉讼, 退市 ...), drops boilerplate (法律意见书, 独立董事意见, 章程/制度, 英文版, 摘要 of long reports ...),
 downloads the PDF from cninfo's static server and keeps the text of the first pages.
 Newest first, resumable with a time budget; output data/cn_ann_text/{code}.json.gz = {id: {t, title, kind, pages, text}}.
-Env CNTXT_MINUTES (default 170), CNTXT_PAGES (default 6), CNTXT_SINCE (default 2016-01-01).
+Env CNTXT_MINUTES (default 170), CNTXT_PAGES (default 6), CNTXT_SINCE (default 2016-01-01), CNTXT_SHARD (k/N, default 0/1).
+Quality: a PDF that fails is retried in later runs (up to 3 tries); an empty text is kept as an error, not as data.
 """
 import gzip
 import io
@@ -67,6 +68,9 @@ def main():
     t0 = time.time()
     OUT.mkdir(parents=True, exist_ok=True)
     files = sorted(IDX.glob("*.json.gz"))
+    shard = os.environ.get("CNTXT_SHARD", "0/1")          # "k/N": this job handles every N-th stock, so N jobs run side by side
+    k, n = (int(x) for x in shard.split("/"))
+    files = [f for i, f in enumerate(files) if i % n == k]
     stats = {"stocks": len(files), "selected": 0, "have": 0, "fetched": 0, "failed": 0}
     by_kind = {}
     left = 0
@@ -98,6 +102,8 @@ def main():
                 rec = {"t": a["t"], "title": a["title"], "kind": k}
                 try:
                     text, n = pdf_text(a["url"])
+                    if len(text) < 30:
+                        raise ValueError("empty text (scanned PDF?)")
                     rec.update(pages=n, text=text)
                 except Exception as e:
                     prev = have.get(str(a["id"]), {})
@@ -114,6 +120,7 @@ def main():
                     stats["failed"] += "error" in rec
                 p.write_bytes(gzip.compress(json.dumps(have, ensure_ascii=False, separators=(",", ":")).encode()))
     Path("data/.cn_ann_text_left").write_text(str(left))
+    stats["shard"] = shard
     stats.update(left=left, minutes=round((time.time() - t0) / 60, 1), by_kind=by_kind)
     print("[cn_ann_text]", json.dumps(stats, ensure_ascii=False))
 

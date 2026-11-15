@@ -8,6 +8,7 @@ on:
     - cron: '10 5 * * *'
 permissions:
   contents: write
+  actions: write
 concurrency: data-backup
 jobs:
   backup:
@@ -42,6 +43,18 @@ jobs:
       - name: Restore A-share announcement texts
         uses: actions/cache/restore@v4
         with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-}
+      - name: Restore A-share announcement texts (shard 0)
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s0-}
+      - name: Restore A-share announcement texts (shard 1)
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s1-}
+      - name: Restore A-share announcement texts (shard 2)
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s2-}
+      - name: Restore A-share announcement texts (shard 3)
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s3-}
       - name: Restore AI reading cache and spend ledger
         uses: actions/cache/restore@v4
         with: {path: data/ai, key: ai-none, restore-keys: ai-}
@@ -62,3 +75,29 @@ jobs:
           gh release view data-backup >/dev/null 2>&1 || gh release create data-backup --title "Encrypted data backup" --notes "Encrypted with ASX_DATA_KEY. Join parts: cat X.part* | openssl enc -d -aes-256-cbc -pbkdf2 -pass env:ASX_DATA_KEY | tar xz"
           gh release upload data-backup bk/* --clobber
           date -u +%FT%TZ > bk/LAST_BACKUP.txt && gh release upload data-backup bk/LAST_BACKUP.txt --clobber
+  prune-caches:
+    # Every run saves a new cache version; keep the newest 2 of each data set so the 10 GB cache limit never pushes
+    # out a data set we still need (the weekly encrypted Release backup stays the permanent copy).
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh api --paginate "repos/$REPO/actions/caches?per_page=100" --jq '.actions_caches[] | [.id, .key, .created_at, .size_in_bytes] | @tsv' > caches.tsv
+          python3 - <<'PY'
+          import collections, subprocess, os
+          rows = [l.rstrip("\n").split("\t") for l in open("caches.tsv") if l.strip()]
+          groups = collections.defaultdict(list)
+          for cid, key, created, size in rows:
+              groups[key.rsplit("-", 1)[0]].append((created, cid, key, int(size)))
+          total = sum(int(r[3]) for r in rows) / 1e9
+          freed = 0
+          for g, items in sorted(groups.items()):
+              items.sort(reverse=True)
+              print(f"{g}: {len(items)} versions, newest {items[0][3]/1e6:.0f} MB")
+              for created, cid, key, size in items[2:]:
+                  subprocess.run(["gh", "api", "-X", "DELETE", f"repos/{os.environ['REPO']}/actions/caches/{cid}"], check=False)
+                  freed += size
+          print(f"total {total:.2f} GB, freed {freed/1e9:.2f} GB")
+          PY

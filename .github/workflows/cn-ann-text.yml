@@ -1,5 +1,6 @@
 name: cn-ann-text
-# Full text of important A-share announcements (cn_ann_text.py), newest first; restarts itself until done, then daily.
+# Full text of important A-share announcements (cn_ann_text.py), newest first.
+# Four shards run side by side (each takes every 4th stock, own cache); restarts itself until done, then daily.
 on:
   workflow_dispatch:
   schedule:
@@ -15,6 +16,10 @@ jobs:
   text:
     runs-on: ubuntu-latest
     timeout-minutes: 200
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -28,15 +33,32 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: data/cn_ann_text
-          key: cnanntext-${{ github.run_id }}
-          restore-keys: cnanntext-
+          key: cnanntext-s${{ matrix.shard }}-${{ github.run_id }}
+          restore-keys: |
+            cnanntext-s${{ matrix.shard }}-
+            cnanntext-
       - run: pip install pypdf
       - run: python cn_ann_text.py
-      - name: Continue if unfinished
-        if: always()
         env:
+          CNTXT_SHARD: ${{ matrix.shard }}/4
+      - if: always()
+        run: mkdir -p left && cp data/.cn_ann_text_left left/${{ matrix.shard }} 2>/dev/null || echo 0 > left/${{ matrix.shard }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: left-${{ matrix.shard }}
+          path: left/
+  continue:
+    needs: text
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: left
+      - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          LEFT=$(cat data/.cn_ann_text_left 2>/dev/null || echo 0)
-          echo "left: $LEFT"; du -sh data/cn_ann_text || true
-          if [ "$LEFT" -gt 0 ]; then gh workflow run cn-ann-text.yml --ref main; fi
+          LEFT=$(cat left/*/* 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          echo "left: $LEFT"
+          if [ "$LEFT" -gt 0 ]; then gh workflow run cn-ann-text.yml --ref main -R ${{ github.repository }}; fi
