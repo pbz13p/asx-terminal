@@ -174,13 +174,18 @@ class EodhdProvider(Provider):
         symbol = f"{code}.AU"
         if tf in ("1D", "5D"):
             return self._cached(f"i:{code}:{tf}", TTL["intraday"], lambda: self._intraday(symbol, tf))
-        days = {"1M": 22, "6M": 126, "1Y": 250}[tf]
+        # daily: always the full adjusted history (the chart shows the chosen range and zooms out to everything)
         def load():
-            start = (date.today() - timedelta(days=int(days * 1.6))).isoformat()
-            rows = self._get(f"eod/{symbol}", **{"from": start})
-            return [{"t": r["date"], "o": r["open"], "h": r["high"], "l": r["low"],
-                     "c": r["close"], "v": r.get("volume") or 0} for r in rows][-days:]
-        return self._cached(f"c:{code}:{tf}", TTL["candles"], load)
+            rows = self._get(f"eod/{symbol}", **{"from": "1990-01-01"})
+            out = []
+            for r in rows:
+                if not r.get("close"):
+                    continue
+                k = (r.get("adjusted_close") or r["close"]) / r["close"]
+                out.append({"t": r["date"], "o": r["open"] * k, "h": r["high"] * k, "l": r["low"] * k,
+                            "c": r["close"] * k, "v": r.get("volume") or 0})
+            return out
+        return self._cached(f"c:{code}:all", TTL["candles"], load)
 
     def _intraday(self, symbol, tf):
         span, interval = (3, "5m") if tf == "1D" else (9, "1h")

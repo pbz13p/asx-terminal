@@ -32,7 +32,7 @@ class Provider:
         raise DataUnavailable
 
     def candles(self, code, tf):
-        """tf is one of 1D 5D 1M 6M 1Y. Returns [candle], oldest first."""
+        """tf is 1D or 5D (intraday) or a daily range (1M 6M 1Y 5Y ALL: full daily history is returned). Oldest first."""
         raise DataUnavailable
 
     def history(self, code, years=20):

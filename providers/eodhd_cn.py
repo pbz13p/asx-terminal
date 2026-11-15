@@ -109,16 +109,17 @@ class CnProvider(EodhdProvider):
     def candles(self, code, tf):
         if tf in ("1D", "5D"):
             raise DataUnavailable("A 股暂时只有日线")
-        days = {"1M": 22, "6M": 126, "1Y": 250}[tf]
-
+        # daily: always the full adjusted history (the chart shows the chosen range and zooms out to everything)
         def load():
-            rows = self._get(f"eod/{sym(code)}", **{"from": (date.today() - timedelta(days=int(days * 1.6) + 30)).isoformat()})
+            rows = self._get(f"eod/{sym(code)}", **{"from": "1990-01-01"})
             out = []
             for r in rows:
-                k = (r.get("adjusted_close") or r["close"]) / r["close"] if r.get("close") else 1
+                if not r.get("close"):
+                    continue
+                k = (r.get("adjusted_close") or r["close"]) / r["close"]
                 out.append({"t": r["date"], "o": r["open"] * k, "h": r["high"] * k, "l": r["low"] * k, "c": r["close"] * k, "v": r.get("volume") or 0})
-            return out[-days:]
-        return self._cached(f"cn:c:{code}:{tf}", 600, load)
+            return out
+        return self._cached(f"cn:c:{code}:all", 600, load)
 
     def insight(self, code):
         def load():

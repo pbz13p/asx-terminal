@@ -45,7 +45,7 @@ provider = get_provider()
 CODE = re.compile(r"^[A-Z0-9]{1,6}$")
 CN_CODE = re.compile(r"^\d{6}$")
 _cnp = None
-TF = {"1D", "5D", "1M", "6M", "1Y"}
+TF = {"1D", "5D", "1M", "6M", "1Y", "5Y", "ALL"}
 
 
 class Handler(SimpleHTTPRequestHandler):
