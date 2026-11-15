@@ -84,6 +84,6 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          LEFT=$(cat left/*/* 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          LEFT=$(for f in left/*/*; do cat "$f"; echo; done 2>/dev/null | awk '{s+=$1} END{print s+0}')
           echo "stocks left: $LEFT"
           if [ "$LEFT" -gt 0 ]; then gh workflow run cn-extra.yml --ref main -R ${{ github.repository }}; fi

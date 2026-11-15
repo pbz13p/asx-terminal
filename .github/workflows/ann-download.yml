@@ -72,8 +72,8 @@ jobs:
       - env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          LEFT=$(cat left/*/[0-9]* 2>/dev/null | awk '{s+=$1} END{print s+0}')
-          BRAKE=$(cat left/*/brake-* 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          LEFT=$(for f in left/*/[0-9]*; do cat "$f"; echo; done 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          BRAKE=$(for f in left/*/brake-*; do cat "$f"; echo; done 2>/dev/null | awk '{s+=$1} END{print s+0}')
           echo "announcements left: $LEFT, braked shards: $BRAKE"
           if [ "$BRAKE" -gt 0 ]; then echo "ASX was refusing us: waiting an hour before the next run"; sleep 3600; fi
           if [ "$LEFT" -gt 0 ]; then gh workflow run ann-download.yml --ref main -R ${{ github.repository }}; fi
