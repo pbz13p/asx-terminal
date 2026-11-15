@@ -48,6 +48,44 @@ _cnp = None
 TF = {"1D", "5D", "1M", "6M", "1Y", "5Y", "ALL"}
 
 
+# Evidence tiers for research cards (Frank 2026-11-15: "逻辑通不等于能挣钱" -- show how far each finding has been proven).
+# 只是讲得通 -> 回测过 -> 实盘撑住. Only the live track record (out/track_*.json, started 2026-11-15) can lift a card to the top.
+TRACK_OF = {"rockets": ("au", "rockets_tradable", "rockets"), "cn_top": ("cn", "cn_top"), "cn_avoid": ("cn", "cn_avoid")}
+LIVE_MIN_SIGNALS, LIVE_MIN_DAYS = 30, 60          # at least 30 priced signals and 60 calendar days (~40 trading days)
+LIVE_COST = {"au": 3.0, "cn": 1.0}                # % round trip: ASX 3% control figure (CLAUDE.md); A-share 1% conservative
+
+
+def card_tier(card, track, today=None):
+    """-> (key, label, note). key: bad / tool / weak / backtest / live_ok / live_fail."""
+    from datetime import date
+    v = card.get("verdict")
+    if v == "无效":
+        return "bad", "测过无效", "回测证伪，留着防止重复测"
+    if v == "工具":
+        return "tool", "工具", "辅助判断用，不是赚钱规则"
+    if v != "有效":
+        return "weak", "只是讲得通", "回测证据不够（效果弱、不稳定或没扣完成本）"
+    spec = TRACK_OF.get(card.get("today") or "")
+    if not spec:
+        return "backtest", "回测过", "还没接实盘记录，不能确认现在还有效"
+    mk, ids = spec[0], spec[1:]
+    lists = ((track or {}).get(mk) or {}).get("lists") or {}
+    t = next((lists[i] for i in ids if i in lists), None)
+    if not t or not t.get("first") or t.get("avg_vs_index") is None:
+        return "backtest", "回测过", "实盘记录刚开始，还没有结果"
+    days = ((today or date.today()) - date.fromisoformat(t["first"])).days
+    n = t.get("priced") or 0
+    if n < LIVE_MIN_SIGNALS or days < LIVE_MIN_DAYS:
+        return "backtest", "回测过", f"实盘已记 {n} 个信号、{days} 天，要满 {LIVE_MIN_SIGNALS} 个、{LIVE_MIN_DAYS} 天才判断"
+    ex = t["avg_vs_index"]
+    if card.get("today") == "cn_avoid":          # an avoid list works when those stocks lag the index
+        ok, msg = ex < 0, f"实盘 {n} 个信号平均比指数 {ex:+.2f}%（避开名单，跑输才算对）"
+    else:
+        cost = LIVE_COST[mk]
+        ok, msg = ex - cost > 0, f"实盘 {n} 个信号平均比指数 {ex:+.2f}%，扣 {cost:g}% 来回成本后 {ex - cost:+.2f}%"
+    return ("live_ok", "实盘撑住", msg) if ok else ("live_fail", "实盘没撑住", msg)
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **k):
         super().__init__(*a, directory=str(ROOT / "web"), **k)
@@ -247,6 +285,7 @@ class Handler(SimpleHTTPRequestHandler):
             pass
         for c in reg.get("cards", []):
             c["hits"] = today.get(c.get("today") or "", []) if c.get("today") else None
+            c["tier"], c["tier_label"], c["tier_note"] = card_tier(c, reg.get("track"))
         reg["scan_day"] = scan_day
         return reg
 
