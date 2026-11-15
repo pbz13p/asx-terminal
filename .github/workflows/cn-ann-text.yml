@@ -1,6 +1,6 @@
 name: cn-ann-text
 # Full text of important A-share announcements (cn_ann_text.py), newest first.
-# Four shards run side by side (each takes every 4th stock, own cache); restarts itself until done, then daily.
+# Eight shards run side by side (each takes every 8th stock, own cache; 2026-11-16: full text is CPU-heavy); restarts itself until done, then daily.
 on:
   workflow_dispatch:
   schedule:
@@ -19,7 +19,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+        include:   # shards 4-7 start from the old 4-shard cache that held their stocks
+          - {shard: 0, base: 0}
+          - {shard: 1, base: 1}
+          - {shard: 2, base: 2}
+          - {shard: 3, base: 3}
+          - {shard: 4, base: 0}
+          - {shard: 5, base: 1}
+          - {shard: 6, base: 2}
+          - {shard: 7, base: 3}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -36,11 +45,12 @@ jobs:
           key: cnanntext-s${{ matrix.shard }}-${{ github.run_id }}
           restore-keys: |
             cnanntext-s${{ matrix.shard }}-
+            cnanntext-s${{ matrix.base }}-
             cnanntext-
       - run: pip install pypdf
       - run: python cn_ann_text.py
         env:
-          CNTXT_SHARD: ${{ matrix.shard }}/4
+          CNTXT_SHARD: ${{ matrix.shard }}/8
       - if: always()
         uses: actions/cache/save@v4
         with:

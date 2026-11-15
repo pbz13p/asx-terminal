@@ -85,6 +85,18 @@ jobs:
       - name: Restore A-share announcement texts (shard 3)
         uses: actions/cache/restore@v4
         with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s3-}
+      - name: Restore A-share announcement texts (shard 4)
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s4-}
+      - name: Restore A-share announcement texts (shard 5)
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s5-}
+      - name: Restore A-share announcement texts (shard 6)
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s6-}
+      - name: Restore A-share announcement texts (shard 7)
+        uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_text, key: cnanntext-none, restore-keys: cnanntext-s7-}
       - name: Restore AI reading cache and spend ledger
         uses: actions/cache/restore@v4
         with: {path: data/ai, key: ai-none, restore-keys: ai-}

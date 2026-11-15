@@ -89,6 +89,11 @@ def main():
     shard = os.environ.get("CNTXT_SHARD", "0/1")          # "k/N": this job handles every N-th stock, so N jobs run side by side
     k, n = (int(x) for x in shard.split("/"))
     files = [f for i, f in enumerate(files) if i % n == k]
+    if n > 1:   # this shard's cache keeps only its own stocks, so restoring every shard's cache never brings back a stale copy
+        mine = {f.name for f in files}
+        for g in OUT.glob("*.json.gz"):
+            if g.name not in mine:
+                g.unlink()
     stats = {"stocks": len(files), "selected": 0, "have": 0, "fetched": 0, "failed": 0}
     by_kind = {}
     left = 0
