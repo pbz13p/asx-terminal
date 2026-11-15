@@ -10,6 +10,9 @@ estimate is over S76_MAX_USD) and runs the event study against round 69's rule t
 
 Rules (CLAUDE.md, "用 AI 读文本做研究"): one spend ledger (data/ai/spend.json, all AI spend), stop at $35 total;
 results cached per announcement id in data/ai/s76/ (never pay twice); runs only on GitHub Actions.
+Full text (2026-11-15): the AI reads the WHOLE announcement. Short ones in one request; long ones are cut at page
+boundaries into parts, every part is read for notes (key facts, numbers, risks, page refs), then one more request
+scores the announcement from all the notes plus the first part.
 Model: claude-haiku-5-5 via the Batch API (half price). Reliable knowledge cutoff June 2026.
 """
 import gzip
@@ -35,9 +38,10 @@ STATE = AI / "s76_state.json"
 MODEL = os.environ.get("S76_MODEL", "claude-haiku-5-5")
 CUTOFF = "2026-07-01"          # first day after the model's reliable knowledge cutoff (June 2026)
 PRICE = {"in": 0.05, "out": 0.25, "cache_read": 0.005, "cache_write": 0.0625}   # USD per MTok, Batch API, prompts < 100k
-BUDGET_STOP = 35.0
+BUDGET_STOP = 95.0             # CLAUDE.md: total AI budget $100, stop at $95
 API = "https://api.anthropic.com/v1/messages/batches"
-CHARS = 6000                  # ~1500 tokens of announcement text
+CHARS = 6000                  # used only for the anonymiser's word statistics and the de-anonymisation probe
+SEG = 24000                   # whole announcement is read; long ones in parts of ~24k chars (~6k tokens), every part read
 OUT = Path(os.environ.get("STUDY76_OUT", "out/study76_results.json"))
 
 SYSTEM = """You are an analyst reading ANONYMISED announcements from small companies listed on the Australian stock exchange.
@@ -64,7 +68,8 @@ def docs():
             continue
         for ids, doc in d["docs"].items():
             if doc.get("sensitive") and doc.get("text"):
-                out.append({"id": ids, "code": d["code"], "date": doc["date"][:10], "headline": doc["headline"], "text": doc["text"]})
+                out.append({"id": ids, "code": d["code"], "date": doc["date"][:10], "headline": doc["headline"], "text": doc["text"],
+                            "full": bool(doc.get("full"))})
     out.sort(key=lambda x: (x["code"], x["date"]))
     return out
 
@@ -196,11 +201,52 @@ def prior_of(x, by_code):
     return best
 
 
-def score_prompt(x, by_code, common):
-    body = anonymise(x["headline"] + ". " + x["text"], x["code"], common)[:CHARS]
+NOTES_SYSTEM = """You are an analyst reading one PART of a long ANONYMISED announcement from a small company listed on the
+Australian stock exchange (names replaced by [N], years by [Y]). Write notes another analyst will use to judge the whole
+announcement without seeing this part. Return ONLY one JSON object:
+{"key_facts": [up to 8 short strings with the hard numbers: grades/widths, resource tonnes, revenue, cash, raise size and price,
+ contract value, trial results, dates relative to now], "risks": [up to 5 short strings: dilution, debt, delays, failed results,
+ going-concern words], "hype": 0-3, "pages": "page numbers these notes come from"}"""
+
+
+def segments(text):
+    """Cut at page markers into parts of at most SEG chars; a page longer than SEG is split."""
+    pages = re.split(r"(?=\[page \d+\]|\[第\d+页\])", text) if re.search(r"\[page \d+\]|\[第\d+页\]", text) else [text]
+    parts, cur = [], ""
+    for pg in pages:
+        while len(pg) > SEG:
+            if cur:
+                parts.append(cur)
+                cur = ""
+            parts.append(pg[:SEG])
+            pg = pg[SEG:]
+        if len(cur) + len(pg) > SEG and cur:
+            parts.append(cur)
+            cur = ""
+        cur += pg
+    if cur.strip():
+        parts.append(cur)
+    return parts or [""]
+
+
+def prior_text(x, by_code, common):
     p = prior_of(x, by_code)
-    prior = anonymise(p["headline"] + ". " + p["text"], p["code"], common)[:1200] if p else "none"
-    return f"PRIOR (earlier announcement of the same kind):\n{prior}\n\nANNOUNCEMENT:\n{body}"
+    return anonymise(p["headline"] + ". " + p["text"], p["code"], common)[:1200] if p else "none"
+
+
+def first_requests(tag, x, by_code, common):
+    """One scoring request for a short announcement, or one notes request per part of a long one."""
+    parts = segments(anonymise(x["headline"] + ". " + x["text"], x["code"], common))
+    if len(parts) == 1:
+        return [req(tag, f"PRIOR (earlier announcement of the same kind):\n{prior_text(x, by_code, common)}\n\nANNOUNCEMENT:\n{parts[0]}", SYSTEM)], 1
+    return [req(f"{tag}p{k}", f"PART {k + 1} of {len(parts)}:\n{p}", NOTES_SYSTEM, max_tokens=700) for k, p in enumerate(parts)], len(parts)
+
+
+def combine_request(tag, x, n, notes, by_code, common):
+    first = segments(anonymise(x["headline"] + ". " + x["text"], x["code"], common))[0][:8000]
+    body = "\n".join(f"NOTES ON PART {k + 1}/{n}: {notes.get(k, '(missing)')}" for k in range(n))
+    return req(f"c{tag[1:]}", f"PRIOR (earlier announcement of the same kind):\n{prior_text(x, by_code, common)}\n\n"
+               f"ANNOUNCEMENT (long; first part in full, then an analyst's notes on every part):\n{first}\n\n{body}", SYSTEM)
 
 
 def fwd21(code, d):
@@ -219,11 +265,16 @@ def pilot(all_docs, common):
     by_code = defaultdict(list)
     for x in all_docs:
         by_code[x["code"]].append(x)
-    sample = rnd.sample(all_docs, min(200, len(all_docs)))
+    full = [x for x in all_docs if x["full"]]       # only docs stored in full give a true cost estimate
+    pool = full if len(full) >= 400 else all_docs
+    sample = rnd.sample(pool, min(200, len(pool)))
     deanon = rnd.sample(all_docs, min(200, len(all_docs)))
     recall_pool = [x for x in all_docs if x["date"] < "2026-06"]
     recall = rnd.sample(recall_pool, min(300, len(recall_pool)))
-    reqs = [req(f"s{i}", score_prompt(x, by_code, common), SYSTEM) for i, x in enumerate(sample)]
+    reqs, nparts = [], {}
+    for i, x in enumerate(sample):
+        r, nparts[i] = first_requests(f"s{i}", x, by_code, common)
+        reqs += r
     reqs += [req(f"d{i}", "Below is an anonymised excerpt of an ASX company announcement. Which ASX-listed company issued it? "
                  "Reply with only its ASX ticker, or UNKNOWN if you cannot tell.\n\n"
                  + anonymise(x["headline"] + ". " + x["text"], x["code"], common)[:3000], max_tokens=10)
@@ -236,6 +287,21 @@ def pilot(all_docs, common):
         return {"stage": "pilot", "status": "batch still running"}
     res, usage, per = got
     usd, total = spend("round 76 pilot (200 scored + 200 de-anon + 300 recall)", usage)
+    long_ = [i for i in nparts if nparts[i] > 1]
+    if long_:   # phase B: score the long ones from their part notes
+        creqs = [combine_request(f"s{i}", sample[i], nparts[i], {k: res.get(f"s{i}p{k}", "") for k in range(nparts[i])}, by_code, common)
+                 for i in long_]
+        gotb = run_batch(creqs, "pilot_b", float(os.environ.get("S76_WAIT", "150")))
+        if gotb is None:
+            return {"stage": "pilot", "status": "phase B batch still running (phase A already paid and logged)"}
+        resb, usageb, perb = gotb
+        usd2, total = spend("round 76 pilot phase B (combine long announcements)", usageb)
+        usd += usd2
+        for i in long_:
+            res[f"s{i}"] = resb.get(f"c{i}", "")
+        per["c"] = perb.get("c", {})
+        for k, v in usageb.items():
+            usage[k] = usage.get(k, 0) + v
     # scoring: parse rate, cost per scored doc
     parsed = 0
     score_tokens = Counter()
@@ -262,7 +328,7 @@ def pilot(all_docs, common):
             if r is not None and r != 0:
                 n_ans += 1
                 right += (r > 0) == (a == "UP")
-    su = per.get("s", {})
+    su = Counter(per.get("s", {})) + Counter(per.get("c", {}))
     s_usd = (su.get("input_tokens", 0) * PRICE["in"] + su.get("output_tokens", 0) * PRICE["out"]
              + su.get("cache_read_input_tokens", 0) * PRICE["cache_read"] + su.get("cache_creation_input_tokens", 0) * PRICE["cache_write"]) / 1e6
     per_doc = s_usd / max(1, len(sample))
@@ -271,7 +337,8 @@ def pilot(all_docs, common):
     out = {"stage": "pilot", "model": MODEL, "docs_sensitive": len(all_docs), "companies": len({x["code"] for x in all_docs}),
            "pre_cutoff": sum(x["date"] < CUTOFF for x in all_docs), "post_cutoff": sum(x["date"] >= CUTOFF for x in all_docs),
            "pilot_usd": round(usd, 4), "usd_per_scored_doc": round(per_doc, 6), "usage_by_kind": per, "ledger_total_usd": total, "usage": usage,
-           "parsed": f"{parsed}/{len(sample)}", "est_full_usd": round(est, 2), "todo": len(todo),
+           "parsed": f"{parsed}/{len(sample)}", "sample_full_text": sum(x["full"] for x in sample),
+           "sample_long_parts": {"docs": len(long_), "parts": sum(nparts[i] for i in long_)}, "docs_full_text": len(full), "est_full_usd": round(est, 2), "todo": len(todo),
            "deanon_hit_pct": round(100 * hits / len(deanon), 1),
            "recall": dict(ans), "recall_unknown_pct": round(100 * ans["UNKNOWN"] / max(1, sum(ans.values())), 1),
            "recall_answered_accuracy_pct": round(100 * right / n_ans, 1) if n_ans else None, "recall_answered_n": n_ans,
