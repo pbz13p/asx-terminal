@@ -2876,5 +2876,12 @@
   "source": "龙虎榜席位",
   "status": "skipped",
   "reason": "下载中（cn_lhb.py），单独一轮研究"
+ },
+ {
+  "id": "new_52wkhigh",
+  "lib": "新方法 2026-11-15",
+  "formula": "CLOSE/TSMAX(HIGH,250)",
+  "source": "离 52 周高点的距离（George & Hwang 2004）；本周 SSRN 新论文 Chen, Stivers & Sun《Heterogeneity in Overnight-versus-Intraday Stock-Return Behavior with Asymmetric Information and 52-week Price Anchoring》以它为核心变量 https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7443340",
+  "note": "越接近 52 周高点越大；A 股文献常见方向相反（锚定后反转），两个方向都看 IC 符号"
  }
 ]
