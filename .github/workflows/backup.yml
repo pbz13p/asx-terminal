@@ -75,6 +75,27 @@ jobs:
           gh release view data-backup >/dev/null 2>&1 || gh release create data-backup --title "Encrypted data backup" --notes "Encrypted with ASX_DATA_KEY. Join parts: cat X.part* | openssl enc -d -aes-256-cbc -pbkdf2 -pass env:ASX_DATA_KEY | tar xz"
           gh release upload data-backup bk/* --clobber
           date -u +%FT%TZ > bk/LAST_BACKUP.txt && gh release upload data-backup bk/LAST_BACKUP.txt --clobber
+          # Dated copies too, so a bug that damages data can never overwrite the only good copy:
+          # keep every weekly copy for 8 weeks and the first copy of each month for ever.
+          TAG="data-backup-$(date -u +%F)"
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --title "Encrypted data backup $(date -u +%F)" --notes "Dated copy. Same format as data-backup."
+          gh release upload "$TAG" bk/* --clobber
+          gh api --paginate "repos/${{ github.repository }}/releases?per_page=100" --jq '.[].tag_name' | grep '^data-backup-20' | sort > tags.txt
+          python3 - <<'PY'
+          import datetime, subprocess
+          tags = [t.strip() for t in open("tags.txt") if t.strip()]
+          today = datetime.date.today()
+          first_of_month = {}
+          for t in tags:
+              d = datetime.date.fromisoformat(t[-10:])
+              first_of_month.setdefault((d.year, d.month), t)
+          for t in tags:
+              d = datetime.date.fromisoformat(t[-10:])
+              if (today - d).days > 56 and t not in first_of_month.values():
+                  print("removing old weekly copy", t)
+                  subprocess.run(["gh", "release", "delete", t, "--yes", "--cleanup-tag"], check=False)
+          print("dated copies kept:", len(tags))
+          PY
   prune-caches:
     # Every run saves a new cache version; keep the newest 2 of each data set so the 10 GB cache limit never pushes
     # out a data set we still need (the weekly encrypted Release backup stays the permanent copy).
@@ -96,6 +117,10 @@ jobs:
           for g, items in sorted(groups.items()):
               items.sort(reverse=True)
               print(f"{g}: {len(items)} versions, newest {items[0][3]/1e6:.0f} MB")
+              biggest_old = max((i[3] for i in items[1:]), default=0)
+              if items[0][3] < 0.9 * biggest_old:      # newest copy shrank: something may be wrong, keep every version
+                  print(f"  WARNING {g}: newest copy is smaller than an older one; nothing deleted")
+                  continue
               for created, cid, key, size in items[2:]:
                   subprocess.run(["gh", "api", "-X", "DELETE", f"repos/{os.environ['REPO']}/actions/caches/{cid}"], check=False)
                   freed += size
