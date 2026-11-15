@@ -1,0 +1,37 @@
+name: cn-extra
+# A-share financial statements (East Money), industry classes and daily valuation / turnover / traded value (Baostock).
+# First run builds history over several days (resumable); afterwards a daily top-up.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 11 * * *'
+  push:
+    branches: [main]
+    paths: ['cn_extra.py', '.github/workflows/cn-extra.yml']
+permissions:
+  contents: read
+concurrency: cn-extra
+jobs:
+  extra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: data/cn_fin
+          key: cnfin-${{ github.run_id }}
+          restore-keys: cnfin-
+      - uses: actions/cache@v4
+        with:
+          path: data/cn_val
+          key: cnval-${{ github.run_id }}
+          restore-keys: cnval-
+      - run: pip install baostock pandas
+      - run: python cn_extra.py
+        env:
+          CNX_MINUTES: "300"
+      - run: du -sh data/cn_fin data/cn_val || true
