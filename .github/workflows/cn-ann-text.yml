@@ -47,7 +47,7 @@ jobs:
             cnanntext-s${{ matrix.shard }}-
             cnanntext-s${{ matrix.base }}-
             cnanntext-
-      - run: pip install pypdf
+      - run: pip install pypdf cryptography
       - run: python cn_ann_text.py
         env:
           CNTXT_SHARD: ${{ matrix.shard }}/8

@@ -140,6 +140,8 @@ def main():
                 if r is None:
                     return True
                 if "error" in r:
+                    if r["error"] == "DependencyError" and not r.get("dep_retry"):   # encrypted PDFs: fixed by installing cryptography (2026-11-17)
+                        return True
                     return r.get("tries", 1) < 3
                 return r.get("pages", 0) > PAGES and not r.get("full")   # long doc saved before full-text storage: redo
             todo = [(a, k) for a, k in sel if need(a)]
@@ -167,6 +169,8 @@ def main():
                 except Exception as e:
                     prev = have.get(str(a["id"]), {})
                     rec.update(error=type(e).__name__, msg=str(e)[:120], tries=prev.get("tries", 0) + 1)
+                    if prev.get("error") == "DependencyError":
+                        rec["dep_retry"] = True
                 time.sleep(0.2)
                 return str(a["id"]), rec
             for i in range(0, len(todo), 40):
