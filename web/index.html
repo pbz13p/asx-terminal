@@ -366,13 +366,13 @@ function aggBars(b,per){if(per==='d')return b;var out=[],cur=null,key=function(t
 function showRange(){var n=BARS.length;if(!n)return;var days={'1M':22,'6M':126,'1Y':250,'5Y':1250}[st.tf];
  if(!days){chart.timeScale().fitContent();return;}var per=st.per||'d',k=per==='w'?5:per==='m'?21:1,show=Math.max(20,Math.round(days/k));
  chart.timeScale().setVisibleLogicalRange({from:n-show,to:n+2});}
-async function loadChart(){var intraday=st.tf==='1D'||st.tf==='5D',my=st.sel+st.tf+(st.per||'d');$('note').style.display='none';
+async function loadChart(keep){var intraday=st.tf==='1D'||st.tf==='5D',my=st.sel+st.tf+(st.per||'d');$('note').style.display='none';var kr=keep&&chart?chart.timeScale().getVisibleLogicalRange():null,n0=BARS.length;
  try{var raw;
   if(!intraday&&DAILY.code===st.m+':'+st.sel){raw=DAILY.bars;}
   else{var d=await apim('candles?code='+st.sel+'&tf='+(intraday?st.tf:'ALL'));if(my!==st.sel+st.tf+(st.per||'d'))return;
    var seen={};raw=d.map(function(x){return {time:tkey(x.t),open:x.o,high:x.h,low:x.l,close:x.c,v:x.v};}).filter(function(x){if(seen[x.time])return false;seen[x.time]=1;return x.close!=null;});
    raw.sort(function(a,b){return a.time<b.time?-1:1;});if(!intraday)DAILY={code:st.m+':'+st.sel,bars:raw};}
-  BARS=intraday?raw:aggBars(raw,st.per||'d');draw();showRange();}
+  BARS=intraday?raw:aggBars(raw,st.per||'d');draw();if(kr){var dn=BARS.length-n0;chart.timeScale().setVisibleLogicalRange({from:kr.from+dn,to:kr.to+dn});}else showRange();}
  catch(e){BARS=[];draw();$('note').style.display='flex';$('note').textContent=st.tf+' 数据暂不可用：'+e.message;}}
 
 /* ---------- left lists ---------- */
@@ -545,6 +545,7 @@ async function boot(){document.body.classList.toggle('cn',st.m==='cn');mkCharts(
  [].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===st.m);});setTfs();renderBTabs();if(st.m==='cn'){$('breadth').style.display='none';$('si').placeholder='搜 A 股代码，如 600519';}
  select(lsg('nt_sel_'+st.m,st.watch[0]));loadIdx();loadQuotes();loadScan();loadCN();loadMarket();renderBottom();
  setInterval(loadQuotes,60000);setInterval(loadIdx,120000);setInterval(loadMarket,1800000);setInterval(loadScan,1800000);setInterval(loadCN,1800000);
+ setInterval(function(){if(!st.sel||document.hidden||DM)return;DAILY={};loadChart(true);},180000);
  var ver=null;setInterval(async function(){try{var v=(await api('version')).web;if(ver!==null&&v!==ver)location.reload();ver=v;}catch(e){}},20000);}
 if(LC)boot();else document.body.innerHTML='<p style="padding:40px">图表组件加载失败，请检查网络后刷新。</p>';
 </script>
