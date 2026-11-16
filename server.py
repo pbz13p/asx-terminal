@@ -490,7 +490,24 @@ def auto_update():
             restart()
 
 
+def autostart():
+    """Windows: start the terminal by itself after every reboot (minimised window), so Frank never has to click start.bat."""
+    if os.name != "nt" or os.environ.get("ASX_DESK_NO_UPDATE"):
+        return
+    try:
+        folder = Path(os.environ["APPDATA"]) / "Microsoft/Windows/Start Menu/Programs/Startup"
+        bat = ROOT / "start.bat"
+        vbs = folder / "NeonTerminal.vbs"
+        text = 'CreateObject("WScript.Shell").Run """%s""", 7, False\r\n' % bat
+        if folder.is_dir() and bat.exists() and (not vbs.exists() or vbs.read_text(errors="ignore") != text):
+            vbs.write_text(text)
+            print("已设置开机自动启动")
+    except Exception:
+        pass
+
+
 def main():
+    autostart()
     threading.Thread(target=auto_update, daemon=True).start()
     port = int(os.environ.get("PORT", "8765"))
     host = os.environ.get("HOST", "127.0.0.1")  # the hosted copy listens behind Caddy on 127.0.0.1 too
