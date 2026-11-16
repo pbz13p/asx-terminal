@@ -8,7 +8,7 @@ import urllib.request
 from datetime import date, timedelta
 
 from .base import DataUnavailable
-from .eodhd import EodhdProvider
+from .eodhd import EodhdProvider, with_today
 
 INDICES = [("000001", "上证指数", "000001.SHG"), ("000300", "沪深 300", "000300.SHG"),
            ("399001", "深证成指", "399001.SHE"), ("399006", "创业板指", "399006.SHE")]
@@ -119,7 +119,7 @@ class CnProvider(EodhdProvider):
                 k = (r.get("adjusted_close") or r["close"]) / r["close"]
                 out.append({"t": r["date"], "o": r["open"] * k, "h": r["high"] * k, "l": r["low"] * k, "c": r["close"] * k, "v": r.get("volume") or 0})
             return out
-        return self._cached(f"cn:c:{code}:all", 600, load)
+        return with_today(self, sym(code), self._cached(f"cn:c:{code}:all", 600, load), "Asia/Shanghai")
 
     def insight(self, code):
         def load():

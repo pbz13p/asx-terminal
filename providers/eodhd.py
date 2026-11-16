@@ -185,7 +185,7 @@ class EodhdProvider(Provider):
                 out.append({"t": r["date"], "o": r["open"] * k, "h": r["high"] * k, "l": r["low"] * k,
                             "c": r["close"] * k, "v": r.get("volume") or 0})
             return out
-        return self._cached(f"c:{code}:all", TTL["candles"], load)
+        return with_today(self, symbol, self._cached(f"c:{code}:all", TTL["candles"], load), "Australia/Sydney")
 
     def _intraday(self, symbol, tf):
         span, interval = (3, "5m") if tf == "1D" else (9, "1h")
@@ -200,3 +200,19 @@ class EodhdProvider(Provider):
             rows = [r for r in rows if r["datetime"][:10] == last_day]
         return [{"t": r["datetime"], "o": r["open"], "h": r["high"], "l": r["low"],
                  "c": r["close"], "v": r.get("volume") or 0} for r in rows]
+
+def with_today(provider, symbol, bars, tz):
+    """EODHD publishes the day's EOD bar hours after the close; until then add today's bar from the (delayed) real-time
+    quote, like TradingView's forming bar. Cached 60 s; any problem just returns the bars unchanged."""
+    try:
+        from zoneinfo import ZoneInfo
+        q = provider._cached(f"rt:{symbol}", 60, lambda: provider._get(f"real-time/{symbol}"))
+        o, h, l, c, v = (q.get(k) for k in ("open", "high", "low", "close", "volume"))
+        if not all(isinstance(x, (int, float)) and x > 0 for x in (o, h, l, c)):
+            return bars
+        day = datetime.fromtimestamp(int(q["timestamp"]), ZoneInfo(tz)).date().isoformat()
+        if bars and day <= bars[-1]["t"][:10]:
+            return bars
+        return bars + [{"t": day, "o": o, "h": h, "l": l, "c": c, "v": v if isinstance(v, (int, float)) else 0}]
+    except Exception:
+        return bars
