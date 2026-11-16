@@ -112,6 +112,22 @@ jobs:
       - name: Restore round 81 announcement embeddings
         uses: actions/cache/restore@v4
         with: {path: data/emb81, key: emb81-none, restore-keys: emb81-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s0-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s1-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s2-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s3-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s4-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s5-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s6-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s7-}
       - name: Restore AI reading cache and spend ledger
         uses: actions/cache/restore@v4
         with: {path: data/ai, key: ai-none, restore-keys: ai-}

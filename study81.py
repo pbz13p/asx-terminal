@@ -453,6 +453,19 @@ def main():
     t0 = time.time()
     docs, rules, companies = load_docs()
     print(f"[docs] {len(docs)} price-sensitive with text, {companies} companies (flag_v2), {len(rules)} rule events", flush=True)
+    shard = os.environ.get("EMB_SHARD")  # "k/n": embed only this lane's companies (parallel lanes in emb81.yml)
+    if shard:
+        import zlib
+        k, n = map(int, shard.split("/"))
+        mine = lambda c: zlib.crc32(c.encode()) % n == k
+        docs = [d for d in docs if mine(d["code"])]
+        for f in EMB.glob("*.npz"):  # keep only this lane's files so lanes never overwrite each other with stale copies
+            if not mine(f.stem):
+                f.unlink()
+        vecs, left = embed_all(docs, t0)
+        print(f"[lane {shard}] docs {len(docs)}, embedded {len(vecs)}, left {left}", flush=True)
+        Path("left.txt").write_text(str(left))
+        return
     vecs, left = embed_all(docs, t0)
     out = {"method": __doc__.strip(), "companies": companies, "docs": len(docs), "embedded": len(vecs), "left_to_embed": left,
            "model": MODEL}

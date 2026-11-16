@@ -55,6 +55,14 @@ jobs:
           path: data/emb81
           key: emb81-${{ github.run_id }}
           restore-keys: emb81-
+      - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s0-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s1-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s2-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s3-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s4-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s5-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s6-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s7-}}
       - run: pip install numpy pandas scipy lightgbm bottleneck && (grep -q "rounds=.*78" .github/run-quick && pip install torch --index-url https://download.pytorch.org/whl/cpu || true) && (grep -q "rounds=.*81" .github/run-quick && pip install scikit-learn fastembed || true)
       - name: Run rounds
         env:
@@ -82,8 +90,8 @@ jobs:
           git add -A .
           git commit -q -m "Quick results $(date -u +%FT%T)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results
-      - name: Continue round 81 embeddings if unfinished
+      - name: "Round 81 embeddings unfinished: hand over to the 8-lane emb81 workflow"
         if: env.EMB_AGAIN == '1'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run quick-study.yml --ref main -R ${{ github.repository }}
+        run: gh workflow run emb81.yml --ref main -R ${{ github.repository }}

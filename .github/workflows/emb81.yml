@@ -1,0 +1,74 @@
+name: emb81
+# Round 81: turn every price-sensitive ASX announcement into a vector with a free local model, in 8 parallel lanes
+# (one lane alone needs ~2 days). Each lane keeps only its own companies' files. When every lane is done it starts
+# quick-study (rounds=81) to run the evaluation; until then it restarts itself.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency: emb81
+jobs:
+  lane:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann-s0-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann-s1-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s0-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s1-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ann, key: ann-none, restore-keys: ann3-s2-}
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/emb81
+          key: emb81-s${{ matrix.k }}-none
+          restore-keys: |
+            emb81-s${{ matrix.k }}-
+            emb81-
+      - run: pip install numpy pandas scipy scikit-learn fastembed
+      - name: Embed this lane
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+          EMB_SHARD: ${{ matrix.k }}/8
+          EMB_MINUTES: "300"
+        run: python study81.py
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: data/emb81
+          key: emb81-s${{ matrix.k }}-${{ github.run_id }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: left-${{ matrix.k }}
+          path: left.txt
+  continue:
+    needs: lane
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {path: left}
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          N=$(ls left | wc -l)
+          LEFT=$(for f in left/*/left.txt; do cat "$f"; echo; done 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          echo "lanes reported: $N, vectors left: $LEFT"
+          if [ "$LEFT" -gt 0 ]; then gh workflow run emb81.yml --ref main -R ${{ github.repository }};
+          elif [ "$N" -lt 8 ]; then echo "a lane failed without reporting: stopping so it does not loop; check the logs"; exit 1;
+          else gh workflow run quick-study.yml --ref main -R ${{ github.repository }}; fi
