@@ -183,6 +183,16 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self.send_json({"ok": False, "error": str(e)[:300]}, 200)
             return
+        if path == "/api/seal":   # own-PC only: encrypt a findings file with the local key (the key never leaves this PC)
+            if self._users() or self.client_address[0] != "127.0.0.1":
+                self.send_error(404)
+                return
+            import base64
+            import securedata
+            n = int(self.headers.get("Content-Length") or 0)
+            raw = self.rfile.read(min(n, 5_000_000))
+            self.send_json({"ok": True, "data": base64.b64encode(securedata.encrypt(raw)).decode()})
+            return
         if path != "/login":
             self.send_error(404)
             return
@@ -354,6 +364,11 @@ class Handler(SimpleHTTPRequestHandler):
     def route(self, name, q):
         if q.get("m") == "cn" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cn(name, q)
+        if name == "quick":   # own-PC only: decrypted quick-study results, so Claude can read them without holding the key
+            f = q.get("f", "")
+            if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"study\d+_results\.json", f):
+                raise ValueError("not available")
+            return fetch_result(f, branch="quick-results")
         if name == "status":
             return {"provider": provider.name, "latency": provider.latency,
                     "capabilities": provider.capabilities}
