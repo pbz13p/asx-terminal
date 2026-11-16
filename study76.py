@@ -77,8 +77,10 @@ def docs():
 CAP = re.compile(r"\b[A-Z][A-Za-z'&\-]{1,}\b")
 
 
-def build_anonymiser(all_docs):
-    """Capitalised words used by fewer than 20 companies are names (company, person, project, place)."""
+def build_anonymiser(all_docs, min_companies=None):
+    """Capitalised words used by fewer than N companies are names (company, person, project, place).
+    N = 20 at first; the 2026-11-16 pilot's de-anonymisation probe still guessed 21% of companies, so it is tunable (S76_ANON_MIN)."""
+    min_companies = min_companies or int(os.environ.get("S76_ANON_MIN", "20"))
     seen = defaultdict(set)
     per = Counter()
     for x in all_docs:
@@ -87,7 +89,7 @@ def build_anonymiser(all_docs):
         per[x["code"]] += 1
         for w in set(CAP.findall(x["headline"] + " " + x["text"][:CHARS])):
             seen[w.lower()].add(x["code"])
-    common = {w for w, s in seen.items() if len(s) >= 20}
+    common = {w for w, s in seen.items() if len(s) >= min_companies}
     return common
 
 
@@ -95,6 +97,8 @@ def anonymise(text, code, common):
     t = re.sub(r"\s+", " ", text)
     t = re.sub(r"https?://\S+|www\.\S+|\S+@\S+", "[N]", t)
     t = re.sub(r"\b" + re.escape(code) + r"\b", "[N]", t)
+    t = re.sub(r"\((?:ASX|TSX|AIM|NYSE|NASDAQ|OTCQB|OTCQX|FSE|JSE)[:\s][^)]*\)", "[N]", t, flags=re.I)   # (ASX: ABC), (TSX-V: XYZ)
+    t = re.sub(r"\b[A-Z]{2,5}\b", lambda m: m.group(0) if m.group(0).lower() in common else "[N]", t)        # other tickers / acronyms
     t = re.sub(r"\b(19|20)\d{2}\b", "[Y]", t)
     t = re.sub(r"\b(FY|CY|H[12]|Q[1-4])\s?\d{2}\b", r"\1[Y]", t)
     t = CAP.sub(lambda m: m.group(0) if m.group(0).lower() in common else "[N]", t)
@@ -260,6 +264,31 @@ def fwd21(code, d):
 
 
 # ---------- stages ----------
+def deanon_probe(all_docs):
+    """Stage "deanon": only the "which company is this?" test, for several anonymiser strengths (about $0.01 per 200 docs)."""
+    rnd = random.Random(761)
+    probe = rnd.sample(all_docs, min(200, len(all_docs)))
+    levels = [int(v) for v in os.environ.get("S76_ANON_LEVELS", "20,60,150").split(",")]
+    commons = {lv: build_anonymiser(all_docs, lv) for lv in levels}
+    reqs = []
+    for lv in levels:
+        reqs += [req(f"L{lv}x{i}", "Below is an anonymised excerpt of an ASX company announcement. Which ASX-listed company issued it? "
+                     "Reply with only its ASX ticker, or UNKNOWN if you cannot tell.\n\n"
+                     + anonymise(x["headline"] + ". " + x["text"], x["code"], commons[lv])[:3000], max_tokens=10)
+                 for i, x in enumerate(probe)]
+    got = run_batch(reqs, "deanon", float(os.environ.get("S76_WAIT", "150")))
+    if got is None:
+        return {"stage": "deanon", "status": "batch still running"}
+    res, usage, per = got
+    usd, total = spend(f"round 76 de-anonymisation probe (levels {levels})", usage)
+    out = {"stage": "deanon", "usd": round(usd, 4), "ledger_total_usd": total, "levels": {}}
+    for lv in levels:
+        hits = sum(1 for i, x in enumerate(probe) if res.get(f"L{lv}x{i}", "").strip().upper().strip(".").startswith(x["code"]))
+        sample = anonymise(probe[0]["headline"] + ". " + probe[0]["text"], probe[0]["code"], commons[lv])[:400]
+        out["levels"][lv] = {"hit_pct": round(100 * hits / len(probe), 1), "kept_words": len(commons[lv]), "sample": sample}
+    return out
+
+
 def pilot(all_docs, common):
     rnd = random.Random(76)
     by_code = defaultdict(list)
@@ -375,7 +404,16 @@ def main():
     common = build_anonymiser(all_docs)
     stage = os.environ.get("S76_STAGE", "pilot")
     done = AI / f"s76_{stage}_{MODEL}.json"   # a finished pilot is never re-run (and never paid twice)
-    if stage == "pilot" and done.exists():
+    if stage == "deanon":
+        dd = AI / f"s76_deanon_{os.environ.get('S76_ANON_LEVELS', '20,60,150').replace(',', '-')}.json"   # never paid twice
+        if dd.exists():
+            out = json.loads(dd.read_text(encoding="utf-8"))
+        else:
+            out = deanon_probe(all_docs)
+            if "levels" in out:
+                AI.mkdir(parents=True, exist_ok=True)
+                dd.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
+    elif stage == "pilot" and done.exists():
         out = json.loads(done.read_text(encoding="utf-8"))
         print("[76] pilot already finished for", MODEL, "- reusing the saved result")
     else:
