@@ -114,6 +114,9 @@ def main():
                         doc["sensitive"] = flag[ids]
                 d["flag_v2"] = True
                 save(code, d)
+            elif not d["listed"]:   # 2026-11-17: no list (delisted / ASX error) -- give up after 3 tries, or the job restarts forever
+                d["list_tries"] = d.get("list_tries", 0) + 1
+                save(code, d)
         # new announcements, plus earlier failures (up to 3 tries each)
         # plus price-sensitive docs saved before full-text storage (2026-11-15) that were cut (over 8 pages or 8000 chars)
         todo = [it for it in d["listed"] if it["ids"] not in d["docs"]
@@ -145,7 +148,7 @@ def main():
     left = total_docs = unlisted = 0
     for u in U:
         d = load(u["code"])
-        if not d["listed"]:
+        if not d["listed"] and d.get("list_tries", 0) < 3:
             unlisted += 1
         left += len([it for it in d["listed"] if it["ids"] not in d["docs"]
                      or ("error" in d["docs"][it["ids"]] and d["docs"][it["ids"]].get("tries", 1) < 3)
