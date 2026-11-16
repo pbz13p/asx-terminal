@@ -374,7 +374,15 @@ def main():
         raise SystemExit("price-sensitive flags not corrected yet for enough companies; run again after the announcement job")
     common = build_anonymiser(all_docs)
     stage = os.environ.get("S76_STAGE", "pilot")
-    out = pilot(all_docs, common) if stage == "pilot" else {"stage": stage, "status": "not built yet"}
+    done = AI / f"s76_{stage}_{MODEL}.json"   # a finished pilot is never re-run (and never paid twice)
+    if stage == "pilot" and done.exists():
+        out = json.loads(done.read_text(encoding="utf-8"))
+        print("[76] pilot already finished for", MODEL, "- reusing the saved result")
+    else:
+        out = pilot(all_docs, common) if stage == "pilot" else {"stage": stage, "status": "not built yet"}
+        if stage == "pilot" and "pilot_usd" in out:
+            done.parent.mkdir(parents=True, exist_ok=True)
+            done.write_text(json.dumps(out, ensure_ascii=False, default=float), encoding="utf-8")
     out["ledger"] = ledger()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1, default=float), encoding="utf-8")
