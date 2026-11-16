@@ -113,7 +113,7 @@ td.w{white-space:normal;min-width:260px}
       <div class="tool">
         <span id="tfs"></span><span class="sep"></span><span id="pers"><button class="tf on" data-per="d" title="每根K线一天">日K</button> <button class="tf" data-per="w" title="每根K线一周">周K</button> <button class="tf" data-per="m" title="每根K线一个月">月K</button></span><span class="sep"></span>
         <button class="tf on" data-ma="20">MA20</button><button class="tf on" data-ma="50">MA50</button><button class="tf on" data-ma="200">MA200</button><span class="sep"></span>
-        <button class="tf" id="bollb">BOLL</button><button class="tf on" id="annb" title="在 K 线上标出公告和信号">公告点</button><span class="sep"></span><button class="tf" id="fsb" title="图表全屏（Esc 退出）">⛶ 全屏</button><span class="sep"></span>
+        <button class="tf" id="bollb">BOLL</button><button class="tf on" id="annb" title="在 K 线上标出公告和信号">公告点</button><span class="sep"></span><button class="tf" id="logb" title="对数坐标：大涨大跌的股票看得更清楚（TradingView 的 log）">对数</button><button class="tf" id="fsb" title="图表全屏（Esc 退出）">⛶ 全屏</button><span class="sep"></span>
         <select id="subsel" aria-label="副图指标"><option value="rsi">RSI</option><option value="macd">MACD</option><option value="kdj">KDJ</option><option value="obv">OBV</option><option value="atr">ATR</option><option value="val">成交额</option><option value="none">无副图</option></select>
       </div>
     </div>
@@ -163,15 +163,20 @@ function mkCharts(){
  cs=chart.addCandlestickSeries({upColor:'#19FF9C',downColor:'#FF2E74',borderVisible:false,wickUpColor:'#19FF9C',wickDownColor:'#FF2E74'});
  vs=chart.addHistogramSeries({priceScaleId:'',priceFormat:{type:'volume'},lastValueVisible:false,priceLineVisible:false});
  vs.priceScale().applyOptions({scaleMargins:{top:.82,bottom:0}});
+ cs.priceScale().applyOptions({scaleMargins:{top:.08,bottom:.2}});   // candles sit above the volume bars instead of on them
  var col={20:'#FFD43B',50:'#22E4F5',200:'#A44BFF'};
- [20,50,200].forEach(function(n){mas[n]=chart.addLineSeries({color:col[n],lineWidth:1.4,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});});
- bol=[0,1,2].map(function(i){return chart.addLineSeries({color:i===1?'rgba(255,212,59,.7)':'rgba(255,212,59,.45)',lineWidth:1,lineStyle:i===1?2:0,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});});
+ // price axis fits the candles only (like TradingView's "scale price chart only"): a far-away MA200 on monthly bars or
+ // BOLL bands must not squash the candles into a flat line
+ var noScale=function(){return null;};
+ [20,50,200].forEach(function(n){mas[n]=chart.addLineSeries({color:col[n],lineWidth:1.4,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,autoscaleInfoProvider:noScale});});
+ bol=[0,1,2].map(function(i){return chart.addLineSeries({color:i===1?'rgba(255,212,59,.7)':'rgba(255,212,59,.45)',lineWidth:1,lineStyle:i===1?2:0,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,autoscaleInfoProvider:noScale});});
  sub=LC.createChart($('sub'),Object.assign({autoSize:true},CO,{timeScale:{visible:false,borderColor:'#161D35'}}));
  chart.timeScale().subscribeVisibleLogicalRangeChange(function(r){if(r)sub.timeScale().setVisibleLogicalRange(r);});
  chart.subscribeCrosshairMove(function(p){var d=p&&p.seriesData&&p.seriesData.get(cs);if(!d)legend();else legend(d);annTip(p);});
  chart.subscribeClick(onChartClick);
  chart.timeScale().subscribeVisibleLogicalRangeChange(function(){paintOv();});
  new ResizeObserver(function(){paintOv();}).observe($('chart'));
+ if(typeof applyLog==='function')applyLog();
 }
 var BARS=[];
 function tkey(t){if(/^\d{4}-\d{2}-\d{2}$/.test(t))return t;var s=Date.parse(String(t).replace(' ','T')+(String(t).length<=19?'Z':''));return Math.floor(s/1000)+11*3600;}
@@ -216,7 +221,7 @@ function setMarks(){if(!cs)return;var mk=[];if(ANNON&&BARS.length&&typeof BARS[0
   // price-sensitive, number = how many; hover/click still lists them all
   var per={},sg={};
   ANNS.forEach(function(a){if(a.date<first||a.date>last)return;var t=snap(a.date);a._t=t;if(!t)return;var o=per[t]||(per[t]={n:0,s:0});o.n++;if(a.sensitive)o.s++;});
-  Object.keys(per).forEach(function(t){var o=per[t];mk.push({time:t,position:'aboveBar',color:o.s?'#FF2E74':'#5B6690',shape:'circle',size:o.s?1:0.6,text:o.n>1?String(o.n):''});});
+  Object.keys(per).forEach(function(t){var o=per[t];mk.push({time:t,position:'aboveBar',color:o.s?'#FF2E74':'#5B6690',shape:'circle',size:o.s?0.7:0.5,text:o.n>1?String(o.n):''});});
   SIGS.forEach(function(g){var t=snap(g.date);if(t&&g.date>=first){if(sg[t])sg[t].text+=' · '+g.text;else{sg[t]={time:t,position:'belowBar',color:'#FFD43B',shape:'arrowUp',text:g.text};mk.push(sg[t]);}}});}
  mk.sort(function(a,b){return a.time<b.time?-1:1;});cs.setMarkers(mk);}
 function annAt(t){var d=dayOf(t);return ANNS.filter(function(a){return a.date===d||(a.snap===d);});}
@@ -482,6 +487,8 @@ function setMarket(m,code){if(m===st.m&&!code)return;st.m=m;lss('nt_m',m);loadW(
  $('si').placeholder=m==='cn'?'搜 A 股代码，如 600519':'搜代码，如 CND（A 股输 6 位数字）';$('addi').placeholder=m==='cn'?'加自选，如 600036':'加自选，如 BHP';$('breadth').style.display=m==='cn'?'none':'';
  setTfs();renderBTabs();renderBottom();$('idx').innerHTML='';loadIdx();loadMarket();select(code||lsg('nt_sel_'+m,st.watch[0]));loadQuotes();}
 $('mkt').addEventListener('click',function(e){var m=e.target.getAttribute('data-m');if(m)setMarket(m);});
+var LOGS=lsg('nt_log','0')==='1';function applyLog(){if(!chart)return;chart.priceScale('right').applyOptions({mode:LOGS?1:0});$('logb').classList.toggle('on',LOGS);}
+$('logb').onclick=function(){LOGS=!LOGS;lss('nt_log',LOGS?'1':'0');applyLog();};applyLog();
 $('fsb').onclick=function(){document.body.classList.toggle('fs');this.classList.toggle('on',document.body.classList.contains('fs'));};
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('fs')){document.body.classList.remove('fs');$('fsb').classList.remove('on');}});
 function select(c){st.sel=c;ANNS=[];SIGS=[];DM=null;if(typeof markTool==='function')markTool();loadDraws();lss('nt_sel_'+st.m,c);$('annhint').textContent=st.m==='cn'?'· 点一下打开原文 PDF（巨潮资讯）':'· 点一下，中文直接弹出';head();renderList();loadChart();loadRight(c);if(!Q[c])loadQuotes();}
