@@ -469,7 +469,7 @@ def main():
     vecs, left = embed_all(docs, t0)
     out = {"method": __doc__.strip(), "companies": companies, "docs": len(docs), "embedded": len(vecs), "left_to_embed": left,
            "model": MODEL}
-    if left > 0:
+    if left > 0.02 * len(docs):   # new announcements keep arriving; under 2% missing does not change the result
         out["status"] = f"向量还没算完：还剩 {left} 篇，下次运行接着算"
         OUT.parent.mkdir(parents=True, exist_ok=True)
         OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
