@@ -212,8 +212,12 @@ function dayOf(t){return typeof t==='string'?t:new Date((t-11*3600)*1000).toISOS
 function setMarks(){if(!cs)return;var mk=[];if(ANNON&&BARS.length&&typeof BARS[0].time==='string'){var first=BARS[0].time,last=BARS[BARS.length-1].time,days={};
   BARS.forEach(function(b){days[b.time]=1;});
   function snap(d){if(days[d])return d;for(var i=0;i<BARS.length;i++)if(BARS[i].time>=d)return BARS[i].time;return null;}
-  ANNS.forEach(function(a){if(a.date<first||a.date>last)return;var t=snap(a.date);a._t=t;if(t)mk.push({time:t,position:'aboveBar',color:a.sensitive?'#FF2E74':'#5B6690',shape:'circle',size:a.sensitive?1:0.6});});
-  SIGS.forEach(function(g){var t=snap(g.date);if(t&&g.date>=first)mk.push({time:t,position:'belowBar',color:'#FFD43B',shape:'arrowUp',text:g.text});});}
+  // one dot per bar (weekly/monthly bars hold many announcements; stacked dots squashed the candles): red if any is
+  // price-sensitive, number = how many; hover/click still lists them all
+  var per={},sg={};
+  ANNS.forEach(function(a){if(a.date<first||a.date>last)return;var t=snap(a.date);a._t=t;if(!t)return;var o=per[t]||(per[t]={n:0,s:0});o.n++;if(a.sensitive)o.s++;});
+  Object.keys(per).forEach(function(t){var o=per[t];mk.push({time:t,position:'aboveBar',color:o.s?'#FF2E74':'#5B6690',shape:'circle',size:o.s?1:0.6,text:o.n>1?String(o.n):''});});
+  SIGS.forEach(function(g){var t=snap(g.date);if(t&&g.date>=first){if(sg[t])sg[t].text+=' · '+g.text;else{sg[t]={time:t,position:'belowBar',color:'#FFD43B',shape:'arrowUp',text:g.text};mk.push(sg[t]);}}});}
  mk.sort(function(a,b){return a.time<b.time?-1:1;});cs.setMarkers(mk);}
 function annAt(t){var d=dayOf(t);return ANNS.filter(function(a){return a.date===d||(a.snap===d);});}
 function annTip(p){if(DM)return;if(!ANNON||!p||!p.time||!p.point){$('dhint').style.display='none';return;}var L=ANNS.filter(function(a){return a._t===p.time;});
