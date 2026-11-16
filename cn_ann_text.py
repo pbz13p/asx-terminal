@@ -117,6 +117,7 @@ def main():
                 g.unlink()
     stats = {"stocks": len(files), "selected": 0, "have": 0, "fetched": 0, "failed": 0}
     by_kind = {}
+    errs = {}
     left = 0
     with ThreadPoolExecutor(max_workers=1 if BIG_MODE else 4) as ex:
         for f in files:
@@ -165,7 +166,7 @@ def main():
                     rec.update(pages=n, text=text, full=True)
                 except Exception as e:
                     prev = have.get(str(a["id"]), {})
-                    rec.update(error=type(e).__name__, tries=prev.get("tries", 0) + 1)
+                    rec.update(error=type(e).__name__, msg=str(e)[:120], tries=prev.get("tries", 0) + 1)
                 time.sleep(0.2)
                 return str(a["id"]), rec
             for i in range(0, len(todo), 40):
@@ -176,11 +177,15 @@ def main():
                     have[ids] = rec
                     stats["fetched"] += 1
                     stats["failed"] += "error" in rec
+                    if "error" in rec:   # why things fail, so a check-in can see it in the log
+                        why = rec["error"] + ": " + rec.get("msg", "")[:60]
+                        errs[why] = errs.get(why, 0) + 1
                 p.write_bytes(gzip.compress(json.dumps(have, ensure_ascii=False, separators=(",", ":")).encode("utf-8", "replace")))
     Path("data/.cn_ann_big_left" if BIG_MODE else "data/.cn_ann_text_left").write_text(str(left))
     stats["shard"] = shard
     stats.update(left=left, minutes=round((time.time() - t0) / 60, 1), by_kind=by_kind)
     stats["mode"] = "big" if BIG_MODE else "normal"
+    stats["errors"] = dict(sorted(errs.items(), key=lambda x: -x[1])[:8])
     print("[cn_ann_text]", json.dumps(stats, ensure_ascii=False))
 
 
