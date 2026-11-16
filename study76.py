@@ -74,6 +74,9 @@ def docs():
     return out
 
 
+PLACES = re.compile(r"\b(?:Melbourne|Sydney|Perth|Brisbane|Adelaide|Hobart|Darwin|Canberra|Gold Coast|Subiaco|West Perth|"
+                    r"North Sydney|Victoria|New South Wales|Queensland|Western Australia|South Australia|Tasmania|"
+                    r"Northern Territory|VIC|NSW|QLD|WA|SA|TAS|NT|ACT)\b")
 CAP = re.compile(r"\b[A-Z][A-Za-z'&\-]{1,}\b")
 
 
@@ -101,6 +104,12 @@ def anonymise(text, code, common):
     t = re.sub(r"\b[A-Z]{2,5}\b", lambda m: m.group(0) if m.group(0).lower() in common else "[N]", t)        # other tickers / acronyms
     t = re.sub(r"\b(19|20)\d{2}\b", "[Y]", t)
     t = re.sub(r"\b(FY|CY|H[12]|Q[1-4])\s?\d{2}\b", r"\1[Y]", t)
+    t = re.sub(r"\b(FY|CY|H[12]|Q[1-4]|1H|2H)\s?(?:19|20)?\d{2}\b", r"\1[Y]", t)       # FY2021, CY21, 1H24
+    t = re.sub(r"\b\d{1,2}(?:st|nd|rd|th)?\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\b", "[D]", t)   # 31 January
+    t = re.sub(r"\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2}\b", "[D]", t)
+    t = PLACES.sub("[P]", t)                                                                     # head-office cities and states
+    t = re.sub(r"\b(?:ABN|ACN|ARBN)\s*[\d ]{9,14}", "[N]", t)                                    # company numbers
+    t = re.sub(r"\b(?:Level|Suite|Unit)\s+\d+[^.]{0,60}", "[A]", t)                               # street addresses
     t = CAP.sub(lambda m: m.group(0) if m.group(0).lower() in common else "[N]", t)
     t = re.sub(r"(\[N\][\s,]*){2,}", "[N] ", t)
     return t
