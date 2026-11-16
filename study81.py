@@ -500,7 +500,7 @@ def main():
                 continue
             m = evaluate(P, walk_forward(P, X, h), h, label)
             models.append(m)
-            print("[model]", json.dumps(m, ensure_ascii=False)[:600], flush=True)
+            print("[model]", m.get("model"), "h", m.get("horizon_months"), "done", flush=True)   # numbers stay in the encrypted file (public repo)
     out.update({"panel_rows": int(len(P)), "panel_companies": int(P.code.nunique()), "first": P.ym.min(), "last": P.ym.max(),
                 "models": models, "event_version": event_version(docs, vecs, pca, P, px, cal, bench),
                 "topics": topics(docs, vecs, px, cal, bench), "seconds": round(time.time() - t0)})
