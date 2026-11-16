@@ -25,7 +25,7 @@ BUDGET = 60 * float(os.environ.get("CNTXT_MINUTES", "170"))
 PAGES = int(os.environ.get("CNTXT_PAGES", "6"))
 SINCE = os.environ.get("CNTXT_SINCE", "2016-01-01")
 MAX_SCAN = 400   # pages kept per document (whole document for all but the rare 400+ page report)
-MAX_KB = 40000    # 2026-11-16: was 6000 (6 MB), which skipped big reorganisation reports; now up to 40 MB
+MAX_KB = 25000    # 2026-11-16: was 6000 (6 MB), which skipped big reorganisation reports; 40 MB ran a runner out of memory
 KEY = re.compile(r"万元|亿元|净利润|营业收入|同比|对价|交易价格|估值|业绩承诺|补偿|风险|担保|减值|亏损|违约|处罚|立案|占.{0,6}比例|%")
 KINDS = [
     ("业绩预告/快报", r"业绩预告|业绩快报|业绩预增|业绩预减|预盈|预亏|扭亏"),
@@ -58,6 +58,7 @@ def kind(title):
 
 
 BRAKE = {"hits": 0, "stop": False}
+BIG = __import__("threading").Semaphore(1)
 _brake_lock = __import__("threading").Lock()
 
 
@@ -132,7 +133,11 @@ def main():
                 a, k = x
                 rec = {"t": a["t"], "title": a["title"], "kind": k}
                 try:
-                    text, n = pdf_text(a["url"])
+                    if (a.get("kb") or 0) > 5000:   # big PDFs one at a time: 4 at once ran a runner out of memory (2026-11-16)
+                        with BIG:
+                            text, n = pdf_text(a["url"])
+                    else:
+                        text, n = pdf_text(a["url"])
                     if len(text) < 30:
                         raise ValueError("empty text (scanned PDF?)")
                     rec.update(pages=n, text=text, full=True)
