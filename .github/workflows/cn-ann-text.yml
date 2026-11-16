@@ -63,8 +63,42 @@ jobs:
         with:
           name: left-${{ matrix.shard }}
           path: left/
+  big:   # PDFs over 25 MB (big reorganisation reports etc.): one at a time with pdftotext, low memory, own cache
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo apt-get install -y -q poppler-utils
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cn_ann
+          key: cnann-none
+          restore-keys: cnann-
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cn_ann_big
+          key: cnannbig-${{ github.run_id }}
+          restore-keys: cnannbig-
+      - run: python cn_ann_text.py
+        env:
+          CNTXT_MODE: big
+      - if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/cn_ann_big
+          key: cnannbig-${{ github.run_id }}
+      - if: always()
+        run: mkdir -p left && cp data/.cn_ann_big_left left/big 2>/dev/null || echo 0 > left/big
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: left-big
+          path: left/
   continue:
-    needs: text
+    needs: [text, big]
     if: always()
     runs-on: ubuntu-latest
     steps:

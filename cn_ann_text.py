@@ -19,7 +19,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 IDX = Path("data/cn_ann")
-OUT = Path("data/cn_ann_text")
+BIG_MODE = os.environ.get("CNTXT_MODE") == "big"   # big PDFs (> MAX_KB) in their own job, one at a time, with pdftotext
+OUT = Path("data/cn_ann_big" if BIG_MODE else "data/cn_ann_text")
 BASE = "http://static.cninfo.com.cn/"
 BUDGET = 60 * float(os.environ.get("CNTXT_MINUTES", "170"))
 PAGES = int(os.environ.get("CNTXT_PAGES", "6"))
@@ -84,6 +85,24 @@ def pdf_text(url):
     return re.sub(r"[ \t]+", " ", text).strip(), n
 
 
+def pdf_text_big(url):
+    """Stream the PDF to disk and extract with pdftotext (poppler): low memory even for 100+ MB reports."""
+    import shutil
+    import subprocess
+    import tempfile
+    with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
+        with urllib.request.urlopen(urllib.request.Request(BASE + url, headers={"Accept": "application/pdf"}), timeout=300) as r:
+            shutil.copyfileobj(r, tmp, 1 << 20)
+        tmp.flush()
+        info = subprocess.run(["pdfinfo", tmp.name], capture_output=True, text=True, timeout=120).stdout
+        n = int((re.search(r"Pages:\s+(\d+)", info) or [0, 0])[1])
+        out = subprocess.run(["pdftotext", "-enc", "UTF-8", "-l", str(MAX_SCAN), tmp.name, "-"],
+                             capture_output=True, timeout=1800).stdout.decode("utf-8", "replace")
+    pages = out.split("\f")
+    text = "\n".join(f"[第{i + 1}页]\n{t}" for i, t in enumerate(pages) if t.strip())
+    return re.sub(r"[ \t]+", " ", text).strip(), n
+
+
 def main():
     t0 = time.time()
     OUT.mkdir(parents=True, exist_ok=True)
@@ -99,14 +118,15 @@ def main():
     stats = {"stocks": len(files), "selected": 0, "have": 0, "fetched": 0, "failed": 0}
     by_kind = {}
     left = 0
-    with ThreadPoolExecutor(max_workers=4) as ex:
+    with ThreadPoolExecutor(max_workers=1 if BIG_MODE else 4) as ex:
         for f in files:
             code = f.name[:-8]
             items = json.loads(gzip.decompress(f.read_bytes()))
             sel = []
             for a in items:
                 k = kind(a.get("title"))
-                if k and a.get("url", "").lower().endswith(".pdf") and a.get("t", "") >= SINCE and (a.get("kb") or 0) <= MAX_KB:
+                big = (a.get("kb") or 0) > MAX_KB
+                if k and a.get("url", "").lower().endswith(".pdf") and a.get("t", "") >= SINCE and big == BIG_MODE:
                     sel.append((a, k))
             sel.sort(key=lambda x: x[0]["t"], reverse=True)
             stats["selected"] += len(sel)
@@ -133,7 +153,9 @@ def main():
                 a, k = x
                 rec = {"t": a["t"], "title": a["title"], "kind": k}
                 try:
-                    if (a.get("kb") or 0) > 5000:   # big PDFs one at a time: 4 at once ran a runner out of memory (2026-11-16)
+                    if BIG_MODE:
+                        text, n = pdf_text_big(a["url"])
+                    elif (a.get("kb") or 0) > 5000:   # big PDFs one at a time: 4 at once ran a runner out of memory (2026-11-16)
                         with BIG:
                             text, n = pdf_text(a["url"])
                     else:
@@ -155,9 +177,10 @@ def main():
                     stats["fetched"] += 1
                     stats["failed"] += "error" in rec
                 p.write_bytes(gzip.compress(json.dumps(have, ensure_ascii=False, separators=(",", ":")).encode("utf-8", "replace")))
-    Path("data/.cn_ann_text_left").write_text(str(left))
+    Path("data/.cn_ann_big_left" if BIG_MODE else "data/.cn_ann_text_left").write_text(str(left))
     stats["shard"] = shard
     stats.update(left=left, minutes=round((time.time() - t0) / 60, 1), by_kind=by_kind)
+    stats["mode"] = "big" if BIG_MODE else "normal"
     print("[cn_ann_text]", json.dumps(stats, ensure_ascii=False))
 
 
