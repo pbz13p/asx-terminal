@@ -45,7 +45,7 @@ aside{background:var(--p);border-right:1px solid var(--ln)}aside.r{border-right:
 .dt{position:absolute;left:0;top:0;bottom:0;width:38px;z-index:6;background:var(--p);border-right:1px solid var(--ln);display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:6px;overflow-y:auto}
 .dt button{all:unset;cursor:pointer;width:30px;height:26px;text-align:center;line-height:26px;border-radius:5px;color:var(--mu);font-size:15.5px}.dt button:hover{background:#121A3C;color:var(--ink)}.dt button.on{background:rgba(34,228,245,.18);color:var(--c);box-shadow:inset 0 0 0 1px rgba(34,228,245,.5)}
 .dsel{position:absolute;left:50%;top:34px;transform:translateX(-50%);z-index:6;display:none;gap:5px;background:#0E1222;border:1px solid var(--ln2);border-radius:8px;padding:5px 8px}.dsel button{all:unset;cursor:pointer;width:16px;height:16px;border-radius:50%;border:1px solid #333}.dsel button[data-x]{width:auto;border:0;font-size:15.5px}
-body.fs header,body.fs aside,body.fs .bottom{display:none}body.fs main{grid-template-columns:1fr}body.fs #app{grid-template-rows:0 1fr}#sub{height:150px;flex:none;border-top:1px solid var(--ln)}
+body.fs header,body.fs aside,body.fs .bottom{display:none}body.fs main{grid-template-columns:1fr}body.fs #app{grid-template-rows:0 1fr}#sub{height:150px;flex:none;border-top:1px solid var(--ln);position:relative}.sublab{position:absolute;left:8px;top:4px;z-index:5;font-size:13px;color:#E6ECFF;background:rgba(10,14,30,.85);border:1px solid #2A3570;border-radius:6px;padding:2px 8px;cursor:pointer;user-select:none}.sublab:hover{border-color:#22E4F5;color:#22E4F5}.submenu{display:none;position:absolute;left:8px;top:28px;z-index:6;background:#0A0E1E;border:1px solid #2A3570;border-radius:8px;padding:4px;min-width:150px;box-shadow:0 6px 24px rgba(0,0,0,.6)}.submenu.on{display:block}.submenu div{padding:6px 10px;border-radius:5px;cursor:pointer;font-size:13px;color:#C9D3F5}.submenu div:hover{background:#161D35;color:#22E4F5}.submenu div.cur{color:#22E4F5}.submenu small{color:#6B7AA6;margin-left:6px}
 #legend{position:absolute;left:12px;top:6px;z-index:3;font-size:14px;color:var(--mu);pointer-events:none}
 #note{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:var(--mu);z-index:2}
 .bottom{height:260px;flex:none;border-top:1px solid var(--ln);display:flex;flex-direction:column;background:var(--p)}
@@ -114,11 +114,11 @@ td.w{white-space:normal;min-width:260px}
         <span id="tfs"></span><span class="sep"></span><span id="pers"><button class="tf on" data-per="d" title="每根K线一天">日K</button> <button class="tf" data-per="w" title="每根K线一周">周K</button> <button class="tf" data-per="m" title="每根K线一个月">月K</button></span><span class="sep"></span>
         <button class="tf on" data-ma="20">MA20</button><button class="tf on" data-ma="50">MA50</button><button class="tf on" data-ma="200">MA200</button><span class="sep"></span>
         <button class="tf" id="bollb">BOLL</button><button class="tf on" id="annb" title="在 K 线上标出公告和信号">公告点</button><span class="sep"></span><button class="tf" id="fsb" title="图表全屏（Esc 退出）">⛶ 全屏</button><span class="sep"></span>
-        <select id="subsel" aria-label="副图指标"><option value="rsi">RSI</option><option value="macd">MACD</option><option value="kdj">KDJ</option><option value="none">无副图</option></select>
+        <select id="subsel" aria-label="副图指标"><option value="rsi">RSI</option><option value="macd">MACD</option><option value="kdj">KDJ</option><option value="obv">OBV</option><option value="atr">ATR</option><option value="val">成交额</option><option value="none">无副图</option></select>
       </div>
     </div>
     <div id="chart"><div id="legend"></div><div id="note"></div><div id="dtools" class="dt"></div><div id="dsel" class="dsel"></div><canvas id="ov" style="position:absolute;left:38px;top:0;right:0;bottom:0;pointer-events:none;z-index:3"></canvas><div id="dhint" style="position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:5;display:none;background:#10183A;border:1px solid var(--c);border-radius:6px;padding:3px 10px;font-size:14.5px"></div></div>
-    <div id="sub"></div>
+    <div id="sub"><div id="sublab" class="sublab" title="点这里换副图指标"></div><div id="submenu" class="submenu"></div></div>
     <div class="bottom">
       <div class="tabs" id="btabs"><button data-t="rockets" class="on">爆拉候选</button><button data-t="breakouts">放量突破</button><button data-t="watchalerts">自选提醒</button><button data-t="mkt">市场公告</button><button data-t="find">研究结论</button></div>
       <div class="tbl" id="btbl"></div>
@@ -187,7 +187,7 @@ function draw(){
  setMarks();
  subs.forEach(function(s){sub.removeSeries(s);});subs=[];
  $('sub').style.display=st.sub==='none'?'none':'';
- if(st.sub==='rsi'){var r=rsi(c,14),s=sub.addLineSeries({color:'#22E4F5',lineWidth:1.4,priceLineVisible:false});s.setData(b.map(function(x,i){return r[i]==null?null:{time:x.time,value:r[i]};}).filter(Boolean));
+ if(st.sub==='rsi'){var r=rsi(c,14),s=sub.addLineSeries({color:'#22E4F5',lineWidth:1.4,priceLineVisible:false});s.setData(b.map(function(x,i){return r[i]==null?{time:x.time}:{time:x.time,value:r[i]};}));
    s.createPriceLine({price:70,color:'#FF2E74',lineStyle:2,lineWidth:1,axisLabelVisible:false});s.createPriceLine({price:30,color:'#19FF9C',lineStyle:2,lineWidth:1,axisLabelVisible:false});subs.push(s);}
  if(st.sub==='macd'){var e1=ema(c,12),e2=ema(c,26),m=e1.map(function(v,i){return v-e2[i];}),sg=ema(m,9);
    var mf={type:'price',precision:pr+1,minMove:Math.pow(10,-pr-1)};var h=sub.addHistogramSeries({priceLineVisible:false,lastValueVisible:false,priceFormat:mf});h.setData(b.map(function(x,i){var v=m[i]-sg[i];return {time:x.time,value:v,color:v>=0?'rgba(25,255,156,.6)':'rgba(255,46,116,.6)'};}));
@@ -195,8 +195,18 @@ function draw(){
    l1.setData(b.map(function(x,i){return {time:x.time,value:m[i]};}));l2.setData(b.map(function(x,i){return {time:x.time,value:sg[i]};}));subs.push(h,l1,l2);}
  if(st.sub==='kdj'){var K=[],D=[],J=[],k=50,dd=50;for(var i=0;i<b.length;i++){var lo=Infinity,hi=-Infinity;for(var j=Math.max(0,i-8);j<=i;j++){lo=Math.min(lo,b[j].low);hi=Math.max(hi,b[j].high);}var rsv=hi>lo?100*(b[i].close-lo)/(hi-lo):50;k=k+(rsv-k)/3;dd=dd+(k-dd)/3;K.push(k);D.push(dd);J.push(3*k-2*dd);}
    [[K,'#FFD43B'],[D,'#22E4F5'],[J,'#A44BFF']].forEach(function(p){var s=sub.addLineSeries({color:p[1],lineWidth:1.2,priceLineVisible:false});s.setData(b.map(function(x,i){return {time:x.time,value:p[0][i]};}));subs.push(s);});}
+ if(st.sub==='obv'){var ob=[],acc=0;for(var i=0;i<b.length;i++){if(i>0)acc+=b[i].close>c[i-1]?b[i].v:b[i].close<c[i-1]?-b[i].v:0;ob.push(acc);}
+   var so=sub.addLineSeries({color:'#22E4F5',lineWidth:1.4,priceLineVisible:false,priceFormat:{type:'volume'}});so.setData(b.map(function(x,i){return {time:x.time,value:ob[i]};}));subs.push(so);}
+ if(st.sub==='atr'){var at=[],a=null;for(var i=0;i<b.length;i++){var tr=i?Math.max(b[i].high-b[i].low,Math.abs(b[i].high-c[i-1]),Math.abs(b[i].low-c[i-1])):b[i].high-b[i].low;a=i<14?(a==null?tr:a+(tr-a)/(i+1)):a+(tr-a)/14;at.push(i>=13?a:null);}
+   var sa=sub.addLineSeries({color:'#FFD43B',lineWidth:1.4,priceLineVisible:false,priceFormat:pf});sa.setData(b.map(function(x,i){return at[i]==null?{time:x.time}:{time:x.time,value:at[i]};}));subs.push(sa);}
+ if(st.sub==='val'){var sv=sub.addHistogramSeries({priceLineVisible:false,lastValueVisible:true,priceFormat:{type:'volume'}});sv.setData(b.map(function(x){return {time:x.time,value:x.close*x.v,color:x.close>=x.open?'rgba(25,255,156,.6)':'rgba(255,46,116,.6)'};}));subs.push(sv);}
+ subLabel();
  legend();setTimeout(paintOv,0);
 }
+var SUBS=[['rsi','RSI 14','强弱，>70 偏热、<30 偏冷'],['macd','MACD 12 26 9','趋势和动能'],['kdj','KDJ 9 3 3','短线超买超卖'],['obv','OBV','量能累计，资金进出'],['atr','ATR 14','每天平均波动多大'],['val','成交额','每天成交多少钱'],['none','隐藏副图','']];
+function subLabel(){var cur=SUBS.filter(function(x){return x[0]===st.sub;})[0];$('sublab').textContent=(cur?cur[1]:'')+' ▾';
+ $('submenu').innerHTML=SUBS.map(function(x){return '<div data-v="'+x[0]+'"'+(x[0]===st.sub?' class="cur"':'')+'>'+x[1]+(x[2]?'<small>'+x[2]+'</small>':'')+'</div>';}).join('');}
+function setSub(v){st.sub=v;$('subsel').value=v;try{localStorage.setItem('nt_sub',v);}catch(e){}$('submenu').classList.remove('on');draw();}
 /* ---------- markers: announcements + our signals ---------- */
 function dayOf(t){return typeof t==='string'?t:new Date((t-11*3600)*1000).toISOString().slice(0,10);}
 function setMarks(){if(!cs)return;var mk=[];if(ANNON&&BARS.length&&typeof BARS[0].time==='string'){var first=BARS[0].time,last=BARS[BARS.length-1].time,days={};
@@ -340,7 +350,10 @@ var TFS=['1D','5D','1M','6M','1Y','5Y','ALL'];
 $('pers').addEventListener('click',function(e){var p=e.target.getAttribute('data-per');if(!p)return;st.per=p;[].forEach.call($('pers').querySelectorAll('.tf'),function(b){b.classList.toggle('on',b===e.target);});if(st.tf==='1D'||st.tf==='5D'){st.tf='1Y';setTfs();}loadChart();});
 $('tfs').addEventListener('click',function(e){var t=e.target.getAttribute('data-tf');if(!t)return;st.tf=t;[].forEach.call($('tfs').querySelectorAll('.tf'),function(b){b.classList.toggle('on',b===e.target);});loadChart();});
 [].forEach.call(document.querySelectorAll('[data-ma]'),function(b){b.onclick=function(){var n=b.getAttribute('data-ma');st.ma[n]=st.ma[n]?0:1;b.classList.toggle('on',!!st.ma[n]);draw();};});
-$('subsel').value=st.sub;$('subsel').onchange=function(){st.sub=this.value;try{localStorage.setItem('nt_sub',st.sub);}catch(e){}draw();};
+$('subsel').value=st.sub;$('subsel').onchange=function(){setSub(this.value);};
+$('sublab').onclick=function(e){e.stopPropagation();$('submenu').classList.toggle('on');};
+$('submenu').onclick=function(e){var d=e.target.closest('[data-v]');if(d)setSub(d.getAttribute('data-v'));};
+document.addEventListener('click',function(){$('submenu').classList.remove('on');});
 
 /* ---------- right panel ---------- */
 async function loadRight(c){
