@@ -65,7 +65,7 @@ jobs:
       - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s5-}}
       - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s6-}}
       - {uses: actions/cache/restore@v4, with: {path: data/emb81, key: emb81-none, restore-keys: emb81-s7-}}
-      - run: pip install numpy pandas scipy lightgbm bottleneck && (grep -q "rounds=.*78" .github/run-quick && pip install torch --index-url https://download.pytorch.org/whl/cpu || true) && (grep -q "rounds=.*81" .github/run-quick && pip install scikit-learn fastembed || true)
+      - run: pip install numpy pandas scipy lightgbm scikit-learn bottleneck && (grep -q "rounds=.*78" .github/run-quick && pip install torch --index-url https://download.pytorch.org/whl/cpu || true) && (grep -q "rounds=.*81" .github/run-quick && pip install scikit-learn fastembed || true)
       - name: Run rounds
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
