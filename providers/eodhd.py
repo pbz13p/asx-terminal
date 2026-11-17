@@ -35,10 +35,15 @@ class EodhdProvider(Provider):
         params.update(api_token=self.key, fmt="json")
         url = f"{self.base}/{path}?{urllib.parse.urlencode(params)}"
         try:
-            with urllib.request.urlopen(url, timeout=60) as r:
+            req = urllib.request.Request(url, headers={"Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=60) as r:
                 return json.load(r)
         except urllib.error.HTTPError as e:
-            raise DataUnavailable(f"EODHD 返回 {e.code}") from None
+            try:
+                why = e.read(160).decode("utf-8", "replace").strip()
+            except Exception:
+                why = ""
+            raise DataUnavailable(f"EODHD 返回 {e.code} {why}".strip()) from None
         except (urllib.error.URLError, TimeoutError, ValueError):
             raise DataUnavailable("连接 EODHD 失败") from None
 
