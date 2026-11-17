@@ -40,6 +40,34 @@ def med(a):
     return float(np.median(a)) if len(a) else 0.0
 
 
+def fix_consolidations(rows):
+    """EODHD often leaves ASX share consolidations (e.g. 1-for-10) unadjusted: the price jumps 10x overnight while
+    volume collapses by about the same ratio. Left in, every consolidation looks like a ten-bagger (first run of
+    this round: 74% 'hit rate', +232% a year -- impossible). Rule: a one-day move of >= 3x (or <= 1/3) in the
+    adjusted close with the next 5 days' median volume below 3/ratio of the previous 20 days' is a consolidation
+    (or split); earlier prices are rescaled so the series is continuous. Returns (rows, n_fixed)."""
+    rows = list(rows)
+    n = 0
+    for i in range(len(rows) - 1, 0, -1):
+        a0, a1 = rows[i - 1][4], rows[i][4]
+        if a0 <= 0:
+            continue
+        r = a1 / a0
+        if 1 / 3 < r < 3:
+            continue
+        vb = med([x[5] for x in rows[max(0, i - 20):i]])
+        va = med([x[5] for x in rows[i:i + 5]])
+        if vb <= 0:
+            continue
+        ratio_v = va / vb
+        if (r >= 3 and ratio_v < 3 / r) or (r <= 1 / 3 and ratio_v > 1 / (3 * r)):
+            n += 1
+            for j in range(i):   # rescale everything before the jump (adjusted o/h/l/c; volume scaled the other way)
+                d, o, h, l, c, v, raw = rows[j]
+                rows[j] = (d, o * r, h * r, l * r, c * r, v / r if r else v, raw)
+    return rows, n
+
+
 def month_ends(dates):
     out, last = [], None
     for i, d in enumerate(dates):
@@ -96,10 +124,13 @@ def main():
     study_last = max(study.load("AXJO.INDX")[-1][0], "2000")
     print("[80] stocks", len(files), "last day", study_last, flush=True)
     recs = []
+    fixed = 0
     for n, f in enumerate(files):
         rows = study.load(f.name[:-5])
         if len(rows) < 30:
             continue
+        rows, k = fix_consolidations(rows)
+        fixed += k
         dates = [r[0] for r in rows]
         first = dates[0]
         code = f.name[:-8]
@@ -121,7 +152,7 @@ def main():
     r12 = np.array([r["r12"] for r in recs])
     comp = np.array([r["complete"] for r in recs])
     year = np.array([int(r["d"][:4]) for r in recs])
-    out = {"stock_months": len(recs), "stocks": len({r["code"] for r in recs}), "first": min(r["d"] for r in recs),
+    out = {"consolidations_fixed": fixed, "stock_months": len(recs), "stocks": len({r["code"] for r in recs}), "first": min(r["d"] for r in recs),
            "last": max(r["d"] for r in recs)}
 
     # a. base rates (complete 3-year windows only)
