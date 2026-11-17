@@ -377,10 +377,12 @@ class Handler(SimpleHTTPRequestHandler):
                 out.update({k: u.get(k) for k in ("subscriptionType", "paymentMethod", "apiRequests", "dailyRateLimit", "apiRequestsDate", "inviteToken") if k != "inviteToken"})
             except Exception as e:
                 out["user_error"] = str(e)
-            for path, kw in (("eod/BHP.AU", {"from": "2026-11-01"}), ("eod/BHP.AU", {}), ("real-time/BHP.AU", {}), ("eod/AAPL.US", {"from": "2026-11-01"})):
+            import providers.eodhd as pe
+            out["no_trade_bars"] = hasattr(pe, "_flat")
+            for path, kw in (("eod/AXJO.INDX", {"from": "2026-11-10"}), ("real-time/AXJO.INDX", {}), ("real-time/CND.AU", {})):
                 try:
                     r = provider._get(path, **kw)
-                    out[path + str(kw)] = f"ok {len(r) if isinstance(r, list) else 1}"
+                    out[path + str(kw)] = (f"ok {len(r)} last {r[-1].get('date')}" if isinstance(r, list) and r else str(r)[:160])
                 except Exception as e:
                     out[path + str(kw)] = str(e)
             return out
