@@ -113,9 +113,12 @@ def labels(rows, i):
     tradable = med(around) >= 1e4 and rows[i][6] >= 0.005   # below half a cent one tick is already 20%: not a real 10x
     j = min(i + H12, len(rows) - 1)
     r12 = rows[j][4] / c0 - 1
+    # round 71's real cost per side: 0.2% + one tick / price (tick 0.1c under 10c, 0.5c under $2, else 1c)
+    cost = lambda p: 0.002 + ((0.001 if p < 0.10 else 0.005 if p < 2 else 0.01) / p if p > 0 else 1)
+    r12n = (1 + r12) * (1 - min(cost(rows[j][6]), 0.9)) * (1 - min(cost(rows[i][6]), 0.9)) - 1
     complete = len(fut) >= H3 or rows[-1][0] < study_last  # delisted within 3y: history is complete
     return {"mult3y": mult, "x10": float(mult >= 10 and tradable), "x5": float(mult >= 5 and tradable),
-            "r12": r12, "complete": complete, "x10_any": float(mult >= 10)}
+            "r12": r12, "r12n": r12n, "complete": complete, "x10_any": float(mult >= 10)}
 
 
 def main():
@@ -149,7 +152,7 @@ def main():
     X = np.array([[r[k] for k in keys] for r in recs], dtype=float)
     y10 = np.array([r["x10"] for r in recs])
     y5 = np.array([r["x5"] for r in recs])
-    r12 = np.array([r["r12"] for r in recs])
+    r12 = np.array([r["r12n"] for r in recs])   # net of round-71 costs on both sides
     comp = np.array([r["complete"] for r in recs])
     year = np.array([int(r["d"][:4]) for r in recs])
     out = {"consolidations_fixed": fixed, "stock_months": len(recs), "stocks": len({r["code"] for r in recs}), "first": min(r["d"] for r in recs),
@@ -217,7 +220,8 @@ def main():
             # top 10% each month
             by_m = defaultdict(list)
             for k2, ii in enumerate(idx):
-                by_m[recs[ii]["d"][:7]].append((p[k2], ii))
+                if recs[ii]["price"] >= 0.01 and recs[ii]["liq"] >= 2000:   # buyable: >= 1c, >= $2k a day
+                    by_m[recs[ii]["d"][:7]].append((p[k2], ii))
             sel = []
             for mo, lst in by_m.items():
                 lst.sort(reverse=True)
@@ -227,7 +231,7 @@ def main():
             row = {"year": ty, "test_months": len(by_m), "picks": len(sel),
                    "x10_rate_top10_pct": round(100 * y10[sel][done].mean(), 3) if done.any() else None,
                    "x10_rate_all_pct": round(100 * y10[te & comp].mean(), 3) if (te & comp).any() else None,
-                   "r12_mean_top_pct": round(100 * np.nanmean(r12[sel]), 1), "r12_mean_all_pct": round(100 * np.nanmean(r12[te]), 1)}
+                   "r12_median_top_pct": round(100 * np.nanmedian(r12[sel]), 1), "r12_median_all_pct": round(100 * np.nanmedian(r12[te]), 1)}
             wf.append(row)
             picks += list(sel)
         print("[80] walk-forward years", len(wf), flush=True)
@@ -243,12 +247,15 @@ def main():
             "x10_rate_all_pct": round(100 * y10[allm].mean(), 3),
             "x5_rate_pct": round(100 * y5[P][done].mean(), 3) if done.any() else None,
             "r12_mean_pct": round(100 * rr.mean(), 1), "r12_median_pct": round(100 * np.median(rr), 1),
+            "r12_mean_capped_10x_pct": round(100 * np.minimum(rr, 9).mean(), 1),
+            "all_buyable_r12_median_pct": round(100 * np.median(r12[allm & (X[:, 0] >= 0.01) & (X[:, 1] >= 2000)]), 1),
+            "all_buyable_r12_mean_capped_pct": round(100 * np.minimum(r12[allm & (X[:, 0] >= 0.01) & (X[:, 1] >= 2000)], 9).mean(), 1),
             "hit_rate_pct": round(100 * (rr > 0).mean(), 1), "avg_win_pct": round(100 * wins.mean(), 1) if len(wins) else None,
             "avg_loss_pct": round(100 * losses.mean(), 1) if len(losses) else None,
             "expectancy_per_dollar": round(float(rr.mean()), 3),
             "top1pct_winners_share_of_gains": round(float(np.sort(rr)[-max(1, len(rr) // 100):].sum() / max(rr[rr > 0].sum(), 1e-9)), 3),
             "median_days_to_build_7500": round(med([min(999, 7500 / max(0.05 * recs[i]["liq"], 1)) for i in P]), 1),
-            "note": "12-month returns are gross (no costs, no stops); costs and stop rules are round 82's job",
+            "note": "12-month returns net of round-71 costs both sides; picks only from stocks >= 1c trading >= $2k/day; no stops (round 82)",
         }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1, default=float), encoding="utf-8")
