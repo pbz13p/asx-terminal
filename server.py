@@ -377,6 +377,12 @@ class Handler(SimpleHTTPRequestHandler):
                 out.update({k: u.get(k) for k in ("subscriptionType", "paymentMethod", "apiRequests", "dailyRateLimit", "apiRequestsDate", "inviteToken") if k != "inviteToken"})
             except Exception as e:
                 out["user_error"] = str(e)
+            for path, kw in (("eod/BHP.AU", {"from": "2026-11-01"}), ("eod/BHP.AU", {}), ("real-time/BHP.AU", {}), ("eod/AAPL.US", {"from": "2026-11-01"})):
+                try:
+                    r = provider._get(path, **kw)
+                    out[path + str(kw)] = f"ok {len(r) if isinstance(r, list) else 1}"
+                except Exception as e:
+                    out[path + str(kw)] = str(e)
             return out
         if name == "where" and not self._users() and self.client_address[0] == "127.0.0.1":   # own PC: app folder path
             return str(ROOT)
