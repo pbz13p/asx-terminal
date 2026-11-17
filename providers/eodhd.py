@@ -207,18 +207,45 @@ class EodhdProvider(Provider):
         return [{"t": r["datetime"], "o": r["open"], "h": r["high"], "l": r["low"],
                  "c": r["close"], "v": r.get("volume") or 0} for r in rows]
 
-def with_today(provider, symbol, bars, tz):
+def _flat(prev, day):
+    """A day the exchange was open but this stock did not trade: a flat bar at the last close, volume 0 (Frank 2026-11-17:
+    hovering over that day must still show a box with the date and volume 0, so nobody thinks data is missing)."""
+    c = prev["c"]
+    return {"t": day, "o": c, "h": c, "l": c, "c": c, "v": 0, "nt": 1}
+
+
+def with_today(provider, symbol, bars, tz, index=None):
     """EODHD publishes the day's EOD bar hours after the close; until then add today's bar from the (delayed) real-time
-    quote, like TradingView's forming bar. Cached 60 s; any problem just returns the bars unchanged."""
+    quote, like TradingView's forming bar. Days the exchange traded but this stock did not (no trades, suspended) become
+    flat bars with volume 0, using the index's trading days as the calendar. Any problem just returns the bars unchanged."""
+    if index is None:
+        index = "AXJO.INDX" if symbol.endswith(".AU") else "000001.SHG"
     try:
         from zoneinfo import ZoneInfo
+        cal = provider._cached(f"cal:{index}", 3600, lambda: [r["date"] for r in provider._get(f"eod/{index}", **{"from": "1990-01-01"})])
+        if bars and cal:
+            have = {b["t"][:10] for b in bars}
+            first, last = bars[0]["t"][:10], bars[-1]["t"][:10]
+            gaps = [d for d in cal if first < d < last and d not in have]
+            if gaps:
+                out, j = [], 0
+                gaps_set = set(gaps)
+                merged = sorted(have | gaps_set)
+                by = {b["t"][:10]: b for b in bars}
+                for d in merged:
+                    out.append(by[d] if d in by else _flat(out[-1], d))
+                bars = out
         q = provider._cached(f"rt:{symbol}", 60, lambda: provider._get(f"real-time/{symbol}"))
         o, h, l, c, v = (q.get(k) for k in ("open", "high", "low", "close", "volume"))
-        if not all(isinstance(x, (int, float)) and x > 0 for x in (o, h, l, c)):
-            return bars
-        day = datetime.fromtimestamp(int(q["timestamp"]), ZoneInfo(tz)).date().isoformat()
-        if bars and day <= bars[-1]["t"][:10]:
-            return bars
-        return bars + [{"t": day, "o": o, "h": h, "l": l, "c": c, "v": v if isinstance(v, (int, float)) else 0}]
+        day = datetime.fromtimestamp(int(q["timestamp"]), ZoneInfo(tz)).date().isoformat() if q.get("timestamp") else ""
+        if all(isinstance(x, (int, float)) and x > 0 for x in (o, h, l, c)) and bars and day > bars[-1]["t"][:10]:
+            bars = bars + [{"t": day, "o": o, "h": h, "l": l, "c": c, "v": v if isinstance(v, (int, float)) else 0}]
+        # the exchange traded today (the index has a newer day) but this stock did not: flat bar, volume 0
+        iq = provider._cached(f"rt:{index}", 60, lambda: provider._get(f"real-time/{index}"))
+        iday = datetime.fromtimestamp(int(iq["timestamp"]), ZoneInfo(tz)).date().isoformat() if iq.get("timestamp") else ""
+        if bars and iday and iday > bars[-1]["t"][:10] and (not cal or iday > cal[-1] or iday in cal):
+            for d in [d for d in cal if bars[-1]["t"][:10] < d < iday] + [iday]:
+                bars = bars + [_flat(bars[-1], d)]
+        return bars
     except Exception:
         return bars

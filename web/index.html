@@ -258,7 +258,7 @@ function kTip(p,d){var k=$('kbox');if(!KTIP||DM||!d||!p||!p.point){k.style.displ
  var dt=typeof b.time==='string'?b.time:new Date((b.time-11*3600)*1000).toISOString().replace('T',' ').slice(0,16);
  var h='<div class="d">'+dt+({w:' · 周K',m:' · 月K'}[st.per]||'')+'</div><table>'+row('开',px(b.open))+row('高',px(b.high),UPC())+row('低',px(b.low),DNC())+row('收',px(b.close),col)+
   row('涨跌',ch==null?'—':(ch>=0?'+':'')+px(ch)+' ('+(ch>=0?'+':'')+(100*ch/pc).toFixed(2)+'%)',col)+row('振幅',pc?(100*(b.high-b.low)/pc).toFixed(2)+'%':'—')+
-  row('成交量',bigN(b.v))+row('成交额',cur+bigN(b.v*(b.open+b.high+b.low+b.close)/4))+
+  row('成交量',bigN(b.v))+row('成交额',cur+bigN(b.v*(b.open+b.high+b.low+b.close)/4))+(b.nt?'<tr><td colspan="2" style="color:var(--y)">'+({w:'这一周',m:'这个月'}[st.per]||'当天')+'无成交（没人买卖或停牌），价格沿用前收</td></tr>':'')+
   MACFG.map(function(m,k){var v=MAV[k]&&MAV[k][i];return m.on&&v!=null?row('<span style="color:'+m.c+'">'+maName(m)+'</span>',px(v)):'';}).join('')+'</table>';
  var L=ANNON?ANNS.filter(function(a){return a._t===b.time;}):[];
  if(L.length)h+='<div class="an">'+L.slice(0,4).map(function(a){return (a.sensitive?'<span class="err">●</span> ':'· ')+esc(a.headline);}).join('<br>')+(L.length>4?'<br><span class="mu">还有 '+(L.length-4)+' 条</span>':'')+'<br><span class="mu">点一下看'+(st.m==='au'?'中文':'原文')+'</span></div>';
@@ -363,8 +363,8 @@ $('annb').onclick=function(){ANNON=!ANNON;this.classList.toggle('on',ANNON);setM
 function rsi(c,n){var o=[],g=0,l=0;for(var i=0;i<c.length;i++){if(i===0){o.push(null);continue;}var d=c[i]-c[i-1],u=Math.max(d,0),w=Math.max(-d,0);if(i<=n){g+=u/n;l+=w/n;o.push(i===n?(l?100-100/(1+g/l):100):null);}else{g=(g*(n-1)+u)/n;l=(l*(n-1)+w)/n;o.push(l?100-100/(1+g/l):100);}}return o;}
 var DAILY={code:null,bars:[]};
 function aggBars(b,per){if(per==='d')return b;var out=[],cur=null,key=function(t){var d=new Date(t+'T00:00:00Z');if(per==='m')return t.slice(0,7);var w=new Date(d);w.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));return w.toISOString().slice(0,10);};
- b.forEach(function(x){var k=key(x.time);if(!cur||cur.k!==k){if(cur)out.push(cur);cur={k:k,time:x.time,open:x.open,high:x.high,low:x.low,close:x.close,v:x.v};}else{cur.high=Math.max(cur.high,x.high);cur.low=Math.min(cur.low,x.low);cur.close=x.close;cur.v+=x.v;cur.time=x.time;}});
- if(cur)out.push(cur);return out.map(function(x){return {time:x.time,open:x.open,high:x.high,low:x.low,close:x.close,v:x.v};});}
+ b.forEach(function(x){var k=key(x.time);if(!cur||cur.k!==k){if(cur)out.push(cur);cur={k:k,time:x.time,open:x.open,high:x.high,low:x.low,close:x.close,v:x.v,nt:x.nt};}else{if(cur.nt&&!x.nt){cur.open=x.open;cur.high=x.high;cur.low=x.low;cur.nt=0;}else if(!x.nt){cur.high=Math.max(cur.high,x.high);cur.low=Math.min(cur.low,x.low);}cur.close=x.close;cur.v+=x.v;cur.time=x.time;}});
+ if(cur)out.push(cur);return out.map(function(x){return {time:x.time,open:x.open,high:x.high,low:x.low,close:x.close,v:x.v,nt:x.nt};});}
 function showRange(){var n=BARS.length;if(!n)return;var days={'1M':22,'6M':126,'1Y':250,'5Y':1250}[st.tf];
  if(!days){chart.timeScale().fitContent();return;}var per=st.per||'d',k=per==='w'?5:per==='m'?21:1,show=Math.max(20,Math.round(days/k));
  chart.timeScale().setVisibleLogicalRange({from:n-show,to:n+2});}
@@ -372,7 +372,7 @@ async function loadChart(keep){var intraday=st.tf==='1D'||st.tf==='5D',my=st.sel
  try{var raw;
   if(!intraday&&DAILY.code===st.m+':'+st.sel){raw=DAILY.bars;}
   else{var d=await apim('candles?code='+st.sel+'&tf='+(intraday?st.tf:'ALL'));if(my!==st.sel+st.tf+(st.per||'d'))return;
-   var seen={};raw=d.map(function(x){return {time:tkey(x.t),open:x.o,high:x.h,low:x.l,close:x.c,v:x.v};}).filter(function(x){if(seen[x.time])return false;seen[x.time]=1;return x.close!=null;});
+   var seen={};raw=d.map(function(x){return {time:tkey(x.t),open:x.o,high:x.h,low:x.l,close:x.c,v:x.v,nt:x.nt?1:0};}).filter(function(x){if(seen[x.time])return false;seen[x.time]=1;return x.close!=null;});
    raw.sort(function(a,b){return a.time<b.time?-1:1;});if(!intraday)DAILY={code:st.m+':'+st.sel,bars:raw};}
   BARS=intraday?raw:aggBars(raw,st.per||'d');draw();if(kr){var dn=BARS.length-n0;chart.timeScale().setVisibleLogicalRange({from:kr.from+dn,to:kr.to+dn});}else showRange();}
  catch(e){BARS=[];draw();$('note').style.display='flex';$('note').textContent=st.tf+' 数据暂不可用：'+e.message;}}
