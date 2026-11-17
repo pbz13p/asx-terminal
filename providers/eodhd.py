@@ -214,6 +214,19 @@ def _flat(prev, day):
     return {"t": day, "o": c, "h": c, "l": c, "c": c, "v": 0, "nt": 1}
 
 
+def _day(ts, tz):
+    """Local trading date of a unix timestamp. Windows Python has no time-zone database unless tzdata is installed
+    (that silently broke today's bar on Frank's PC), so fall back to fixed offsets; trading hours are far from midnight."""
+    try:
+        from zoneinfo import ZoneInfo
+        return datetime.fromtimestamp(int(ts), ZoneInfo(tz)).date().isoformat()
+    except Exception:
+        from datetime import timedelta
+        u = datetime.fromtimestamp(int(ts), timezone.utc)
+        off = 8 if tz == "Asia/Shanghai" else (11 if u.month in (10, 11, 12, 1, 2, 3) else 10)
+        return (u + timedelta(hours=off)).date().isoformat()
+
+
 def with_today(provider, symbol, bars, tz, index=None):
     """EODHD publishes the day's EOD bar hours after the close; until then add today's bar from the (delayed) real-time
     quote, like TradingView's forming bar. Days the exchange traded but this stock did not (no trades, suspended) become
@@ -221,7 +234,6 @@ def with_today(provider, symbol, bars, tz, index=None):
     if index is None:
         index = "AXJO.INDX" if symbol.endswith(".AU") else "000001.SHG"
     try:
-        from zoneinfo import ZoneInfo
         cal = provider._cached(f"cal:{index}", 3600, lambda: [r["date"] for r in provider._get(f"eod/{index}", **{"from": "1990-01-01"})])
         if bars and cal:
             have = {b["t"][:10] for b in bars}
@@ -237,12 +249,12 @@ def with_today(provider, symbol, bars, tz, index=None):
                 bars = out
         q = provider._cached(f"rt:{symbol}", 60, lambda: provider._get(f"real-time/{symbol}"))
         o, h, l, c, v = (q.get(k) for k in ("open", "high", "low", "close", "volume"))
-        day = datetime.fromtimestamp(int(q["timestamp"]), ZoneInfo(tz)).date().isoformat() if q.get("timestamp") else ""
+        day = _day(q["timestamp"], tz) if q.get("timestamp") else ""
         if all(isinstance(x, (int, float)) and x > 0 for x in (o, h, l, c)) and bars and day > bars[-1]["t"][:10]:
             bars = bars + [{"t": day, "o": o, "h": h, "l": l, "c": c, "v": v if isinstance(v, (int, float)) else 0}]
         # the exchange traded today (the index has a newer day) but this stock did not: flat bar, volume 0
         iq = provider._cached(f"rt:{index}", 60, lambda: provider._get(f"real-time/{index}"))
-        iday = datetime.fromtimestamp(int(iq["timestamp"]), ZoneInfo(tz)).date().isoformat() if iq.get("timestamp") else ""
+        iday = _day(iq["timestamp"], tz) if iq.get("timestamp") else ""
         if bars and iday and iday > bars[-1]["t"][:10] and (not cal or iday > cal[-1] or iday in cal):
             for d in [d for d in cal if bars[-1]["t"][:10] < d < iday] + [iday]:
                 bars = bars + [_flat(bars[-1], d)]
