@@ -191,7 +191,12 @@ class Handler(SimpleHTTPRequestHandler):
             import securedata
             n = int(self.headers.get("Content-Length") or 0)
             raw = self.rfile.read(min(n, 5_000_000))
-            self.send_json({"ok": True, "data": base64.b64encode(securedata.encrypt(raw)).decode()})
+            sealed = securedata.encrypt(raw)
+            out = ROOT / "sealed"   # Claude picks the sealed file up from this folder (the key never leaves this PC)
+            out.mkdir(exist_ok=True)
+            name = re.sub(r"[^\w.-]", "", self.headers.get("X-Name") or "findings.json.enc")
+            (out / name).write_bytes(sealed)
+            self.send_json({"ok": True, "data": {"saved": str(out / name), "bytes": len(sealed)}})
             return
         if path != "/login":
             self.send_error(404)
