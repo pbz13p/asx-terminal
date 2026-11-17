@@ -4,6 +4,8 @@ name: quick-study
 # pushed to the quick-results branch.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '40 11 * * 1-5'   # after the daily ASX announcement download: AI reads the new announcements (round 76)
   push:
     branches: [main]
     paths: ['.github/run-quick']
@@ -76,6 +78,7 @@ jobs:
           if grep -q "cn" .github/run-quick; then STUDYCN_OUT=out/cn_download_summary.json python cn_download.py || echo "cn download failed"; fi
           ROUNDS=$(grep -oP '(?<=rounds=)[0-9,]+' .github/run-quick || true)
           for kv in $(grep -oP 'S76_[A-Z_]+=[^ ]+' .github/run-quick || true); do export "$kv"; done   # round 76 options
+          if [ "${{ github.event_name }}" = "schedule" ]; then ROUNDS=76; export S76_STAGE=read S76_ANON_MIN=400; fi   # daily: read new announcements
           for n in $(echo "$ROUNDS" | tr ',' ' '); do
             echo "=== round $n"; env STUDY${n}_OUT=out/study${n}_results.json python study$n.py || echo "round $n failed"
           done

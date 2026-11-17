@@ -23,7 +23,7 @@ import re
 import time
 import urllib.request
 from collections import Counter, defaultdict
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -462,7 +462,15 @@ def read_all(all_docs, common):
         room = stop - ledger()["total"] - 0.5
         n = int(min(int(os.environ.get("S76_CHUNK", "12000")), room / per_doc))
         if n < 50:
-            return {"stage": "read", "status": f"budget stop: ${ledger()['total']} spent, {len(todo)} left unread", "left": len(todo)}
+            # Frank 2026-11-17: new ASX announcements come first -- after the backlog cap, keep reading the last 7 days'
+            # new ones (about 100 a day, ~$0.1) up to S76_NEW_CAP, so the daily signals never stop
+            recent = (date.today() - timedelta(days=7)).isoformat()
+            new_room = float(os.environ.get("S76_NEW_CAP", "58.0")) - ledger()["total"] - 0.3
+            fresh = [x for x in todo if x["date"] >= recent]
+            n = int(min(len(fresh), new_room / per_doc))
+            if not fresh or n < 1:
+                return {"stage": "read", "status": f"budget stop: ${ledger()['total']} spent, {len(todo)} left unread", "left": len(todo)}
+            todo = fresh
         todo.sort(key=lambda x: x["date"], reverse=True)   # newest first: the out-of-sample (after the model's cutoff) period matters most
         chunk = todo[:n]
         st["read_chunk"] = [x["id"] for x in chunk]
