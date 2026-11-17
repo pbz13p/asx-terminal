@@ -369,6 +369,15 @@ class Handler(SimpleHTTPRequestHandler):
     def route(self, name, q):
         if q.get("m") == "cn" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cn(name, q)
+        if name == "eodstatus" and not self._users() and self.client_address[0] == "127.0.0.1":   # own PC: why EODHD refuses
+            key = getattr(provider, "key", "") or ""
+            out = {"key_len": len(key), "key_tail": key[-4:]}
+            try:
+                u = provider._get("user")
+                out.update({k: u.get(k) for k in ("subscriptionType", "paymentMethod", "apiRequests", "dailyRateLimit", "apiRequestsDate", "inviteToken") if k != "inviteToken"})
+            except Exception as e:
+                out["user_error"] = str(e)
+            return out
         if name == "where" and not self._users() and self.client_address[0] == "127.0.0.1":   # own PC: app folder path
             return str(ROOT)
         if name == "quick":   # own-PC only: decrypted quick-study results, so Claude can read them without holding the key
