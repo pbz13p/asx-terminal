@@ -25,6 +25,8 @@ ANN = study.DATA / "ann"
 N = int(os.environ.get("ANN_N", "5000"))  # 300 -> 600 -> 900 small caps first, then every other listed stock
 BUDGET = float(os.environ.get("ANN_MINUTES", "230")) * 60
 YEARS = list(range(date.today().year - 4, date.today().year + 1))
+FROM_YEAR = int(os.environ.get("ANN_FROM_YEAR", "2015"))   # 2026-11-17 (Frank): back-fill older years and delisted companies
+THIS_YEAR = date.today().year
 
 
 def universe():
@@ -76,6 +78,17 @@ def universe():
                 break
             chosen.append({"code": code, "mcap": volml.company_info(code).get("marketCap"), "value_med": round(med),
                            "tier": tier, "peak_multiple_5y": round(peak, 1)})
+    gone = []   # tier 8: companies that stopped trading since FROM_YEAR (delisted / taken over / suspended) -- survivorship
+    taken = {u["code"] for u in chosen} | set(ipos)
+    for p in study.CACHE.glob("*.AU.json"):
+        code = p.name[:-8]
+        if code in taken or code in have:
+            continue
+        rows = study.load(p.name[:-5])
+        if rows and rows[-1][0] < last[:8] + "01" and rows[-1][0][:4] >= str(FROM_YEAR):
+            gone.append({"code": code, "tier": 8, "delisted": True, "from": int(rows[0][0][:4]), "to": int(rows[-1][0][:4])})
+    chosen += sorted(gone, key=lambda u: -u["to"])
+    print(f"[universe] delisted companies added: {len(gone)}", flush=True)
     for code in sorted(ipos):   # tier 6: new listings, always added (not capped by N)
         chosen.append({"code": code, "mcap": volml.company_info(code).get("marketCap"), "tier": 6, "new_listing": True})
     print(f"[universe] new listings added: {len(ipos)}", flush=True)
@@ -110,9 +123,28 @@ def main():
         if time.time() - t0 > BUDGET or study67.BRAKE["stop"]:
             continue
         d = load(code)
-        if not d["listed"] or d.get("listed_on") != date.today().isoformat() or not d.get("flag_v2"):
-            items = study67.listing(code, YEARS)
-            if items:
+        # back-fill: every past year from FROM_YEAR (or the company's first trading year) is listed once and remembered
+        u0 = u
+        first, last_y = max(FROM_YEAR, u0.get("from", FROM_YEAR)), u0.get("to", THIS_YEAR)
+        past = [y for y in range(first, min(last_y, THIS_YEAR - 1) + 1) if y not in d.get("years_done", []) and y < YEARS[0]]
+        if past and (d["listed"] or u0.get("delisted")) and time.time() - t0 < BUDGET and not study67.BRAKE["stop"]:
+            seen = {it["ids"] for it in d["listed"]}
+            for y in past:
+                f0 = study67.calls["failed"]
+                got = study67.listing(code, [y])
+                if study67.calls["failed"] > f0:
+                    break
+                d["listed"] += [it for it in got if it["ids"] not in seen]
+                seen |= {it["ids"] for it in got}
+                d.setdefault("years_done", []).append(y)
+            save(code, d)
+        if (not d["listed"] or d.get("listed_on") != date.today().isoformat() or not d.get("flag_v2")) and not (u0.get("delisted") and d["listed"]):
+            # first time: the last 5 years; afterwards only this year and last year (older years never change) -- half the requests
+            yrs = [y for y in YEARS if y <= last_y and (not d.get("listed_on") or y >= THIS_YEAR - 1)]
+            items = study67.listing(code, yrs) if yrs else []
+            if items or (yrs == [] and d["listed"]):
+                old_ids = {it["ids"] for it in items}
+                items += [it for it in d["listed"] if it["ids"] not in old_ids]   # keep back-filled years
                 d["listed"], d["listed_on"] = items, date.today().isoformat()
                 # 2026-11-15: the old parser marked every announcement price-sensitive; correct stored docs from the fresh list
                 flag = {it["ids"]: it["sensitive"] for it in items}
