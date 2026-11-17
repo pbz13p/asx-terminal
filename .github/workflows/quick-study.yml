@@ -80,6 +80,7 @@ jobs:
             echo "=== round $n"; env STUDY${n}_OUT=out/study${n}_results.json python study$n.py || echo "round $n failed"
           done
           if [ -f out/study81_results.json ] && python -c "import json,sys;sys.exit(0 if json.load(open('out/study81_results.json')).get('left_to_embed',0)>0 else 1)"; then echo "round 81 embeddings unfinished: run again"; echo "EMB_AGAIN=1" >> $GITHUB_ENV; fi
+          if [ "$(cat s76_again 2>/dev/null)" = "1" ]; then echo "S76_AGAIN=1" >> $GITHUB_ENV; fi
           python securedata.py encrypt-dir out
           ls -la out
       - name: Push encrypted results to the quick-results branch
@@ -92,6 +93,11 @@ jobs:
           git add -A .
           git commit -q -m "Quick results $(date -u +%FT%T)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results
+      - name: "Round 76 reading unfinished: run again"
+        if: env.S76_AGAIN == '1'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run quick-study.yml --ref main -R ${{ github.repository }}
       - name: "Round 81 embeddings unfinished: hand over to the 8-lane emb81 workflow"
         if: env.EMB_AGAIN == '1'
         env:

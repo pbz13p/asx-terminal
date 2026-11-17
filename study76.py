@@ -402,6 +402,122 @@ def pilot(all_docs, common):
     return out
 
 
+def run_many(reqs, label, wait_min, max_bytes=150_000_000):
+    """Batch API takes at most 256 MB per batch: split into parts, submit them all, then collect them all."""
+    groups, cur, size = [], [], 0
+    for r in reqs:
+        b = len(json.dumps(r))
+        if cur and size + b > max_bytes:
+            groups.append(cur)
+            cur, size = [], 0
+        cur.append(r)
+        size += b
+    if cur:
+        groups.append(cur)
+    for g, rs in enumerate(groups):   # submit every part first (a part already submitted is just checked)
+        st = json.loads(STATE.read_text()) if STATE.exists() else {}
+        if f"{label}{g}" in st or not (AI / f"s76_{label}{g}.json").exists():
+            if not (AI / f"s76_{label}{g}.json").exists():
+                got = run_batch(rs, f"{label}{g}", 0)
+                if got is not None:
+                    (AI / f"s76_{label}{g}.json").write_text(json.dumps(got))
+    t0 = time.time()
+    for g, rs in enumerate(groups):
+        f = AI / f"s76_{label}{g}.json"
+        if not f.exists():
+            got = run_batch(rs, f"{label}{g}", max(1, wait_min - (time.time() - t0) / 60))
+            if got is None:
+                return None
+            f.write_text(json.dumps(got))
+    res, usage, per = {}, Counter(), {}
+    for g in range(len(groups)):
+        f = AI / f"s76_{label}{g}.json"
+        r, u, p = json.loads(f.read_text())
+        res.update(r)
+        usage.update(u)
+        f.unlink()
+    return res, dict(usage), per
+
+
+def read_all(all_docs, common):
+    """Stage "read" (Frank 2026-11-17: start reading now, read new ones as they arrive, never pay twice):
+    score every price-sensitive announcement not yet in CACHE, whole text, long ones part by part.
+    One chunk per run (sized to the remaining budget); a batch still running is picked up by the next run."""
+    by_code = defaultdict(list)
+    for x in all_docs:
+        by_code[x["code"]].append(x)
+    st = json.loads(STATE.read_text()) if STATE.exists() else {}
+    bad = json.loads((AI / "s76_unparsed.json").read_text()) if (AI / "s76_unparsed.json").exists() else {}
+    todo = [x for x in all_docs if not (CACHE / f"{x['id']}.json").exists() and bad.get(x["id"], 0) < 2]
+    if "read_chunk" in st:   # a chunk submitted earlier: keep exactly those documents
+        ids = set(st["read_chunk"])
+        chunk = [x for x in all_docs if x["id"] in ids]
+    else:
+        if not todo:
+            return {"stage": "read", "status": "done", "left": 0, "cached": len(list(CACHE.glob("*.json")))}
+        per_doc = float(os.environ.get("S76_USD_PER_DOC", "0.0012"))
+        room = BUDGET_STOP - ledger()["total"] - 0.5
+        n = int(min(int(os.environ.get("S76_CHUNK", "12000")), room / per_doc))
+        if n < 50:
+            return {"stage": "read", "status": f"budget stop: ${ledger()['total']} spent, {len(todo)} left unread", "left": len(todo)}
+        todo.sort(key=lambda x: x["date"], reverse=True)   # newest first: the out-of-sample (after the model's cutoff) period matters most
+        chunk = todo[:n]
+        st["read_chunk"] = [x["id"] for x in chunk]
+        AI.mkdir(parents=True, exist_ok=True)
+        STATE.write_text(json.dumps(st))
+    reqs, nparts = [], {}
+    for i, x in enumerate(chunk):
+        r, nparts[i] = first_requests(f"s{i}", x, by_code, common)
+        reqs += r
+    wait = float(os.environ.get("S76_WAIT", "240"))
+    a_file = AI / "s76_read_a.json"
+    if st.get("read_a_done") and a_file.exists():   # phase A already paid in an earlier run: reuse it
+        res, usd, total = json.loads(a_file.read_text()), 0.0, ledger()["total"]
+    else:
+        got = run_many(reqs, "read_a", wait)
+        if got is None:
+            return {"stage": "read", "status": f"chunk of {len(chunk)} still being read", "left": len(todo), "again": True}
+        res, usage, per = got
+        usd, total = spend(f"round 76 read: {len(chunk)} announcements (phase A)", usage)
+        a_file.write_text(json.dumps(res))
+        st = json.loads(STATE.read_text()) if STATE.exists() else {}
+        st["read_a_done"] = True
+        STATE.write_text(json.dumps(st))
+    long_ = [i for i in nparts if nparts[i] > 1]
+    if long_:
+        notes_file = AI / "s76_read_notes.json"   # phase A notes are kept so a phase B that runs over is not paid again
+        notes_file.write_text(json.dumps({str(i): {k: res.get(f"s{i}p{k}", "") for k in range(nparts[i])} for i in long_}))
+        creqs = [combine_request(f"s{i}", chunk[i], nparts[i], {k: res.get(f"s{i}p{k}", "") for k in range(nparts[i])}, by_code, common)
+                 for i in long_]
+        gotb = run_many(creqs, "read_b", wait)
+        if gotb is None:
+            return {"stage": "read", "status": "phase B still running", "left": len(todo), "again": True}
+        resb, usageb, _ = gotb
+        usd2, total = spend(f"round 76 read: {len(long_)} long announcements (phase B)", usageb)
+        usd += usd2
+        for i in long_:
+            res[f"s{i}"] = resb.get(f"c{i}", "")
+    CACHE.mkdir(parents=True, exist_ok=True)
+    ok = 0
+    for i, x in enumerate(chunk):
+        j = parse_json(res.get(f"s{i}", ""))
+        if j:
+            ok += 1
+            (CACHE / f"{x['id']}.json").write_text(json.dumps({"code": x["code"], "date": x["date"], "model": MODEL,
+                                                               "anon_min": int(os.environ.get("S76_ANON_MIN", "20")), **j}, ensure_ascii=False))
+        else:
+            bad[x["id"]] = bad.get(x["id"], 0) + 1
+    (AI / "s76_unparsed.json").write_text(json.dumps(bad))
+    st = json.loads(STATE.read_text()) if STATE.exists() else {}
+    st.pop("read_chunk", None)
+    st.pop("read_a_done", None)
+    STATE.write_text(json.dumps(st))
+    a_file.unlink(missing_ok=True)
+    left = len(todo) - ok
+    return {"stage": "read", "status": "chunk done", "chunk": len(chunk), "parsed": ok, "chunk_usd": round(usd, 3),
+            "ledger_total_usd": total, "left": left, "cached": len(list(CACHE.glob("*.json"))), "again": left > 0}
+
+
 def main():
     if not os.environ.get("ANTHROPIC_API_KEY"):
         raise SystemExit("ANTHROPIC_API_KEY missing")
@@ -424,10 +540,20 @@ def main():
     print("sensitive flag values (first 40 companies):", dict(vals))
     if len(all_docs) < 2000:
         raise SystemExit("price-sensitive flags not corrected yet for enough companies; run again after the announcement job")
-    common = build_anonymiser(all_docs)
     stage = os.environ.get("S76_STAGE", "pilot")
+    cf = AI / "s76_common.json"
+    if stage == "read" and cf.exists():   # frozen word list: prompts of a submitted batch never change between runs
+        common = set(json.loads(cf.read_text()))
+    else:
+        common = build_anonymiser(all_docs)
+        if stage == "read":
+            AI.mkdir(parents=True, exist_ok=True)
+            cf.write_text(json.dumps(sorted(common)))
     done = AI / f"s76_{stage}_{MODEL}.json"   # a finished pilot is never re-run (and never paid twice)
-    if stage == "deanon":
+    if stage == "read":
+        out = read_all(all_docs, common)
+        Path("s76_again").write_text("1" if out.get("again") else "0")
+    elif stage == "deanon":
         dd = AI / f"s76_deanon_{os.environ.get('S76_ANON_LEVELS', '20,60,150').replace(',', '-')}{'_fuzz' if os.environ.get('S76_FUZZ') == '1' else ''}.json"   # never paid twice
         if dd.exists():
             out = json.loads(dd.read_text(encoding="utf-8"))
