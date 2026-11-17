@@ -15,6 +15,7 @@
 2. **加密后提交**：
    `python -c "import securedata;open('research/findings.json.enc','wb').write(securedata.encrypt(open('research/findings.json','rb').read()))"`
    （需要环境变量 ASX_DATA_KEY）。只提交 `.enc` 文件，`findings.json` 已在 .gitignore 里。
+   工作环境里没有密钥时（2026-11-17 起的做法）：在主人 Chrome 里打开 http://127.0.0.1:8765，fetch `/api/research` 拿当前卡片（去掉 hits/tier/tier_label/tier_note），改好后 POST 到 `/api/seal`（请求头 X-Name: findings.json.enc），主人电脑用本机密钥加密存到 `<程序文件夹>/sealed/`（C:\Users\pc13\Downloads\asx-terminal\asx-terminal\sealed），再用 device_stage_files 取回、提交；读加密的研究结果用 `/api/quick?f=study<N>_results.json`。密钥始终不离开主人电脑。
 3. 如果新结论需要每天自动出一份名单，在 `study22.py`（每日扫描）里加输出，再在 `server.py` 的 `research()` 里把它接到卡片的 `today` 上。
 4. 结论被新数据推翻时，把旧卡片改成"无效"并写明原因，不要删掉。测过无效的结论也要留着，这样以后不会重复测。
 
