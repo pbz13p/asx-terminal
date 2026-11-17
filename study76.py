@@ -96,8 +96,22 @@ def build_anonymiser(all_docs, min_companies=None):
     return common
 
 
+def _fuzz(m):
+    v = m.group(0).replace(",", "")
+    try:
+        x = float(v)
+    except ValueError:
+        return m.group(0)
+    if x < 10:
+        return m.group(0)
+    r = float(f"{x:.2g}")
+    return f"{r:,.0f}" if r >= 1 else f"{r:g}"
+
+
 def anonymise(text, code, common):
     t = re.sub(r"\s+", " ", text)
+    if os.environ.get("S76_FUZZ") == "1":   # 2026-11-17: probe still guessed 9.5% at the strongest word level; exact numbers may give it away
+        t = re.sub(r"\d[\d,]*\.?\d*", _fuzz, t)
     t = re.sub(r"https?://\S+|www\.\S+|\S+@\S+", "[N]", t)
     t = re.sub(r"\b" + re.escape(code) + r"\b", "[N]", t)
     t = re.sub(r"\((?:ASX|TSX|AIM|NYSE|NASDAQ|OTCQB|OTCQX|FSE|JSE)[:\s][^)]*\)", "[N]", t, flags=re.I)   # (ASX: ABC), (TSX-V: XYZ)
@@ -414,7 +428,7 @@ def main():
     stage = os.environ.get("S76_STAGE", "pilot")
     done = AI / f"s76_{stage}_{MODEL}.json"   # a finished pilot is never re-run (and never paid twice)
     if stage == "deanon":
-        dd = AI / f"s76_deanon_{os.environ.get('S76_ANON_LEVELS', '20,60,150').replace(',', '-')}.json"   # never paid twice
+        dd = AI / f"s76_deanon_{os.environ.get('S76_ANON_LEVELS', '20,60,150').replace(',', '-')}{'_fuzz' if os.environ.get('S76_FUZZ') == '1' else ''}.json"   # never paid twice
         if dd.exists():
             out = json.loads(dd.read_text(encoding="utf-8"))
         else:
