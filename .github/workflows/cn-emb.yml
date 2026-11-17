@@ -1,0 +1,72 @@
+name: cn-emb
+# A-share announcements -> vectors with a free local Chinese model (cn_emb.py); eight lanes, one per text-cache shard,
+# each with its own cache cnemb-s<k>. Restarts itself until done; afterwards weekly for new announcements.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '30 15 * * 0'   # weekly: new announcements
+  push:
+    branches: [main]
+    paths: ['cn_emb.py', '.github/workflows/cn-emb.yml']
+permissions:
+  contents: read
+  actions: write
+concurrency: cn-emb
+jobs:
+  lane:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install numpy fastembed
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_ann, key: cnann-none, restore-keys: cnann-}
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cn_ann_text
+          key: cnanntext-none
+          restore-keys: cnanntext-s${{ matrix.k }}-
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_big, key: cnannbig-none, restore-keys: cnannbig-}
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cn_ann_ocr
+          key: cnocr-none
+          restore-keys: cnocr-s${{ matrix.k }}-
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cn_emb
+          key: cnemb-s${{ matrix.k }}-none
+          restore-keys: cnemb-s${{ matrix.k }}-
+      - run: python cn_emb.py
+        env:
+          EMB_MINUTES: "300"
+      - if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/cn_emb
+          key: cnemb-s${{ matrix.k }}-${{ github.run_id }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: left-${{ matrix.k }}
+          path: cnemb_left.txt
+  continue:
+    needs: lane
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {path: left}
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LEFT=$(for f in left/*/cnemb_left.txt; do cat "$f"; echo; done 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          echo "left: $LEFT"
+          if [ "$LEFT" -gt 0 ]; then gh workflow run cn-emb.yml --ref main -R ${{ github.repository }}; fi

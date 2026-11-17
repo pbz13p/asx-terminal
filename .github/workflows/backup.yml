@@ -110,6 +110,22 @@ jobs:
         uses: actions/cache/restore@v4
         with: {path: data/cn_ann_big, key: cnannbig-none, restore-keys: cnannbig-}
       - uses: actions/cache/restore@v4
+        with: {path: data/cn_emb, key: cnemb-none, restore-keys: cnemb-s0-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_emb, key: cnemb-none, restore-keys: cnemb-s1-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_emb, key: cnemb-none, restore-keys: cnemb-s2-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_emb, key: cnemb-none, restore-keys: cnemb-s3-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_emb, key: cnemb-none, restore-keys: cnemb-s4-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_emb, key: cnemb-none, restore-keys: cnemb-s5-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_emb, key: cnemb-none, restore-keys: cnemb-s6-}
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_emb, key: cnemb-none, restore-keys: cnemb-s7-}
+      - uses: actions/cache/restore@v4
         with: {path: data/cn_ann_ocr, key: cnocr-none, restore-keys: cnocr-s0-}
       - uses: actions/cache/restore@v4
         with: {path: data/cn_ann_ocr, key: cnocr-none, restore-keys: cnocr-s1-}
@@ -156,7 +172,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%u)" != "7" ]; then echo "not Sunday: caches refreshed only"; exit 0; fi
           mkdir -p bk
-          for d in eod ann cn cn_ann us_daily ai cn_lhb cn_fin cn_val cn_ann_text cn_ann_big cn_ann_ocr emb81; do
+          for d in eod ann cn cn_ann us_daily ai cn_lhb cn_fin cn_val cn_ann_text cn_ann_big cn_ann_ocr cn_emb emb81; do
             [ -d "data/$d" ] || continue
             tar czf - -C data "$d" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:ASX_DATA_KEY | split -b 1900m -d - "bk/$d.tar.gz.enc.part"
           done
