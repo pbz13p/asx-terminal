@@ -44,7 +44,7 @@ def universe():
             continue
         val = [r[6] * r[5] for r in rows[-250:]]
         med = statistics.median(val)
-        if med >= 1e3 and rows[-1][6] >= 0.001 and p.name[:-8] not in have:
+        if rows[-1][6] >= 0.001 and p.name[:-8] not in have:   # 2026-11-17 (Frank): thinly traded stocks too (were >= $1k/day)
             cl = [r[4] for r in rows[-1260:] if r[4]]
             run_min, peak = float("inf"), 1.0  # biggest rise from a low to a later high within 5 years
             for c in cl:
@@ -66,10 +66,11 @@ def universe():
     rest = [c for c in cands if c[1] not in taken]
     # tier 4: stocks that rose >= 5x from a low to a later high within 5 years (small-to-big stories), biggest rise first
     # tier 5: everything else still trading, by turnover (mega caps end up last-ish)
-    t4 = sorted([c for c in rest if c[2] >= 5], key=lambda c: -c[2])
-    t5 = [c for c in rest if c[2] < 5]
+    t4 = sorted([c for c in rest if c[2] >= 5 and c[0] >= 1e3], key=lambda c: -c[2])
+    t5 = [c for c in rest if c[2] < 5 and c[0] >= 1e3]
+    t7 = [c for c in rest if c[0] < 1e3]   # tier 7: under $1k/day -- downloaded and watched, left out of research by default
     print(f"[universe] small caps {len(chosen)}, tier 4 (>=5x in 5y) {len(t4)}, tier 5 {len(t5)}", flush=True)
-    for tier, group in ((4, t4), (5, t5)):
+    for tier, group in ((4, t4), (5, t5), (7, t7)):
         for med, code, peak in group:
             if len(chosen) >= N:
                 break
