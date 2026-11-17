@@ -491,11 +491,27 @@ def do_update():
         return _stamp() != before
 
 
+SERVER = None
+
+
 def restart():
+    """Start a fresh copy and quit this one. 2026-11-17: os.execv on Windows left the PC copy stuck on old code for hours,
+    so free the port, launch a new process (it retries the port for a minute) and exit."""
+    import subprocess
     import sys
     print("Program updated, restarting...")
-    os.environ["ASX_DESK_RESTART"] = "1"
-    os.execv(sys.executable, [sys.executable] + sys.argv)
+    env = {**os.environ, "ASX_DESK_RESTART": "1"}
+    try:
+        if SERVER is not None:
+            SERVER.server_close()
+    except Exception:
+        pass
+    flags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0) if os.name == "nt" else 0
+    try:
+        subprocess.Popen([sys.executable] + sys.argv, cwd=str(ROOT), env=env, creationflags=flags)
+    except Exception:
+        os.execve(sys.executable, [sys.executable] + sys.argv, env)
+    os._exit(0)
 
 
 def auto_update():
@@ -503,8 +519,11 @@ def auto_update():
         return
     while True:
         time.sleep(60)
-        if do_update():  # program code changed: restart in place so new features work
-            restart()
+        try:   # never let one bad update kill the updater (it did on 2026-11-16, freezing the PC copy)
+            if do_update():  # program code changed: restart so new features work
+                restart()
+        except Exception as e:
+            print("update check failed:", type(e).__name__)
 
 
 def autostart():
@@ -528,7 +547,16 @@ def main():
     threading.Thread(target=auto_update, daemon=True).start()
     port = int(os.environ.get("PORT", "8765"))
     host = os.environ.get("HOST", "127.0.0.1")  # the hosted copy listens behind Caddy on 127.0.0.1 too
-    server = ThreadingHTTPServer((host, port), Handler)
+    global SERVER
+    for _ in range(60):   # after a restart the old copy may still hold the port for a moment
+        try:
+            server = ThreadingHTTPServer((host, port), Handler)
+            break
+        except OSError:
+            time.sleep(1)
+    else:
+        server = ThreadingHTTPServer((host, port), Handler)
+    SERVER = server
     print(f"ASX Neon Terminal 已启动: http://127.0.0.1:{port}  (关闭此窗口即停止)")
     if os.environ.get("NO_BROWSER") != "1":
         if not os.environ.get("ASX_DESK_RESTART"):

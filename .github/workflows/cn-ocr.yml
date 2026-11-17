@@ -1,0 +1,65 @@
+name: cn-ocr
+# A-share announcements that are scanned images (~1% of 1.29M): download again and OCR (tesseract, Chinese + English).
+# Eight lanes, one per cn_ann_text cache shard; each keeps its own cache cnocr-s<k>. Restarts itself until done.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['cn_ocr.py', '.github/workflows/cn-ocr.yml']
+permissions:
+  contents: read
+  actions: write
+concurrency: cn-ocr
+jobs:
+  lane:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    strategy:
+      fail-fast: false
+      matrix:
+        k: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: sudo apt-get install -y -q poppler-utils tesseract-ocr tesseract-ocr-chi-sim
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_ann, key: cnann-none, restore-keys: cnann-}
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cn_ann_text
+          key: cnanntext-none
+          restore-keys: cnanntext-s${{ matrix.k }}-
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn_ann_big, key: cnannbig-none, restore-keys: cnannbig-}
+      - uses: actions/cache/restore@v4
+        with:
+          path: data/cn_ann_ocr
+          key: cnocr-s${{ matrix.k }}-none
+          restore-keys: cnocr-s${{ matrix.k }}-
+      - run: python cn_ocr.py
+        env:
+          OCR_MINUTES: "300"
+      - if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/cn_ann_ocr
+          key: cnocr-s${{ matrix.k }}-${{ github.run_id }}
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: left-${{ matrix.k }}
+          path: ocr_left.txt
+  continue:
+    needs: lane
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: {path: left}
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LEFT=$(for f in left/*/ocr_left.txt; do cat "$f"; echo; done 2>/dev/null | awk '{s+=$1} END{print s+0}')
+          echo "left: $LEFT"
+          if [ "$LEFT" -gt 0 ]; then gh workflow run cn-ocr.yml --ref main -R ${{ github.repository }}; fi
