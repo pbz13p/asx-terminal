@@ -456,7 +456,10 @@ def read_all(all_docs, common):
         if not todo:
             return {"stage": "read", "status": "done", "left": 0, "cached": len(list(CACHE.glob("*.json")))}
         per_doc = float(os.environ.get("S76_USD_PER_DOC", "0.0012"))
-        room = BUDGET_STOP - ledger()["total"] - 0.5
+        # Frank 2026-11-17: this month only the Max plan's free API credit (US$59.41 left on 17 Nov, no card on file) --
+        # stop at S76_STOP_AT (ledger total), read the rest when the next month's credit arrives
+        stop = min(BUDGET_STOP, float(os.environ.get("S76_STOP_AT", "55.3")))
+        room = stop - ledger()["total"] - 0.5
         n = int(min(int(os.environ.get("S76_CHUNK", "12000")), room / per_doc))
         if n < 50:
             return {"stage": "read", "status": f"budget stop: ${ledger()['total']} spent, {len(todo)} left unread", "left": len(todo)}
