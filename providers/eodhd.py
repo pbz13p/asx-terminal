@@ -35,7 +35,8 @@ class EodhdProvider(Provider):
         params.update(api_token=self.key, fmt="json")
         url = f"{self.base}/{path}?{urllib.parse.urlencode(params)}"
         try:
-            req = urllib.request.Request(url, headers={"Accept": "application/json"})
+            # 2026-11-17: EODHD started answering 403 to Python's default client header (the browser still worked)
+            req = urllib.request.Request(url, headers={"Accept": "application/json", "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) NeonTerminal/1.0"})
             with urllib.request.urlopen(req, timeout=60) as r:
                 return json.load(r)
         except urllib.error.HTTPError as e:
