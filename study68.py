@@ -30,13 +30,16 @@ YEARS = list(range(date.today().year - 4, date.today().year + 1))
 def universe():
     f = ANN / "universe.json"
     chosen = json.loads(f.read_text()) if f.exists() else []
-    if len(chosen) >= N:
+    if len(chosen) >= N:   # (N is 5000, above the ~1,500 actively traded companies, so this re-checks every run)
         return chosen
     have = {u["code"] for u in chosen}
     last = study.load("AXJO.INDX")[-1][0]
-    cands = []
+    cands, ipos = [], []
     for p in study.CACHE.glob("*.AU.json"):
         rows = study.load(p.name[:-5])
+        if rows and rows[-1][0] >= last[:8] + "01" and len(rows) < 120 and p.name[:-8] not in have:
+            ipos.append(p.name[:-8])   # 2026-11-17 (Frank): new listings / IPOs are followed from day one, not after 6 months
+            continue
         if len(rows) < 120 or rows[-1][0] < last[:8] + "01":
             continue
         val = [r[6] * r[5] for r in rows[-250:]]
@@ -72,6 +75,9 @@ def universe():
                 break
             chosen.append({"code": code, "mcap": volml.company_info(code).get("marketCap"), "value_med": round(med),
                            "tier": tier, "peak_multiple_5y": round(peak, 1)})
+    for code in sorted(ipos):   # tier 6: new listings, always added (not capped by N)
+        chosen.append({"code": code, "mcap": volml.company_info(code).get("marketCap"), "tier": 6, "new_listing": True})
+    print(f"[universe] new listings added: {len(ipos)}", flush=True)
     ANN.mkdir(parents=True, exist_ok=True)
     f.write_text(json.dumps(chosen))
     return chosen
