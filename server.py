@@ -364,6 +364,8 @@ class Handler(SimpleHTTPRequestHandler):
     def route(self, name, q):
         if q.get("m") == "cn" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cn(name, q)
+        if name == "where" and not self._users() and self.client_address[0] == "127.0.0.1":   # own PC: app folder path
+            return str(ROOT)
         if name == "quick":   # own-PC only: decrypted quick-study results, so Claude can read them without holding the key
             f = q.get("f", "")
             if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"study\d+_results\.json", f):
