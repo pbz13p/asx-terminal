@@ -44,7 +44,7 @@
 - 要点记进 research/quant_watch.md，能用到研究里的直接排进 ROADMAP 或当场做。
 - 主人说「学习 / 深度学习 某某博主的全部视频」（2026-11-19 定）：
   1. 在他的 Chrome 里打开 https://tingowl.com/version ，页面里用 fetch 调慧听后台，身份用主人这台 Chrome 自己的慧听登录：请求头 X-App-Token: kandong2026 和 Authorization: Bearer <JSON.parse(localStorage.getItem("kandong.session")).token>（没有这个值就先打开 https://tingowl.com/app 一次）：GET /admin/channel/find?q=博主名 找频道，拿不准是哪个就把候选列给主人选；POST /admin/channel/collect {"channel":频道链接,"limit":80} 开始收集；GET /admin/channel/status?slug=… 等到 running=false（几十期要几十分钟，期间可以先读已经拿到的）。
-  2. GET /admin/channel/videos?slug=… 列出全部视频；逐条 GET /admin/channel/text?slug=…&vid=…（有 next 就接着读）把**完整文字稿**从头读完。不调慧听的总结接口（那个花 API 钱）。
+  2. GET /admin/channel/videos?slug=… 列出全部视频；逐条 GET /admin/channel/text?slug=…&vid=…（有 next 就接着读）把**完整文字稿**从头读完；返回里的 board 是黑板/白板/图表上抄下来的字和图的描述，老师很多规则写在黑板上，必须一起读。status 为 members_only 的是会员课，跳过（主人说不需要）。先学系列课（威科夫、云聪13买点、CIS、迷宫理论等），再学单期。不调慧听的总结接口（那个花 API 钱）。
   3. 每期写一份笔记进 research/creators/<博主>/<日期或期号>.md：原话要点（带时间点）、他的方法和规则、提到的具体数字和案例（标明待核）、能不能用我们的数据测。
   4. 全部读完写 research/creators/<博主>/总结.md：他反复用的核心方法、前后矛盾的地方、他说过的业绩和预测哪些能核对、能变成因子或规则的清单（能测的排进 ROADMAP 或当场写进研究代码，不能测的写明缺什么数据）、对我们两套打法各有什么用。
   5. 给主人的小结：一屏以内，最值得用的 3 条 + 已经排队要测的 + 拿不到文字稿的几期。
