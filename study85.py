@@ -190,7 +190,7 @@ def events(lists):
                         r = c[ix[a1]] / c[ix[a0]] - 1
                         rn = (1 + r) * (1 - min(cost(raw[ix[a1]]), .9)) * (1 - min(cost(raw[ix[a0]]), .9)) - 1
                         return rn - (b[a1] / b[a0] - 1)
-                    ev.append({"date": A, "index": grp, "side": side, "code": code, "price": raw[ix["pre"]], "liq": round(liq),
+                    ev.append({"date": A, "eff": dts["eff"], "index": grp, "side": side, "code": code, "price": raw[ix["pre"]], "liq": round(liq),
                                "cap_5pct": round(0.05 * liq), "W1": w("pre", "ann"), "W2": w("ann", "eff"), "W3": w("eff", "post"),
                                "W23": w("ann", "post"), "W12": w("pre", "eff")})
     return ev, bench_name, dict(dropped)
@@ -235,7 +235,14 @@ def main():
         if L["effective"] and L["changes"] and k not in seen:
             seen.add(k)
             uniq.append(L)
-    ev, bench, dropped = events(uniq)
+    ev, bench, dropped = events(sorted(uniq, key=lambda L: L["announced"]))
+    keep, seen2 = [], set()
+    for e in ev:   # a rebalance re-issued a few days later lists the same stocks again: count each stock once (first notice)
+        k = (e["eff"], e["index"], e["side"], e["code"])
+        if k not in seen2:
+            seen2.add(k)
+            keep.append(e)
+    ev = keep
     res = {"benchmark": bench, "events": len(ev), "dropped_reused_code_or_no_trading": dropped, "liquidity_floor": FLOOR}
     for grp in ("ASX200", "ASX300", "AllOrds"):
         for side in ("add", "del"):
