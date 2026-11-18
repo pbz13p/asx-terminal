@@ -50,6 +50,7 @@ HEAD = re.compile(r"(S&P|S&amp;P|Standard\s*&\s*Poor).{0,60}(Rebalanc|Indices|In
 MONTHS = {m: i + 1 for i, m in enumerate("January February March April May June July August September October November December".split())}
 SECTION = re.compile(r"(S&P/ASX\s*(?:20|50|100|200|300)\b(?:\s*Index)?|S&P/ASX Small Ordinaries(?:\s*Index)?|All Ordinaries(?:\s*Index)?)"
                      r"\s*[–\-—:]\s*(No change|Effective[^\n]{0,40}?(?:on|of)\s+(?:[A-Z][a-z]+,?\s+)?([A-Z][a-z]+)\s+(\d{1,2}),?\s+(\d{4}))", re.I)
+HEAD2 = re.compile(r"Rebalanc|Quarterly Review|Annual Review", re.I)
 ACTION = re.compile(r"^\s*(Addition|Deletion|Removal|Add|Delete|Remove)\s+([A-Z0-9]{3,4})\b\s*(.*)$", re.M)
 
 
@@ -125,7 +126,7 @@ def main():
                 print("[85] fetch failed", day, type(e).__name__, flush=True)
         n = sum(len(v["add"]) + len(v["del"]) for v in idx.values())
         lists.append({"announced": day, "effective": eff, "headline": a["headline"][:120], "changes": n,
-                      "indices": {k: v for k, v in idx.items()}, "sample": a["text"][:1500] if n == 0 else None})
+                      "indices": {k: v for k, v in idx.items()}, "sample": a["text"][:7000] if n == 0 and HEAD2.search(a["headline"]) else None})
     # coverage by rebalance quarter (Mar/Jun/Sep/Dec, 2015 on); rebalance announcements are in the rebalance month
     have = defaultdict(list)
     for L in lists:
