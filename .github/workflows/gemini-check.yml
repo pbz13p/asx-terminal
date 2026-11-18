@@ -1,0 +1,17 @@
+name: gemini-check
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['gemini_check.py', '.github/workflows/gemini-check.yml']
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: python gemini_check.py
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
