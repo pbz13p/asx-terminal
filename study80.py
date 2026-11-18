@@ -63,7 +63,7 @@ def fix_consolidations(rows):
         # Only consolidations (price up >= 3x overnight with volume shrinking about as much). The old split branch
         # (price down >= 3x, volume not shrinking) matched real crashes -- volume usually jumps on bad news -- and
         # erased them (third run: 71% hit rate). Real splits are almost unheard of among ASX small caps.
-        if r >= 3 and ratio_v < 1.5 / r:
+        if r >= 3 and ratio_v < 1.0:   # 1.5/r caught only 64 in 3,776 stocks; ASX small caps consolidate by the hundreds
             n += 1
             for j in range(i):   # rescale everything before the jump (adjusted o/h/l/c; volume scaled the other way)
                 d, o, h, l, c, v, raw, tv = rows[j]
@@ -88,6 +88,11 @@ def to_calendar(rows, cal):
             out.append(r)
         prev = out[-1]
     return out
+
+
+def big_jumps(rows):
+    """Dates of one-day moves >= 3x still left after the fix (real rallies or missed consolidations)."""
+    return [rows[i][0] for i in range(1, len(rows)) if rows[i - 1][4] > 0 and rows[i][4] / rows[i - 1][4] >= 3]
 
 
 def month_ends(dates):
@@ -152,12 +157,15 @@ def main():
     recs = []
     fixed = 0
     fixed_codes = set()
+    n_jumps = 0
     for n, f in enumerate(files):
         rows = study.load(f.name[:-5])
         if len(rows) < 30:
             continue
         rows = [r + (r[6] * r[5],) for r in rows]   # raw $ traded, kept as-is through the consolidation fix
         rows, k = fix_consolidations(rows)
+        jumps = big_jumps(rows)
+        n_jumps += len(jumps)
         rows = to_calendar(rows, cal)
         fixed += k
         if k:
@@ -172,6 +180,8 @@ def main():
             lab = labels(rows, i)
             if lab is None:
                 continue
+            j12 = dates[min(i + H12, len(dates) - 1)]
+            lab["jump12"] = any(dates[i] < jd <= j12 for jd in jumps)
             recs.append({"code": code, "d": dates[i], **x, **lab})
         if n % 500 == 0:
             print("[80] scanned", n, "stocks,", len(recs), "stock-months", flush=True)
@@ -296,7 +306,12 @@ def main():
             "median_days_to_build_7500": round(med([min(999, 7500 / max(0.05 * recs[i]["liq"], 1)) for i in P]), 1),
             "unfixed_stocks_only": (lambda Q: {"picks": int(len(Q)), "r12_median_pct": round(100 * float(np.median(r12[Q])), 1) if len(Q) else None,
                 "hit_rate_pct": round(100 * float((r12[Q] > 0).mean()), 1) if len(Q) else None})(np.array([i for i in P if recs[i]["code"] not in fixed_codes], dtype=int)),
-            "fixed_stocks": len(fixed_codes),
+            "fixed_stocks": len(fixed_codes), "jumps3x_left": n_jumps,
+            "picks_with_3x_jump_pct": round(100 * float(np.mean([recs[i]["jump12"] for i in P])), 1),
+            "no_jump_picks": (lambda Q: {"picks": int(len(Q)), "r12_median_pct": round(100 * float(np.median(r12[Q])), 1),
+                "r12_mean_capped_pct": round(100 * float(np.minimum(r12[Q], 9).mean()), 1), "hit_rate_pct": round(100 * float((r12[Q] > 0).mean()), 1)})(
+                np.array([i for i in P if not recs[i]["jump12"]], dtype=int)),
+            "no_jump_all_buyable_median_pct": round(100 * float(np.median(r12[allm & (X[:, 0] >= 0.01) & (X[:, 1] >= 2000) & ~np.array([r["jump12"] for r in recs])])), 1),
             "calendar": "every stock on the index trading calendar (no-trade days = previous close, volume 0)", "note": "12-month returns net of round-71 costs both sides; picks only from stocks >= 1c trading >= $2k/day; no stops (round 82)",
         }
     OUT.parent.mkdir(parents=True, exist_ok=True)
