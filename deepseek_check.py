@@ -11,7 +11,7 @@ with urllib.request.urlopen(urllib.request.Request("https://api.deepseek.com/use
     print("balance:", json.load(r))
 with urllib.request.urlopen(urllib.request.Request("https://api.deepseek.com/models", headers=H), timeout=60) as r:
     print("models:", [m["id"] for m in json.load(r).get("data", [])])
-body = {"model": "deepseek-chat", "messages": [{"role": "user", "content": "用一句中文回答：1+1等于几？"}], "max_tokens": 30}
+body = {"model": "deepseek-flash", "messages": [{"role": "user", "content": "用一句中文回答：1+1等于几？"}], "max_tokens": 30}
 with urllib.request.urlopen(urllib.request.Request("https://api.deepseek.com/chat/completions", data=json.dumps(body).encode(), headers=H), timeout=120) as r:
     out = json.load(r)
 print("reply:", out["choices"][0]["message"]["content"].strip()[:60], "| usage:", out.get("usage"))
