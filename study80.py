@@ -260,6 +260,7 @@ def main():
     wf = []
     picks = []
     imp = []
+    watch = {}
     if lgb is not None:
         for ty in range(2014, max(year) + 1):
             tr = (year <= ty - 4) & comp     # labels need 3 years: a gap so no training label sees the test year
@@ -278,6 +279,18 @@ def main():
             for k2, ii in enumerate(idx):
                 if recs[ii]["price"] >= 0.01 and recs[ii]["liq"] >= 2000:   # buyable: >= 1c, >= $2k a day
                     by_m[recs[ii]["d"][:7]].append((p[k2], ii))
+            for mo, lst in by_m.items():   # point-in-time score for the codes Frank asks about (percentile among buyable that month)
+                ranks = sorted(v for v, _ in lst)
+                for v, ii in lst:
+                    if recs[ii]["code"] in WATCH:
+                        watch.setdefault(recs[ii]["code"], {})[recs[ii]["d"]] = {
+                            "pct": round(100 * bisect_left(ranks, v) / max(len(ranks) - 1, 1), 1), "price": recs[ii]["price"],
+                            "liq": round(recs[ii]["liq"]), "x10": recs[ii]["x10"], "mult3y": round(float(recs[ii]["mult3y"]), 1),
+                            "fr12": round(float(recs[ii]["fr12"]), 2), "top10": None}
+            for k2, ii in enumerate(idx):   # watched codes that were not buyable that month
+                if recs[ii]["code"] in WATCH and recs[ii]["d"] not in watch.get(recs[ii]["code"], {}):
+                    watch.setdefault(recs[ii]["code"], {})[recs[ii]["d"]] = {"pct": None, "price": recs[ii]["price"],
+                        "liq": round(recs[ii]["liq"]), "p": round(float(p[k2]), 4), "mult3y": round(float(recs[ii]["mult3y"]), 1)}
             sel = []
             for mo, lst in by_m.items():
                 lst.sort(reverse=True)
@@ -292,6 +305,7 @@ def main():
             picks += list(sel)
         print("[80] walk-forward years", len(wf), flush=True)
     out["walk_forward"] = wf
+    out["watch"] = watch
     if lgb is not None:   # today's scores: train on every complete label, score the latest month-end (private, encrypted)
         last_m = max(r["d"] for r in recs)[:7]
         te = np.array([r["d"][:7] == last_m for r in recs])
@@ -356,6 +370,7 @@ def main():
 
 
 study_last = ""
+WATCH = set(c.strip() for c in os.environ.get("S80_CODES", "IVZ,CND").split(",") if c.strip())
 
 if __name__ == "__main__":
     main()
