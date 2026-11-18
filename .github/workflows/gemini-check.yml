@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['gemini_check.py', '.github/workflows/gemini-check.yml']
+    paths: ['gemini_check.py', 'deepseek_check.py', '.github/workflows/gemini-check.yml']
 permissions:
   contents: read
 jobs:
@@ -15,3 +15,7 @@ jobs:
       - run: python gemini_check.py
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      - run: python deepseek_check.py
+        if: always()
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
