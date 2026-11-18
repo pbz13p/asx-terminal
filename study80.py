@@ -140,12 +140,13 @@ def labels(rows, i):
     tradable = med(around) >= 1e4 and rows[i][6] >= 0.005   # below half a cent one tick is already 20%: not a real 10x
     j = min(i + H12, len(rows) - 1)
     r12 = rows[j][4] / c0 - 1
+    r12raw = rows[j][6] / rows[i][6] - 1 if rows[i][6] > 0 else np.nan   # raw traded prices, no back-adjustment
     # round 71's real cost per side: 0.2% + one tick / price (tick 0.1c under 10c, 0.5c under $2, else 1c)
     cost = lambda p: 0.002 + ((0.001 if p < 0.10 else 0.005 if p < 2 else 0.01) / p if p > 0 else 1)
     r12n = (1 + r12) * (1 - min(cost(rows[j][6]), 0.9)) * (1 - min(cost(rows[i][6]), 0.9)) - 1
     complete = len(fut) >= H3 or rows[-1][0] < study_last  # delisted within 3y: history is complete
     return {"mult3y": mult, "x10": float(mult >= 10 and tradable), "x5": float(mult >= 5 and tradable),
-            "r12": r12, "r12n": r12n, "complete": complete, "x10_any": float(mult >= 10)}
+            "r12": r12, "r12n": r12n, "r12raw": r12raw, "adj_drift": (rows[j][4] / rows[j][6]) / (c0 / rows[i][6]) if rows[i][6] > 0 and rows[j][6] > 0 else np.nan, "complete": complete, "x10_any": float(mult >= 10)}
 
 
 def main():
@@ -306,6 +307,13 @@ def main():
             "median_days_to_build_7500": round(med([min(999, 7500 / max(0.05 * recs[i]["liq"], 1)) for i in P]), 1),
             "unfixed_stocks_only": (lambda Q: {"picks": int(len(Q)), "r12_median_pct": round(100 * float(np.median(r12[Q])), 1) if len(Q) else None,
                 "hit_rate_pct": round(100 * float((r12[Q] > 0).mean()), 1) if len(Q) else None})(np.array([i for i in P if recs[i]["code"] not in fixed_codes], dtype=int)),
+            "raw_check": (lambda Q: {"picks": int(len(Q)), "r12_adj_median_pct": round(100 * float(np.median([recs[i]["r12"] for i in Q])), 1),
+                "r12_raw_median_pct": round(100 * float(np.nanmedian([recs[i]["r12raw"] for i in Q])), 1),
+                "r12_raw_hit_pct": round(100 * float(np.nanmean([recs[i]["r12raw"] > 0 for i in Q])), 1),
+                "adj_drift_median": round(float(np.nanmedian([recs[i]["adj_drift"] for i in Q])), 3),
+                "adj_drift_gt1_1_pct": round(100 * float(np.nanmean([recs[i]["adj_drift"] > 1.1 for i in Q])), 1)})(
+                [i for i in P if recs[i]["code"] not in fixed_codes and not recs[i]["jump12"]]),
+            "raw_check_all_buyable_median_pct": round(100 * float(np.nanmedian([r["r12raw"] for r, ok in zip(recs, allm & (X[:, 0] >= 0.01) & (X[:, 1] >= 2000)) if ok and r["code"] not in fixed_codes])), 1),
             "fixed_stocks": len(fixed_codes), "jumps3x_left": n_jumps,
             "picks_with_3x_jump_pct": round(100 * float(np.mean([recs[i]["jump12"] for i in P])), 1),
             "no_jump_picks": (lambda Q: {"picks": int(len(Q)), "r12_median_pct": round(100 * float(np.median(r12[Q])), 1),
