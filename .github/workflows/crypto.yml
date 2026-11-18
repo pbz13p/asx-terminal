@@ -9,11 +9,12 @@ on:
     paths: ['crypto_download.py', '.github/workflows/crypto.yml']
 permissions:
   contents: read
+  actions: write
 concurrency: crypto-data
 jobs:
   crypto:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 340
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -25,3 +26,7 @@ jobs:
           key: crypto-${{ github.run_id }}
           restore-keys: crypto-
       - run: python crypto_download.py
+      - name: Not finished -- run again
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: if [ "$(cat crypto_left.txt 2>/dev/null || echo 0)" -gt 0 ]; then gh workflow run crypto.yml --ref main -R ${{ github.repository }}; fi

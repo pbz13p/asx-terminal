@@ -21,7 +21,9 @@ from pathlib import Path
 DATA = Path("data/crypto")
 RAW = DATA / "raw"
 BASE = "https://data.binance.vision/data/futures/um"
-SYMBOLS = os.environ.get("CRYPTO_SYMBOLS", "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,DOGEUSDT").split(",")
+SYMBOLS = [x for x in os.environ.get("CRYPTO_SYMBOLS", "").split(",") if x]   # empty = every USDT perpetual ever listed
+LIST = "https://s3-ap-northeast-1.amazonaws.com/data.binance.vision?delimiter=/&prefix=data/futures/um/monthly/klines/"
+BUDGET = float(os.environ.get("CRYPTO_MINUTES", "300")) * 60
 START = date(2019, 9, 1)
 
 
@@ -40,6 +42,23 @@ def get(url):
         except (urllib.error.URLError, TimeoutError):
             time.sleep(5 * (attempt + 1))
     return None
+
+
+def all_symbols():
+    """Every USDT-margined perpetual Binance has published data for -- delisted ones included (no survivorship)."""
+    import re
+    out, marker = [], ""
+    while True:
+        body = get(LIST + (f"&marker={marker}" if marker else ""))
+        if body is None:
+            break
+        page = body.decode()
+        got = re.findall(r"<Prefix>data/futures/um/monthly/klines/([^/<]+)/</Prefix>", page)
+        out += got
+        if "<IsTruncated>true</IsTruncated>" not in page or not got:
+            break
+        marker = f"data/futures/um/monthly/klines/{got[-1]}/"
+    return sorted({s for s in out if s.endswith("USDT") and "_" not in s})   # perpetuals only (no dated quarterlies)
 
 
 def months(sym):
@@ -64,21 +83,27 @@ def fetch(kind, sym):
         while d < date.today():
             names.append((f"{sym}-1h-{d.isoformat()}.zip", f"{BASE}/daily/klines/{sym}/1h/"))
             d += timedelta(days=1)
+    todo = []
     for name, url in names:
         f = folder / name
         if f.exists() and f.stat().st_size > 0:
             got += 1
-            continue
-        if (folder / (name + ".none")).exists() and name.count("-") == 3:   # a past month that was never published
-            continue
+        elif not ((folder / (name + ".none")).exists() and name.count("-") == 3):   # past months never published: skip
+            todo.append((name, url))
+
+    def one(nu):
+        name, url = nu
         body = get(url + name)
         if body is None:
-            (folder / (name + ".none")).write_text("")   # not published (coin not listed yet)
-            continue
-        f.write_bytes(body)
-        got += 1
-        new += 1
-        time.sleep(0.2)   # polite
+            (folder / (name + ".none")).write_text("")   # not published (coin not listed then / delisted)
+            return 0
+        (folder / name).write_bytes(body)
+        return 1
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        for k in ex.map(one, todo):
+            got += k
+            new += k
     return got, new
 
 
@@ -104,8 +129,16 @@ def rows(kind, sym):
 
 def main():
     DATA.mkdir(parents=True, exist_ok=True)
-    summary = {}
-    for sym in SYMBOLS:
+    t0 = time.time()
+    syms = SYMBOLS or all_symbols()
+    print("[crypto] symbols", len(syms), flush=True)
+    sf = DATA / "summary.json"
+    summary = json.loads(sf.read_text()) if sf.exists() else {}
+    left = 0
+    for sym in syms:
+        if time.time() - t0 > BUDGET:
+            left += 1
+            continue
         k_got, k_new = fetch("klines", sym)
         f_got, f_new = fetch("fundingRate", sym)
         K, F = rows("klines", sym), rows("fundingRate", sym)
@@ -114,8 +147,10 @@ def main():
         summary[sym] = {"hours": len(K), "first": time.strftime("%Y-%m-%d", time.gmtime(K[0][0])) if K else None,
                         "last": time.strftime("%Y-%m-%d %H:00", time.gmtime(K[-1][0])) if K else None,
                         "funding_points": len(F), "files_new": k_new + f_new}
-        print("[crypto]", sym, summary[sym], flush=True)   # public market data: counts and dates only
-    (DATA / "summary.json").write_text(json.dumps(summary, indent=1))
+    sf.write_text(json.dumps(summary, indent=1))
+    Path("crypto_left.txt").write_text(str(left))
+    done = [v for v in summary.values() if v["hours"]]
+    print("[crypto] symbols with data", len(done), "left for next run", left, "minutes", round((time.time() - t0) / 60), flush=True)
 
 
 if __name__ == "__main__":
