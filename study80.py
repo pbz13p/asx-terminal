@@ -292,6 +292,19 @@ def main():
             picks += list(sel)
         print("[80] walk-forward years", len(wf), flush=True)
     out["walk_forward"] = wf
+    if lgb is not None:   # today's scores: train on every complete label, score the latest month-end (private, encrypted)
+        last_m = max(r["d"] for r in recs)[:7]
+        te = np.array([r["d"][:7] == last_m for r in recs])
+        mdl = lgb.LGBMClassifier(n_estimators=300, learning_rate=0.03, num_leaves=31, min_child_samples=200, subsample=0.8,
+                                 subsample_freq=1, colsample_bytree=0.8, verbose=-1,
+                                 scale_pos_weight=float((1 - y10[comp].mean()) / max(y10[comp].mean(), 1e-6)))
+        mdl.fit(X[comp], y10[comp])
+        idx = np.where(te)[0]
+        pp = mdl.predict_proba(X[idx])[:, 1]
+        order = pp.argsort().argsort() / max(len(pp) - 1, 1)
+        out["latest_scores"] = {"month": last_m, "n": int(len(idx)),
+                                "scores": {recs[i]["code"]: [round(float(pp[k]), 4), round(100 * float(order[k]), 1),
+                                                             int(recs[i]["price"] >= 0.01 and recs[i]["liq"] >= 2000)] for k, i in enumerate(idx)}}
     if imp:   # which features the model leans on (share of total gain)
         g = np.mean(imp, axis=0)
         out["importance"] = {k: round(float(v / g.sum()), 3) for k, v in sorted(zip(keys, g), key=lambda t: -t[1])}
