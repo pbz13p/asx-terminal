@@ -63,9 +63,28 @@ def fix_consolidations(rows):
         if (r >= 3 and ratio_v < 3 / r) or (r <= 1 / 3 and ratio_v > 1 / (3 * r)):
             n += 1
             for j in range(i):   # rescale everything before the jump (adjusted o/h/l/c; volume scaled the other way)
-                d, o, h, l, c, v, raw = rows[j]
-                rows[j] = (d, o * r, h * r, l * r, c * r, v / r if r else v, raw)
+                d, o, h, l, c, v, raw, tv = rows[j]
+                rows[j] = (d, o * r, h * r, l * r, c * r, v / r if r else v, raw, tv)
     return rows, n
+
+
+def to_calendar(rows, cal):
+    """EODHD has no row on days a stock did not trade. Counting rows as days made a thin stock's "12 months" really
+    2-3 years and its "3 years" 6+ years (second run: 71% hit rate, +63% median -- impossible). Put every stock on the
+    index's trading calendar: a no-trade day repeats the previous close with zero volume. Element 7 is the raw $ traded."""
+    have = {r[0]: r for r in rows}
+    lo, hi = rows[0][0], rows[-1][0]
+    days = sorted(set(d for d in cal[bisect_left(cal, lo):] if d <= hi) | set(have))
+    out, prev = [], None
+    for d in days:
+        r = have.get(d)
+        if r is None:
+            c, raw = prev[4], prev[6]
+            out.append((d, c, c, c, c, 0, raw, 0.0))
+        else:
+            out.append(r)
+        prev = out[-1]
+    return out
 
 
 def month_ends(dates):
@@ -80,7 +99,7 @@ def month_ends(dates):
 def features(rows, i, first_day):
     c = np.array([r[4] for r in rows[max(0, i - 760):i + 1]])
     raw = rows[i][6]
-    val = np.array([r[6] * r[5] for r in rows[max(0, i - 250):i + 1]])
+    val = np.array([r[7] for r in rows[max(0, i - 250):i + 1]])
     v60 = val[-60:]
     p = c[-1]
 
@@ -109,7 +128,7 @@ def labels(rows, i):
         return None
     peak_k = max(range(len(fut)), key=lambda k: fut[k][4])
     mult = fut[peak_k][4] / c0
-    around = [r[6] * r[5] for r in fut[max(0, peak_k - 10):peak_k + 11]]
+    around = [r[7] for r in fut[max(0, peak_k - 10):peak_k + 11]]
     tradable = med(around) >= 1e4 and rows[i][6] >= 0.005   # below half a cent one tick is already 20%: not a real 10x
     j = min(i + H12, len(rows) - 1)
     r12 = rows[j][4] / c0 - 1
@@ -124,7 +143,8 @@ def labels(rows, i):
 def main():
     global study_last
     files = sorted(study.CACHE.glob("*.AU.json"))
-    study_last = max(study.load("AXJO.INDX")[-1][0], "2000")
+    cal = [r[0] for r in study.load("AXJO.INDX")]
+    study_last = max(cal[-1], "2000")
     print("[80] stocks", len(files), "last day", study_last, flush=True)
     recs = []
     fixed = 0
@@ -132,7 +152,9 @@ def main():
         rows = study.load(f.name[:-5])
         if len(rows) < 30:
             continue
+        rows = [r + (r[6] * r[5],) for r in rows]   # raw $ traded, kept as-is through the consolidation fix
         rows, k = fix_consolidations(rows)
+        rows = to_calendar(rows, cal)
         fixed += k
         dates = [r[0] for r in rows]
         first = dates[0]
@@ -255,7 +277,7 @@ def main():
             "expectancy_per_dollar": round(float(rr.mean()), 3),
             "top1pct_winners_share_of_gains": round(float(np.sort(rr)[-max(1, len(rr) // 100):].sum() / max(rr[rr > 0].sum(), 1e-9)), 3),
             "median_days_to_build_7500": round(med([min(999, 7500 / max(0.05 * recs[i]["liq"], 1)) for i in P]), 1),
-            "note": "12-month returns net of round-71 costs both sides; picks only from stocks >= 1c trading >= $2k/day; no stops (round 82)",
+            "calendar": "every stock on the index trading calendar (no-trade days = previous close, volume 0)", "note": "12-month returns net of round-71 costs both sides; picks only from stocks >= 1c trading >= $2k/day; no stops (round 82)",
         }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1, default=float), encoding="utf-8")
