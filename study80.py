@@ -370,7 +370,7 @@ def main():
 
 
 study_last = ""
-WATCH = set(c.strip() for c in os.environ.get("S80_CODES", "IVZ,CND").split(",") if c.strip())
+WATCH = set(c.strip() for c in os.environ.get("S80_CODES", "IVZ,CND,PCL").split(",") if c.strip())
 
 if __name__ == "__main__":
     main()
