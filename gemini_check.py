@@ -11,7 +11,7 @@ BASE = "https://generativelanguage.googleapis.com/v1beta"
 def call(path, body=None):
     req = urllib.request.Request(BASE + path, data=json.dumps(body).encode() if body else None,
                                  headers={"x-goog-api-key": KEY, "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as r:
+    with urllib.request.urlopen(req, timeout=150) as r:
         return json.load(r)
 
 
@@ -32,8 +32,8 @@ try:
             text = out["candidates"][0]["content"]["parts"][0]["text"]
             print("test model:", pick, "| reply:", text.strip()[:60], "| usage:", out.get("usageMetadata"))
             break
-        except urllib.error.HTTPError as e:
-            tried.append((pick, e.code))
+        except Exception as e:   # busy (503), retired (404) or slow: try the next one
+            tried.append((pick, getattr(e, "code", type(e).__name__)))
     print("tried:", tried)
 except urllib.error.HTTPError as e:
     print("HTTP", e.code, e.read()[:300])
