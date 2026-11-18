@@ -261,6 +261,7 @@ def main():
     picks = []
     imp = []
     watch = {}
+    PCT = np.full(len(recs), np.nan)   # out-of-sample score (0-100) among buyable stocks that month
     if lgb is not None:
         for ty in range(2014, max(year) + 1):
             tr = (year <= ty - 4) & comp     # labels need 3 years: a gap so no training label sees the test year
@@ -282,6 +283,7 @@ def main():
             for mo, lst in by_m.items():   # point-in-time score for the codes Frank asks about (percentile among buyable that month)
                 ranks = sorted(v for v, _ in lst)
                 for v, ii in lst:
+                    PCT[ii] = 100 * bisect_left(ranks, v) / max(len(ranks) - 1, 1)
                     if recs[ii]["code"] in WATCH:
                         watch.setdefault(recs[ii]["code"], {})[recs[ii]["d"]] = {
                             "pct": round(100 * bisect_left(ranks, v) / max(len(ranks) - 1, 1), 1), "price": recs[ii]["price"],
@@ -306,6 +308,42 @@ def main():
         print("[80] walk-forward years", len(wf), flush=True)
     out["walk_forward"] = wf
     out["watch"] = watch
+    # capture: of the ten-bagger stocks in the test years, how many did we hold at least once before the run (score >= cut
+    # in a month whose 3-year label was a ten-bagger), how early, and which ones we missed and why
+    tested = ~np.isnan(PCT) | np.array([r["d"][:4] >= "2018" for r in recs])
+    tb = defaultdict(list)
+    for i, r in enumerate(recs):
+        if r["x10_any"] and r["complete"] and r["d"][:4] >= "2018" and r["d"] < "2024":
+            tb[r["code"]].append(i)
+    cap = {"tenbagger_stocks_2018_2023": len(tb)}
+    for cut in (90, 80, 70):
+        got = [k for k, ii in tb.items() if any(PCT[i] >= cut for i in ii)]
+        cap[f"caught_score{cut}"] = len(got)
+        cap[f"caught_score{cut}_pct"] = round(100 * len(got) / max(len(tb), 1), 1)
+    why = Counter()
+    for k, ii in tb.items():
+        if any(PCT[i] >= 90 for i in ii):
+            continue
+        best = max(ii, key=lambda i: -1 if np.isnan(PCT[i]) else PCT[i])
+        r = recs[best]
+        why["below_1c" if all(recs[i]["price"] < 0.01 for i in ii) else
+            "under_2k_a_day" if all(recs[i]["liq"] < 2000 or recs[i]["price"] < 0.01 for i in ii) else
+            "scored_70_90" if np.nanmax([PCT[i] for i in ii] + [-1]) >= 70 else "scored_below_70"] += 1
+    cap["missed_why"] = dict(why)
+    # how much of the run we would have caught: multiple from the first score>=90 month to the 3-year peak, vs from the low
+    gain_first, gain_low = [], []
+    for k, ii in tb.items():
+        hit = [i for i in ii if PCT[i] >= 90]
+        if hit:
+            gain_first.append(recs[hit[0]]["mult3y"])
+            gain_low.append(max(recs[i]["mult3y"] for i in ii))
+    cap["caught_median_multiple_from_first_signal"] = round(med(gain_first), 1)
+    cap["caught_median_multiple_from_best_month"] = round(med(gain_low), 1)
+    # false alarms: for every caught ten-bagger, how many score>=90 picks (stock-months) were not ten-baggers
+    sc = ~np.isnan(PCT) & (PCT >= 90) & comp
+    cap["score90_picks_complete"] = int(sc.sum())
+    cap["score90_picks_tenbagger_pct"] = round(100 * float(np.array([recs[i]["x10_any"] for i in np.where(sc)[0]]).mean()), 2) if sc.any() else None
+    out["capture"] = cap
     if lgb is not None:   # today's scores: train on every complete label, score the latest month-end (private, encrypted)
         last_m = max(r["d"] for r in recs)[:7]
         te = np.array([r["d"][:7] == last_m for r in recs])
