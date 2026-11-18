@@ -23,7 +23,7 @@ try:
     print("models:", len(models))
     flash = [m for m in models if "flash" in m and "image" not in m and "tts" not in m and "live" not in m]
     print("flash models:", flash[:15])
-    pick = flash[0] if flash else models[0]
+    pick = "models/gemini-flash-latest" if "models/gemini-flash-latest" in models else (flash[0] if flash else models[0])
     out = call(f"/{pick}:generateContent", {"contents": [{"parts": [{"text": "用一句中文回答：1+1等于几？"}]}]})
     text = out["candidates"][0]["content"]["parts"][0]["text"]
     print("test model:", pick, "| reply:", text.strip()[:60], "| usage:", out.get("usageMetadata"))
