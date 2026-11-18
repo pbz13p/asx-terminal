@@ -200,6 +200,30 @@ class Handler(SimpleHTTPRequestHandler):
             (out / name).write_bytes(sealed)
             self.send_json({"ok": True, "data": {"saved": str(out / name), "bytes": len(sealed)}})
             return
+        if path == "/api/earwise":   # own-PC only: fetch one video's full transcript from Frank's 慧听 and keep it in drop/earwise
+            if self._users() or self.client_address[0] != "127.0.0.1":
+                self.send_error(404)
+                return
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(min(n, 20000)) or b"{}")
+                import urllib.request
+                vid = re.sub(r"[^\w-]", "", body.get("vid", ""))[:20]
+                out = ROOT / "drop" / re.sub(r"[^\w-]", "", body.get("folder", "earwise"))[:40]
+                out.mkdir(parents=True, exist_ok=True)
+                f = out / f"{vid}.json"
+                if not f.exists():
+                    req = urllib.request.Request("https://tingowl.com/captions", method="POST",
+                                                 data=json.dumps({"url": f"https://www.youtube.com/watch?v={vid}", "lang": "zh", "translate": False}).encode(),
+                                                 headers={"Content-Type": "application/json", "X-App-Token": "kandong2026",
+                                                          "Authorization": "Bearer " + str(body.get("token", ""))})
+                    with urllib.request.urlopen(req, timeout=1800) as r:
+                        f.write_bytes(r.read())
+                j = json.loads(f.read_bytes())
+                self.send_json({"ok": True, "data": {"saved": str(f), "lines": len(j.get("lines") or []), "source": j.get("source"), "duration": j.get("duration")}})
+            except Exception as e:
+                self.send_json({"ok": False, "error": f"{type(e).__name__}: {str(e)[:200]}"})
+            return
         if path != "/login":
             self.send_error(404)
             return
