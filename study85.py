@@ -49,7 +49,8 @@ ANN = study.DATA / "ann"
 HEAD = re.compile(r"(S&P|S&amp;P|Standard\s*&\s*Poor).{0,60}(Rebalanc|Indices|Index)|Quarterly Rebalance|All Ordinaries.{0,30}(Rebalanc|Review)", re.I)
 MONTHS = {m: i + 1 for i, m in enumerate("January February March April May June July August September October November December".split())}
 SECTION = re.compile(r"(S&P/ASX\s*(?:20|50|100|200|300)\b(?:\s*Index)?|S&P/ASX Small Ordinaries(?:\s*Index)?|All Ordinaries(?:\s*Index)?)"
-                     r"\s*[–\-—:]\s*(No change|Effective[^\n]{0,40}?(?:on|of)\s+(?:[A-Z][a-z]+,?\s+)?([A-Z][a-z]+)\s+(\d{1,2}),?\s+(\d{4}))", re.I)
+                     r"[ \t]*[–\-—:][ \t]*([^\n]{0,90})", re.I)   # header line: "No change" / "Effective Prior to the Open on ..." / "March 18, 2016 After Market Close"
+DATE = re.compile(r"([A-Z][a-z]+)\s+(\d{1,2}),?\s+(\d{4})")
 HEAD2 = re.compile(r"Rebalanc|Quarterly Review|Annual Review", re.I)
 ACTION = re.compile(r"^\s*(Addition|Deletion|Removal|Add|Delete|Remove)\s+([A-Z0-9]{3,4})\b\s*(.*)$", re.M)
 
@@ -70,11 +71,13 @@ def parse(text):
         idx = norm_index(m.group(1))
         seg = text[m.end(): marks[k + 1].start() if k + 1 < len(marks) else len(text)]
         rec = out.setdefault(idx, {"add": [], "del": [], "nochange": False})
-        if m.group(2).lower().startswith("no change"):
+        line = m.group(2)
+        if line.lower().startswith("no change"):
             rec["nochange"] = True
             continue
-        if m.group(3) and m.group(3).capitalize() in MONTHS:
-            eff = eff or f"{m.group(5)}-{MONTHS[m.group(3).capitalize()]:02d}-{int(m.group(4)):02d}"
+        dm = DATE.search(line)
+        if dm and dm.group(1) in MONTHS and not eff:
+            eff = (f"{dm.group(3)}-{MONTHS[dm.group(1)]:02d}-{int(dm.group(2)):02d}", "open" if "open" in line.lower() else "close")
         for a in ACTION.finditer(seg):
             side = "add" if a.group(1).lower().startswith("add") else "del"
             if a.group(2) not in rec[side]:
@@ -107,6 +110,82 @@ def collect():
     return by_date
 
 
+def cost(p):   # round 71: 0.2% + one tick per side
+    return 0.002 + ((0.001 if p < 0.10 else 0.005 if p < 2 else 0.01) / p if p > 0 else 1)
+
+
+def series(sym):
+    rows = study.load(sym)
+    return [r[0] for r in rows], [r[4] for r in rows], [r[6] for r in rows], [r[6] * r[5] for r in rows]
+
+
+def at(dates, day):   # index of the last trading row on or before day
+    i = bisect_right(dates, day) - 1
+    return i if i >= 0 else None
+
+
+def stats(xs, days):
+    """mean / median / hit / worst, and t clustered by rebalance date."""
+    if not xs:
+        return None
+    a = np.array(xs)
+    g = defaultdict(list)
+    for x, d in zip(xs, days):
+        g[d].append(x)
+    m = np.array([np.mean(v) for v in g.values()])
+    t = float(m.mean() / (m.std(ddof=1) / math.sqrt(len(m)))) if len(m) > 2 and m.std(ddof=1) > 0 else None
+    per_year = defaultdict(float)
+    for d, v in g.items():
+        per_year[d[:4]] += float(np.mean(v))   # one equal-weight basket per rebalance, summed over the year
+    return {"n": len(a), "rebalances": len(m), "mean_pct": round(100 * a.mean(), 2), "median_pct": round(100 * float(np.median(a)), 2),
+            "hit_pct": round(100 * float((a > 0).mean()), 1), "worst_pct": round(100 * float(a.min()), 1),
+            "best_pct": round(100 * float(a.max()), 1), "t_by_date": round(t, 2) if t is not None else None,
+            "per_year_pct": round(100 * float(np.mean(list(per_year.values()))), 2), "reliable": len(a) >= 100}
+
+
+def events(lists):
+    cal, bc, _, _ = series("AXJO.INDX")
+    bench_name = "AXJO.INDX"
+    for sym in ("AXSO.INDX", "XSO.INDX"):
+        d2, c2, _, _ = series(sym)
+        if len(d2) > 1000:
+            cal, bc, bench_name = d2, c2, sym
+            break
+    ev = []
+    for L in lists:
+        if not L["effective"]:
+            continue
+        A = L["announced"]
+        ia = at(cal, A)
+        ie = at(cal, L["effective"]) if L["effective_kind"] == "close" else bisect_left(cal, L["effective"]) - 1
+        if ia is None or ie is None or ie <= ia or ia < 10 or ie + 20 >= len(cal):
+            continue
+        dts = {"pre": cal[ia - 10], "ann": cal[ia], "eff": cal[ie], "post": cal[ie + 20]}
+        for idx, rec in L["indices"].items():
+            grp = {"ASX200": "ASX200", "ASX300": "ASX300", "SmallOrds": "ASX300", "AllOrds": "AllOrds"}.get(idx)
+            if not grp:
+                continue
+            for side in ("add", "del"):
+                for code in rec[side]:
+                    d, c, raw, val = series(code + ".AU")
+                    if len(d) < 30:
+                        continue
+                    ix = {k: at(d, v) for k, v in dts.items()}
+                    if None in ix.values() or d[ix["pre"]] < cal[ia - 15]:   # must have traded around the window
+                        continue
+                    b = {k: bc[at(cal, v)] for k, v in dts.items()}
+                    liq = float(np.median(val[max(0, ix["pre"] - 60):ix["pre"] + 1])) if ix["pre"] > 0 else 0
+
+                    def w(a0, a1):
+                        r = c[ix[a1]] / c[ix[a0]] - 1
+                        rn = (1 + r) * (1 - min(cost(raw[ix[a1]]), .9)) * (1 - min(cost(raw[ix[a0]]), .9)) - 1
+                        return rn - (b[a1] / b[a0] - 1)
+                    ev.append({"date": A, "index": grp, "side": side, "code": code, "price": raw[ix["pre"]], "liq": round(liq),
+                               "cap_5pct": round(0.05 * liq), "W1": w("pre", "ann"), "W2": w("ann", "eff"), "W3": w("eff", "post"),
+                               "W23": w("ann", "post"), "W12": w("pre", "eff")})
+    return ev, bench_name
+
+
 def main():
     by_date = collect()
     fetched = 0
@@ -125,7 +204,7 @@ def main():
             except Exception as e:
                 print("[85] fetch failed", day, type(e).__name__, flush=True)
         n = sum(len(v["add"]) + len(v["del"]) for v in idx.values())
-        lists.append({"announced": day, "effective": eff, "headline": a["headline"][:120], "changes": n,
+        lists.append({"announced": day, "effective": eff[0] if eff else None, "effective_kind": eff[1] if eff else None, "headline": a["headline"][:120], "changes": n,
                       "indices": {k: v for k, v in idx.items()}, "sample": a["text"][:7000] if n == 0 and HEAD2.search(a["headline"]) else None})
     # coverage by rebalance quarter (Mar/Jun/Sep/Dec, 2015 on); rebalance announcements are in the rebalance month
     have = defaultdict(list)
@@ -139,6 +218,25 @@ def main():
            "quarters_missing": [q for q in want if q not in have],
            "by_quarter": {q: have[q] for q in want if q in have},
            "lists": lists}
+    # phase 2: event study on the real lists
+    seen, uniq = set(), []
+    for L in sorted(lists, key=lambda L: -L["changes"]):   # the same rebalance can be lodged on several dates (re-issues)
+        k = (L["effective"], json.dumps(L["indices"], sort_keys=True))
+        if L["effective"] and L["changes"] and k not in seen:
+            seen.add(k)
+            uniq.append(L)
+    ev, bench = events(uniq)
+    res = {"benchmark": bench, "events": len(ev)}
+    for grp in ("ASX200", "ASX300", "AllOrds"):
+        for side in ("add", "del"):
+            E = [e for e in ev if e["index"] == grp and e["side"] == side]
+            for part, f in (("in_2015_2021", lambda e: e["date"] < "2022"), ("out_2022_on", lambda e: e["date"] >= "2022")):
+                P = [e for e in E if f(e)]
+                res[f"{grp}_{side}_{part}"] = {W: stats([e[W] for e in P], [e["date"] for e in P]) for W in ("W1", "W2", "W3", "W12", "W23")}
+                res[f"{grp}_{side}_{part}"]["capacity_per_rebalance_median"] = round(float(np.median(
+                    [sum(e["cap_5pct"] for e in P if e["date"] == d) for d in {e["date"] for e in P}]))) if P else None
+    out["event_study"] = res
+    out["events"] = ev
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     print("[85] done: quarters found", out["quarters_found"], "of", len(want), flush=True)   # counts only; lists are encrypted
