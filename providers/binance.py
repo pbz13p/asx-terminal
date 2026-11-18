@@ -1,0 +1,92 @@
+"""Crypto mode (?m=cx): Binance USDT-margined perpetuals, real time, public endpoints (no key, no login).
+
+Runs on Frank's PC (Australia), which reaches fapi.binance.com directly. Same contract as the stock providers:
+market / quotes / indices / candles, plus the funding rate (every 8 hours, the cost of holding a perpetual).
+"""
+import json
+import time
+import urllib.request
+from datetime import datetime, timezone
+
+from providers.base import DataUnavailable
+
+BASE = "https://fapi.binance.com"
+TOP = ("BTC", "ETH", "SOL", "BNB", "XRP", "DOGE")
+
+
+class BinanceProvider:
+    name = "binance"
+    latency = "real-time"
+
+    def __init__(self):
+        self._c = {}
+
+    def _get(self, path, **params):
+        q = "&".join(f"{k}={v}" for k, v in params.items())
+        url = f"{BASE}{path}" + (f"?{q}" if q else "")
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=20) as r:
+                return json.load(r)
+        except Exception as e:
+            raise DataUnavailable(f"Binance 连不上：{type(e).__name__}")
+
+    def _cached(self, key, ttl, fn):
+        hit = self._c.get(key)
+        if hit and time.time() - hit[0] < ttl:
+            return hit[1]
+        val = fn()
+        self._c[key] = (time.time(), val)
+        return val
+
+    def market(self):
+        def load():
+            tick = self._get("/fapi/v1/ticker/24hr")
+            prem = {p["symbol"]: p for p in self._get("/fapi/v1/premiumIndex")}
+            stocks = []
+            for t in tick:
+                s = t["symbol"]
+                if not s.endswith("USDT") or "_" in s:
+                    continue
+                last = float(t["lastPrice"])
+                if last <= 0 or float(t.get("count") or 0) == 0:
+                    continue
+                f = prem.get(s, {})
+                fr = float(f.get("lastFundingRate") or 0)
+                stocks.append({"code": s[:-4], "name": s, "last": last, "prev": last - float(t["priceChange"]),
+                               "volume": float(t["volume"]), "turnover": float(t["quoteVolume"]),
+                               "funding": fr, "funding_year_pct": round(fr * 3 * 365 * 100, 1),
+                               "next_funding": f.get("nextFundingTime")})
+            asof = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+            return {"asof": asof, "stocks": stocks}
+        return self._cached("market", 20, load)
+
+    def quotes(self, codes):
+        m = {s["code"]: s for s in self.market()["stocks"]}
+        return [{"code": c, "last": m[c]["last"], "prev": m[c]["prev"], "volume": m[c]["volume"], "name": m[c]["name"],
+                 "funding": m[c]["funding"], "funding_year_pct": m[c]["funding_year_pct"]} for c in codes if c in m]
+
+    def indices(self):
+        m = {s["code"]: s for s in self.market()["stocks"]}
+        return {"main": [{"code": c, "label": c + " 永续", "last": m[c]["last"], "prev": m[c]["prev"]} for c in TOP if c in m],
+                "sectors": []}
+
+    def candles(self, code, tf):
+        if tf in ("1D", "5D"):
+            raise DataUnavailable("加密货币先只有日线（盯盘请用 Binance）")
+
+        def load():
+            out, start = [], 1500000000000
+            while True:
+                rows = self._get("/fapi/v1/klines", symbol=code + "USDT", interval="1d", limit=1500, startTime=start)
+                if not rows:
+                    break
+                for r in rows:
+                    out.append({"t": datetime.fromtimestamp(r[0] / 1000, timezone.utc).strftime("%Y-%m-%d"),
+                                "o": float(r[1]), "h": float(r[2]), "l": float(r[3]), "c": float(r[4]), "v": float(r[5])})
+                if len(rows) < 1500:
+                    break
+                start = rows[-1][0] + 1
+            if not out:
+                raise DataUnavailable("没有这个合约")
+            return out
+        return self._cached("c:" + code, 60, load)

@@ -45,6 +45,8 @@ provider = get_provider()
 CODE = re.compile(r"^[A-Z0-9]{1,6}$")
 CN_CODE = re.compile(r"^\d{6}$")
 _cnp = None
+_cxp = None
+CX_CODE = re.compile(r"^[A-Z0-9]{1,15}$")
 TF = {"1D", "5D", "1M", "6M", "1Y", "5Y", "ALL"}
 
 
@@ -366,7 +368,37 @@ class Handler(SimpleHTTPRequestHandler):
             return out
         raise ValueError("A 股模式暂不支持这个功能")
 
+    def route_cx(self, name, q):
+        """Crypto mode (?m=cx): Binance USDT perpetuals, real time from this PC."""
+        from providers.binance import BinanceProvider
+        global _cxp
+        if _cxp is None:
+            _cxp = BinanceProvider()
+        if name == "market":
+            return _cxp.market()
+        if name == "indices":
+            return _cxp.indices()
+        if name == "quotes":
+            codes = [c for c in q.get("codes", "").split(",") if c]
+            if not codes or len(codes) > 60 or not all(CX_CODE.match(c) for c in codes):
+                raise ValueError("合约代码不正确，例如 BTC")
+            return _cxp.quotes(codes)
+        code = q.get("code", "")
+        if not CX_CODE.match(code):
+            raise ValueError("合约代码不正确，例如 BTC")
+        if name == "candles":
+            if q.get("tf") not in TF:
+                raise ValueError("周期不正确")
+            return _cxp.candles(code, q["tf"])
+        if name == "ann":
+            return []
+        if name == "profile":
+            return {"code": code, "lists": [], "watch": None, "vol": None}
+        raise ValueError("加密货币模式暂不支持这个功能")
+
     def route(self, name, q):
+        if q.get("m") == "cx" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
+            return self.route_cx(name, q)
         if q.get("m") == "cn" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cn(name, q)
         if name == "eodstatus" and not self._users() and self.client_address[0] == "127.0.0.1":   # own PC: why EODHD refuses
@@ -491,7 +523,7 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "providers/binance.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py")
 
 

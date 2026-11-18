@@ -96,7 +96,7 @@ td.w{white-space:normal;min-width:260px}
 <body>
 <div id="app">
 <header>
-  <div class="brand"><i></i>NEON <b>TERMINAL</b></div><div class="mk" id="mkt"><button data-m="au" class="on">🇦🇺 澳股</button><button data-m="cn">🇨🇳 A 股</button></div>
+  <div class="brand"><i></i>NEON <b>TERMINAL</b></div><div class="mk" id="mkt"><button data-m="au" class="on">🇦🇺 澳股</button><button data-m="cn">🇨🇳 A 股</button><button data-m="cx">₿ 加密</button></div>
   <form id="sf" role="search"><input id="si" placeholder="搜代码：CND 或 600519" maxlength="6" autocomplete="off" aria-label="搜索股票代码"></form>
   <div class="idx num" id="idx"></div>
   <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
@@ -134,23 +134,23 @@ td.w{white-space:normal;min-width:260px}
 </div>
 <div id="ai" role="dialog" aria-label="问 AI"><div class="dh"><b>🤖 问 AI <span class="mu" id="aiw" style="font:400 15px var(--mono)"></span></b><button class="btn" id="aiideas" style="display:none">待审核想法</button><button class="btn" id="aix" aria-label="关闭">✕</button></div>
 <div id="aim"></div><form id="aif"><textarea id="aii" placeholder="输入你的想法或问题，比如：我觉得最近跌得多的电子股会反弹，可行吗？（Enter 发送，Shift+Enter 换行）"></textarea><button class="btn" style="align-self:flex-end;color:#fff;background:var(--v);border-color:var(--v)">发送</button></form></div>
-<div id="rc" role="dialog" aria-label="研究中心"><div class="rch"><h2>🔬 研究中心</h2><div class="rcs num" id="rcs"></div><div class="tabs" id="rcf" style="border:0;white-space:nowrap"><button data-f="all" class="on">全部</button><button data-f="ASX">澳股</button><button data-f="A股">A 股</button><button data-f="无效">测过无效</button></div><span style="flex:1"></span><button class="btn" id="rcx">关闭 ✕</button></div><div id="rcn"></div><div id="rct"></div><div class="cards" id="rcc"></div></div>
+<div id="rc" role="dialog" aria-label="研究中心"><div class="rch"><h2>🔬 研究中心</h2><div class="rcs num" id="rcs"></div><div class="tabs" id="rcf" style="border:0;white-space:nowrap"><button data-f="all" class="on">全部</button><button data-f="ASX">澳股</button><button data-f="A股">A 股</button><button data-f="加密">加密</button><button data-f="无效">测过无效</button></div><span style="flex:1"></span><button class="btn" id="rcx">关闭 ✕</button></div><div id="rcn"></div><div id="rct"></div><div class="cards" id="rcc"></div></div>
 <div id="dr" role="dialog" aria-label="公告"><div class="dh"><b id="drt"></b><button class="btn" id="dro">原文页</button><button class="btn" id="drx" aria-label="关闭">✕</button></div><div class="db" id="drb"></div></div>
 <script>
 var $=function(i){return document.getElementById(i);};
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 async function api(p){var r=await fetch('/api/'+p);var j=await r.json();if(!j.ok)throw new Error(j.error||'出错');return j.data;}
 function pc(v,d){if(v==null||isNaN(v))return '<span class="mu">—</span>';d=d==null?1:d;return '<span class="'+(v>=0?'up':'dn')+'">'+(v>=0?'+':'')+v.toFixed(d)+'%</span>';}
-function px(v){if(v==null)return '—';return v<0.1?v.toFixed(4):v<2?v.toFixed(3):v.toFixed(2);}
+function px(v){if(v==null)return '—';if(v>0&&v<0.001)return v.toPrecision(4);return v<0.1?v.toFixed(4):v<2?v.toFixed(3):v.toFixed(2);}
 function mc(v){return v?'$'+(v>=1e9?(v/1e9).toFixed(1)+'B':(v/1e6).toFixed(0)+'M'):'—';}
 var SZ={'Information Technology':'信息技术','Industrials':'工业','Financials':'金融','Real Estate':'房地产','Materials':'原材料/矿业','Communication Services':'通信','Health Care':'医疗','Consumer Discretionary':'可选消费','Consumer Staples':'必需消费','Energy':'能源','Utilities':'公用事业'};
 var st={m:'au',sel:null,tf:'6M',sub:'rsi',lt:'watch',bt:'rockets',watch:[]};
-var DEFW={au:['CND','BHP','CBA','PLS','XRO'],cn:['600519','000001','601318','000858','600036']};
+var DEFW={au:['CND','BHP','CBA','PLS','XRO'],cn:['600519','000001','601318','000858','600036'],cx:['BTC','ETH','SOL','BNB','XRP','DOGE']};
 function lsg(k,d){try{var v=localStorage.getItem(k);return v==null?d:v;}catch(e){return d;}}function lss(k,v){try{localStorage.setItem(k,v);}catch(e){}}
-st.m=lsg('nt_m','au')==='cn'?'cn':'au';st.sub=lsg('nt_sub','rsi');
-function loadW(){try{st.watch=JSON.parse(lsg('nt_watch'+(st.m==='cn'?'_cn':''),'null'))||DEFW[st.m].slice();}catch(e){st.watch=DEFW[st.m].slice();}}loadW();
-function saveW(){lss('nt_watch'+(st.m==='cn'?'_cn':''),JSON.stringify(st.watch));}
-function okCode(v){return st.m==='cn'?/^\d{6}$/.test(v):/^[A-Z0-9]{1,6}$/.test(v);}
+st.m=(function(m){return m==='cn'||m==='cx'?m:'au';})(lsg('nt_m','au'));st.sub=lsg('nt_sub','rsi');
+function loadW(){try{st.watch=JSON.parse(lsg('nt_watch'+(st.m==='au'?'':'_'+st.m),'null'))||DEFW[st.m].slice();}catch(e){st.watch=DEFW[st.m].slice();}}loadW();
+function saveW(){lss('nt_watch'+(st.m==='au'?'':'_'+st.m),JSON.stringify(st.watch));}
+function okCode(v){return st.m==='cn'?/^\d{6}$/.test(v):st.m==='cx'?/^[A-Z0-9]{1,15}$/.test(v):/^[A-Z0-9]{1,6}$/.test(v);}
 function apim(p){return api(p+(p.indexOf('?')>=0?'&':'?')+'m='+st.m);}
 var Q={},MKT=[],SCAN=null,NAMES={},CNP=null;
 
@@ -382,7 +382,7 @@ function row(c,last,ch,nm,tag,rm){return '<div class="it'+(c===st.sel?' on':'')+
 function chgOf(q){return q&&q.prev?100*(q.last/q.prev-1):null;}
 function renderList(){var h='';
  if(st.lt==='watch')h=st.watch.map(function(c){var q=Q[c];return row(c,q&&q.last,chgOf(q),NAMES[c],'',1);}).join('')||'<div class="empty" style="padding:12px">还没有自选</div>';
- if(st.lt==='gain'||st.lt==='lose'){var a=MKT.filter(function(s){return s.prev&&s.last*s.volume>=(st.m==='cn'?2e7:1e5);}).map(function(s){return {c:s.code,l:s.last,ch:100*(s.last/s.prev-1),n:s.name};});
+ if(st.lt==='gain'||st.lt==='lose'){var a=MKT.filter(function(s){return s.prev&&s.last*s.volume>=(st.m==='cn'?2e7:st.m==='cx'?5e6:1e5);}).map(function(s){return {c:s.code,l:s.last,ch:100*(s.last/s.prev-1),n:s.name};});
   a.sort(function(x,y){return st.lt==='gain'?y.ch-x.ch:x.ch-y.ch;});h=a.slice(0,60).map(function(s){return row(s.c,s.l,s.ch,s.n);}).join('')||'<div class="empty" style="padding:12px">市场数据加载中…</div>';}
  if(st.lt==='sig'&&st.m==='cn'){h=((CNP&&CNP.top)||[]).map(function(r){return row(r.code,r.price,null,r.name,'模型前 10%');}).join('')||'<div class="empty" style="padding:12px">A 股每日选股还没生成</div>';}
  else if(st.lt==='sig'){var R=(SCAN&&SCAN.rockets)||[],W=((SCAN&&SCAN.watch)||[]).filter(function(w){return w.alerts&&w.alerts.length;});
@@ -391,7 +391,7 @@ function renderList(){var h='';
 $('list').addEventListener('click',function(e){var rm=e.target.getAttribute('data-rm');if(rm){st.watch=st.watch.filter(function(c){return c!==rm;});saveW();renderList();return;}var it=e.target.closest('.it');if(it)select(it.getAttribute('data-c'));});
 $('ltabs').addEventListener('click',function(e){var t=e.target.getAttribute('data-t');if(!t)return;st.lt=t;[].forEach.call($('ltabs').children,function(b){b.classList.toggle('on',b===e.target);});renderList();});
 $('addf').addEventListener('submit',function(e){e.preventDefault();var v=$('addi').value.trim().toUpperCase();if(!okCode(v))return;if(st.watch.indexOf(v)<0){st.watch.unshift(v);saveW();}$('addi').value='';loadQuotes();renderList();select(v);});
-$('sf').addEventListener('submit',function(e){e.preventDefault();var v=$('si').value.trim().toUpperCase().replace(/\.AX$|\.AU$|\.SH$|\.SZ$/,'');if(/^\d{6}$/.test(v)&&st.m!=='cn')setMarket('cn',v);else if(/^[A-Z][A-Z0-9]{0,5}$/.test(v)&&st.m!=='au')setMarket('au',v);else if(okCode(v))select(v);else return;$('si').value='';$('si').blur();});
+$('sf').addEventListener('submit',function(e){e.preventDefault();var v=$('si').value.trim().toUpperCase().replace(/\.AX$|\.AU$|\.SH$|\.SZ$/,'');if(st.m==='cx'){v=v.replace(/USDT$/,'');if(okCode(v))select(v);$('si').value='';$('si').blur();return;}if(/^\d{6}$/.test(v)&&st.m!=='cn')setMarket('cn',v);else if(/^[A-Z][A-Z0-9]{0,5}$/.test(v)&&st.m!=='au')setMarket('au',v);else if(okCode(v))select(v);else return;$('si').value='';$('si').blur();});
 
 /* ---------- toolbar ---------- */
 var TFS=['1D','5D','1M','6M','1Y','5Y','ALL'];
@@ -461,7 +461,7 @@ $('aiideas').onclick=async function(){try{var L=await api('ideas');$('aim').inne
 var RC=null,rcf=null;
 async function openRC(){$('rc').classList.add('on');if(!RC){$('rcc').innerHTML='<div class="empty">读取研究结论…</div>';try{RC=await api('research');}catch(e){$('rcc').innerHTML='<div class="empty">'+esc(e.message)+'</div>';return;}}renderRC();}
 function renderRC(){var TK=(RC.track||{})[st.m==='cn'?'cn':'au'],TL=TK&&TK.lists?Object.keys(TK.lists).map(function(k){return TK.lists[k];}):[];
- $('rct').innerHTML='<h3>📈 实盘记录 <span class="mu" style="font:400 15px var(--mono)">每天自动记下信号和当时价格，跟踪之后的真实表现（造不了假、补不回来）</span></h3>'+(TL.length?'<table class="num"><tr><th>名单</th><th>开始</th><th>信号数</th><th>平均至今</th><th>比指数</th><th>上涨比例</th><th>最好 / 最差</th></tr>'+TL.map(function(t){return '<tr><td>'+esc(t.label)+'</td><td>'+esc(t.first||'—')+'</td><td>'+t.signals+'</td><td>'+(t.avg_ret==null?'—':pc(t.avg_ret))+'</td><td>'+(t.avg_vs_index==null?'—':pc(t.avg_vs_index))+'</td><td>'+(t.win_rate==null?'—':t.win_rate+'%')+'</td><td>'+(t.best==null?'—':pc(t.best)+' / '+pc(t.worst))+'</td></tr>';}).join('')+'</table>':'<div class="mu" style="font-size:14.5px">从下一个交易日开始记录，几天后这里就会出现数字。</div>');var N=(RC.news||[]).filter(function(n){return n.market===(st.m==='cn'?'A股':'ASX')||rcf==='all';}).slice(0,8);$('rcn').innerHTML=N.length?'<h3>🆕 最新更新</h3>'+N.map(function(n){return '<div><b>'+esc(n.date)+' · '+esc(n.market)+'</b>'+esc(n.text)+'</div>';}).join(''):'';if(RC.news&&RC.news[0])lss('nt_seen_news',RC.news[0].date+RC.news[0].text.slice(0,20));$('rcb').innerHTML='🔬 研究中心';if(!rcf)rcf=st.m==='cn'?'A股':'ASX';[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b.getAttribute('data-f')===rcf);});var C=RC.cards||[],ok=C.filter(function(c){return c.verdict==='有效';}),hits=0;C.forEach(function(c){if(c.hits)hits+=c.hits.length;});
+ $('rct').innerHTML='<h3>📈 实盘记录 <span class="mu" style="font:400 15px var(--mono)">每天自动记下信号和当时价格，跟踪之后的真实表现（造不了假、补不回来）</span></h3>'+(TL.length?'<table class="num"><tr><th>名单</th><th>开始</th><th>信号数</th><th>平均至今</th><th>比指数</th><th>上涨比例</th><th>最好 / 最差</th></tr>'+TL.map(function(t){return '<tr><td>'+esc(t.label)+'</td><td>'+esc(t.first||'—')+'</td><td>'+t.signals+'</td><td>'+(t.avg_ret==null?'—':pc(t.avg_ret))+'</td><td>'+(t.avg_vs_index==null?'—':pc(t.avg_vs_index))+'</td><td>'+(t.win_rate==null?'—':t.win_rate+'%')+'</td><td>'+(t.best==null?'—':pc(t.best)+' / '+pc(t.worst))+'</td></tr>';}).join('')+'</table>':'<div class="mu" style="font-size:14.5px">从下一个交易日开始记录，几天后这里就会出现数字。</div>');var N=(RC.news||[]).filter(function(n){return n.market===({cn:'A股',cx:'加密'}[st.m]||'ASX')||rcf==='all';}).slice(0,8);$('rcn').innerHTML=N.length?'<h3>🆕 最新更新</h3>'+N.map(function(n){return '<div><b>'+esc(n.date)+' · '+esc(n.market)+'</b>'+esc(n.text)+'</div>';}).join(''):'';if(RC.news&&RC.news[0])lss('nt_seen_news',RC.news[0].date+RC.news[0].text.slice(0,20));$('rcb').innerHTML='🔬 研究中心';if(!rcf)rcf={cn:'A股',cx:'加密'}[st.m]||'ASX';[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b.getAttribute('data-f')===rcf);});var C=RC.cards||[],ok=C.filter(function(c){return c.verdict==='有效';}),hits=0;C.forEach(function(c){if(c.hits)hits+=c.hits.length;});
  var TC={};C.forEach(function(c){if(c.tier)TC[c.tier]=(TC[c.tier]||0)+1;});
  $('rcs').innerHTML='<div title="只有实盘记录能证明现在还赚钱；回测过只说明过去有效">证据：<span class="y">只是讲得通 '+(TC.weak||0)+'</span> · <span style="color:var(--c)">回测过 '+(TC.backtest||0)+'</span> · <span class="up" style="font-weight:700">实盘撑住 '+(TC.live_ok||0)+'</span>'+(TC.live_fail?' · <span class="err">实盘没撑住 '+TC.live_fail+'</span>':'')+'</div><div><b class="y">'+hits+'</b>只今日命中</div><div class="mu">扫描 '+esc(RC.scan_day||'—')+' · 结论更新 '+esc(RC.updated||'')+'</div>';
  var V={'有效':'ok','无效':'bad','工具':'tool','一般':'mid'},order={'有效':0,'工具':1,'一般':2,'无效':3};
@@ -497,9 +497,13 @@ var FIND='<div class="find"><p class="y">完整的研究结论和今日命中的
 '<h4>交易成本</h4><p>小股票最大的成本是价差（2 分以下约 6–8%），不是佣金。用限价单挂买一价，少买卖、拿久一点。</p></div>';
 function tbl(cols,rows,click){if(!rows||!rows.length)return '<div class="empty" style="padding:12px">暂无</div>';
  return '<table><thead><tr>'+cols.map(function(c){return '<th>'+c[0]+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr'+(click?' class="cl" data-c="'+esc(r.code)+'"':'')+'>'+cols.map(function(c){return '<td'+(c[2]?' class="w"':'')+'>'+c[1](r)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';}
-var BT={au:[['rockets','爆拉候选'],['breakouts','放量突破'],['watchalerts','自选提醒'],['mkt','市场公告'],['find','研究结论']],cn:[['cntop','模型选股（前 10%）'],['cnavoid','要避开的'],['cnexplain','模型说明'],['find','研究结论']]};
+var BT={cx:[['cxall','全部合约'],['cxfund','资金费率'],['find','研究结论']],au:[['rockets','爆拉候选'],['breakouts','放量突破'],['watchalerts','自选提醒'],['mkt','市场公告'],['find','研究结论']],cn:[['cntop','模型选股（前 10%）'],['cnavoid','要避开的'],['cnexplain','模型说明'],['find','研究结论']]};
 function renderBTabs(){if(!BT[st.m].some(function(x){return x[0]===st.bt;}))st.bt=BT[st.m][0][0];$('btabs').innerHTML=BT[st.m].map(function(x){return '<button data-t="'+x[0]+'"'+(x[0]===st.bt?' class="on"':'')+'>'+x[1]+'</button>';}).join('');}
 function renderBottom(){var t=st.bt,S=SCAN||{},h='';
+ if(st.m==='cx'&&t!=='find'){var A=MKT.slice();if(!A.length){$('btbl').innerHTML='<div class="empty" style="padding:12px">Binance 行情读取中…</div>';return;}
+  if(t==='cxall')A.sort(function(a,b){return b.turnover-a.turnover;});else A.sort(function(a,b){return Math.abs(b.funding)-Math.abs(a.funding);});
+  $('btbl').innerHTML='<p class="mu" style="margin:6px 12px;font-size:15px">'+(t==='cxall'?'Binance USDT 永续，按 24 小时成交额排。实时价格（每 20 秒刷新），盯盘画线请直接用 Binance。':'资金费率每 8 小时收一次：正数 = 做多的人付钱给做空的人。年化 = 费率 × 3 × 365，持仓越久成本越高。')+'</p>'+
+   tbl([['合约',function(r){return '<b>'+esc(r.code)+'</b>';}],['价格',function(r){return px(r.last);}],['24 小时',function(r){return pc(r.prev?100*(r.last/r.prev-1):null,2);}],['成交额（美元）',function(r){return (r.turnover/1e6).toFixed(1)+' 百万';}],['资金费率',function(r){return '<span class="'+(r.funding>0?'dn':'up')+'">'+(100*r.funding).toFixed(4)+'%</span>';}],['年化',function(r){return r.funding_year_pct+'%';}]],A.slice(0,100),true);return;}
  if(st.m==='cn'&&t==='cnexplain'){var P=CNP||{};$('btbl').innerHTML='<div class="find">'+
  '<h4>这个模型在做什么（大白话）</h4><p>每天收盘后，把成交额最大的 1000 只主板股票，用 34 个常用指标（涨跌幅、波动、量比、均线、RSI、MACD、KDJ……）全部算一遍，交给机器学习模型打分。模型是用 2010 年以来的历史学出来的：什么样的股票，之后 20 个交易日比同类涨得多。分数最高的 10% 是"模型选股"，最低的 10% 是"要避开的"。</p>'+
  '<h4>它学到的规律：A 股短期"涨多了会跌、跌多了会弹"</h4><p>A 股散户多、跟热点很厉害，也常有资金拉抬。一个题材被炒起来时，成交突然放大、几天涨很多、天天大起大落，往往已经是后半段：追进去的人多，接下来就容易回落。反过来，被市场情绪砸下去、跌得很急的票，之后反弹的机会比较大。所以模型选的多是<b class="y">最近跌得多</b>的，避开的多是<b class="y">最近被炒得很热</b>的。</p>'+
@@ -525,14 +529,14 @@ $('btbl').addEventListener('click',function(e){var tr=e.target.closest('tr.cl');
 function head(){var q=Q[st.sel],m=MKT.filter(function(s){return s.code===st.sel;})[0];var last=q?q.last:m&&m.last,prev=q?q.prev:m&&m.prev;
  $('code').textContent=st.sel||'—';$('px').textContent=last!=null?px(last):'';$('chg').innerHTML=prev?pc(100*(last/prev-1),2):'';}
 async function loadQuotes(){var cs_=st.watch.slice(0,40);if(st.sel&&cs_.indexOf(st.sel)<0)cs_.push(st.sel);if(!cs_.length)return;
- try{(await apim('quotes?codes='+cs_.slice(0,40).join(','))).forEach(function(q){Q[q.code]=q;if(q.name)NAMES[q.code]=NAMES[q.code]||q.name;});renderList();head();}catch(e){}}
+ try{(await apim('quotes?codes='+cs_.slice(0,40).join(','))).forEach(function(q){Q[q.code]=q;if(q.name)NAMES[q.code]=NAMES[q.code]||q.name;});renderList();head();if(st.m==='cx'&&st.bt!=='find')renderBottom();}catch(e){}}
 async function loadIdx(){try{var d=await apim('indices');$('idx').innerHTML=d.main.slice(0,6).map(function(o){return '<div><small>'+esc(o.label)+'</small><b>'+o.last.toLocaleString(undefined,{maximumFractionDigits:2})+'</b>'+pc(o.prev?100*(o.last/o.prev-1):null,2)+'</div>';}).join('');}catch(e){}}
 async function loadMarket(){var my=st.m;try{var d=await apim('market');if(my!==st.m)return;MKT=d.stocks;MKT.forEach(function(s){NAMES[s.code]=NAMES[s.code]||s.name;});renderList();head();}catch(e){}}
 async function loadCN(){try{CNP=await api('cnpicks');}catch(e){CNP=null;}if(st.m==='cn'){renderBottom();if(st.lt==='sig')renderList();}}
 async function loadScan(){try{SCAN=await api('scan');$('breadth').innerHTML=(SCAN.breadth!=null?'站上 200 日线 <b>'+SCAN.breadth+'%</b> · ':'')+'扫描 '+esc(SCAN.last_day||'');}catch(e){SCAN={};}renderBottom();if(st.lt==='sig')renderList();}
-function setTfs(){var allow=st.m==='cn'?['1M','6M','1Y','5Y','ALL']:TFS;if(allow.indexOf(st.tf)<0)st.tf='6M';
+function setTfs(){var allow=st.m!=='au'?['1M','6M','1Y','5Y','ALL']:TFS;if(allow.indexOf(st.tf)<0)st.tf='6M';
  $('tfs').innerHTML=allow.map(function(t){return '<button class="tf'+(t===st.tf?' on':'')+'" data-tf="'+t+'">'+({'1D':'1天','5D':'5天','1M':'1月','6M':'6月','1Y':'1年','5Y':'5年','ALL':'全部'}[t])+'</button>';}).join(' ');}
-function setMarket(m,code){if(m===st.m&&!code)return;st.m=m;document.body.classList.toggle('cn',m==='cn');lss('nt_m',m);loadW();Q={};MKT=[];RC=null;rcf=null;[].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===m);});
+function setMarket(m,code){if(m===st.m&&!code)return;st.m=m;$('breadth').style.display=m==='au'?'':'none';$('si').placeholder=m==='cx'?'搜合约，如 BTC、ETH、SOL':m==='cn'?'搜 A 股代码，如 600519':$('si').getAttribute('data-ph')||$('si').placeholder;document.body.classList.toggle('cn',m==='cn');lss('nt_m',m);loadW();Q={};MKT=[];RC=null;rcf=null;[].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===m);});
  $('si').placeholder=m==='cn'?'搜 A 股代码，如 600519':'搜代码，如 CND（A 股输 6 位数字）';$('addi').placeholder=m==='cn'?'加自选，如 600036':'加自选，如 BHP';$('breadth').style.display=m==='cn'?'none':'';
  setTfs();renderBTabs();renderBottom();$('idx').innerHTML='';loadIdx();loadMarket();select(code||lsg('nt_sel_'+m,st.watch[0]));loadQuotes();}
 $('mkt').addEventListener('click',function(e){var m=e.target.getAttribute('data-m');if(m)setMarket(m);});
@@ -548,9 +552,9 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.bo
 function select(c){st.sel=c;ANNS=[];SIGS=[];DM=null;if(typeof markTool==='function')markTool();loadDraws();lss('nt_sel_'+st.m,c);$('annhint').textContent=st.m==='cn'?'· 点一下打开原文 PDF（巨潮资讯）':'· 点一下，中文直接弹出';head();renderList();loadChart();loadRight(c);if(!Q[c])loadQuotes();}
 async function checkNews(){try{var r=await api('research');var k=r.news&&r.news[0]?r.news[0].date+r.news[0].text.slice(0,20):'';if(k&&k!==lsg('nt_seen_news',''))$('rcb').innerHTML='🔬 研究中心<span class="newdot"></span>';}catch(e){}}
 async function boot(){document.body.classList.toggle('cn',st.m==='cn');mkCharts();checkNews();try{var s=await api('status');$('src').textContent=s.provider.toUpperCase()+' · '+s.latency;}catch(e){$('src').textContent='本地服务未连接';}
- [].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===st.m);});setTfs();renderBTabs();if(st.m==='cn'){$('breadth').style.display='none';$('si').placeholder='搜 A 股代码，如 600519';}
+ [].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===st.m);});setTfs();renderBTabs();$('si').setAttribute('data-ph',$('si').placeholder);if(st.m!=='au'){$('breadth').style.display='none';$('si').placeholder=st.m==='cx'?'搜合约，如 BTC、ETH、SOL':'搜 A 股代码，如 600519';}
  select(lsg('nt_sel_'+st.m,st.watch[0]));loadIdx();loadQuotes();loadScan();loadCN();loadMarket();renderBottom();
- setInterval(loadQuotes,60000);setInterval(loadIdx,120000);setInterval(loadMarket,1800000);setInterval(loadScan,1800000);setInterval(loadCN,1800000);
+ setInterval(loadQuotes,60000);setInterval(function(){if(st.m==='cx'&&!document.hidden){loadMarket();loadQuotes();loadIdx();}},20000);setInterval(loadIdx,120000);setInterval(loadMarket,1800000);setInterval(loadScan,1800000);setInterval(loadCN,1800000);
  setInterval(function(){if(!st.sel||document.hidden||DM)return;DAILY={};loadChart(true);},180000);
  var ver=null;setInterval(async function(){try{var v=(await api('version')).web;if(ver!==null&&v!==ver)location.reload();ver=v;}catch(e){}},20000);}
 if(LC)boot();else document.body.innerHTML='<p style="padding:40px">图表组件加载失败，请检查网络后刷新。</p>';
