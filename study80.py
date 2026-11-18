@@ -60,7 +60,10 @@ def fix_consolidations(rows):
         if vb <= 0:
             continue
         ratio_v = va / vb
-        if (r >= 3 and ratio_v < 3 / r) or (r <= 1 / 3 and ratio_v > 1 / (3 * r)):
+        # Only consolidations (price up >= 3x overnight with volume shrinking about as much). The old split branch
+        # (price down >= 3x, volume not shrinking) matched real crashes -- volume usually jumps on bad news -- and
+        # erased them (third run: 71% hit rate). Real splits are almost unheard of among ASX small caps.
+        if r >= 3 and ratio_v < 1.5 / r:
             n += 1
             for j in range(i):   # rescale everything before the jump (adjusted o/h/l/c; volume scaled the other way)
                 d, o, h, l, c, v, raw, tv = rows[j]
@@ -148,6 +151,7 @@ def main():
     print("[80] stocks", len(files), "last day", study_last, flush=True)
     recs = []
     fixed = 0
+    fixed_codes = set()
     for n, f in enumerate(files):
         rows = study.load(f.name[:-5])
         if len(rows) < 30:
