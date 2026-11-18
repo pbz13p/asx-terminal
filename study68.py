@@ -116,6 +116,9 @@ def main():
         for f in ANN.glob("*.json.gz"):
             if f.name[:-8] not in mine:
                 f.unlink()
+    # 2026-11-19: companies never started go first. In list order the daily re-listing of the first ~1,800 used up every
+    # run's time budget, so the 1,839 at the tail (mostly delisted companies) were never reached ("not started: 613" x3)
+    U.sort(key=lambda u: (ANN / f"{u['code']}.json.gz").exists())
     print("universe", len(U), "companies (shard", f"{k}/{n})")
     todo_total = done_now = failed = 0
     for i, u in enumerate(U):
