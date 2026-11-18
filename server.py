@@ -46,6 +46,7 @@ CODE = re.compile(r"^[A-Z0-9]{1,6}$")
 CN_CODE = re.compile(r"^\d{6}$")
 _cnp = None
 _cxp = None
+BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 CX_CODE = re.compile(r"^[A-Z0-9]{1,15}$")
 TF = {"1D", "5D", "1M", "6M", "1Y", "5Y", "ALL"}
 
@@ -215,7 +216,8 @@ class Handler(SimpleHTTPRequestHandler):
                 if not f.exists():
                     req = urllib.request.Request("https://tingowl.com/captions", method="POST",
                                                  data=json.dumps({"url": f"https://www.youtube.com/watch?v={vid}", "lang": "zh", "translate": False}).encode(),
-                                                 headers={"Content-Type": "application/json", "X-App-Token": "kandong2026",
+                                                 headers={"Content-Type": "application/json", "X-App-Token": "kandong2026", "Origin": "https://tingowl.com",
+                                                          "User-Agent": BROWSER_UA,
                                                           "Authorization": "Bearer " + str(body.get("token", ""))})
                     with urllib.request.urlopen(req, timeout=1800) as r:
                         f.write_bytes(r.read())
