@@ -20,12 +20,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - uses: actions/cache@v4
+      - uses: actions/cache/restore@v4
         with:
           path: data/crypto
           key: crypto-${{ github.run_id }}
           restore-keys: crypto-
       - run: python crypto_download.py
+      - uses: actions/cache/save@v4   # keep what was downloaded even if the run fails part-way
+        if: always()
+        with:
+          path: data/crypto
+          key: crypto-${{ github.run_id }}
       - name: Not finished -- run again
         env:
           GH_TOKEN: ${{ github.token }}

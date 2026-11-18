@@ -41,6 +41,8 @@ def get(url):
             raise
         except (urllib.error.URLError, TimeoutError):
             time.sleep(5 * (attempt + 1))
+        except Exception:   # one bad file must not stop the whole run
+            return None
     return None
 
 
@@ -58,7 +60,7 @@ def all_symbols():
         if "<IsTruncated>true</IsTruncated>" not in page or not got:
             break
         marker = f"data/futures/um/monthly/klines/{got[-1]}/"
-    return sorted({s for s in out if s.endswith("USDT") and "_" not in s})   # perpetuals only (no dated quarterlies)
+    return sorted({s for s in out if s.endswith("USDT") and "_" not in s and s.isascii()})   # a few listings use Chinese names   # perpetuals only (no dated quarterlies)
 
 
 def months(sym):
