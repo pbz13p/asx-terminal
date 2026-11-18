@@ -40,12 +40,16 @@ class BinanceProvider:
 
     def market(self):
         def load():
+            # crypto only: Binance also lists stock / gold / index perpetuals (NVDA, XAU...) -- underlyingType COIN keeps coins
+            coins = self._cached("info", 3600, lambda: {x["symbol"] for x in self._get("/fapi/v1/exchangeInfo")["symbols"]
+                                                         if x.get("contractType") == "PERPETUAL" and x.get("quoteAsset") == "USDT"
+                                                         and x.get("status") == "TRADING" and x.get("underlyingType", "COIN") == "COIN"})
             tick = self._get("/fapi/v1/ticker/24hr")
             prem = {p["symbol"]: p for p in self._get("/fapi/v1/premiumIndex")}
             stocks = []
             for t in tick:
                 s = t["symbol"]
-                if not s.endswith("USDT") or "_" in s:
+                if s not in coins:
                     continue
                 last = float(t["lastPrice"])
                 if last <= 0 or float(t.get("count") or 0) == 0:
