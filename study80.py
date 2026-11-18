@@ -159,6 +159,7 @@ def main():
     fixed = 0
     fixed_codes = set()
     n_jumps = 0
+    dead = set()
     for n, f in enumerate(files):
         rows = study.load(f.name[:-5])
         if len(rows) < 30:
@@ -173,6 +174,8 @@ def main():
             fixed_codes.add(f.name[:-8])
         dates = [r[0] for r in rows]
         first = dates[0]
+        if dates[-1] < study_last[:4] + "-01-01":
+            dead.add(f.name[:-8])
         code = f.name[:-8]
         for i in month_ends(dates):
             if dates[i] < START or rows[i][6] <= 0:
@@ -183,6 +186,7 @@ def main():
                 continue
             j12 = dates[min(i + H12, len(dates) - 1)]
             lab["jump12"] = any(dates[i] < jd <= j12 for jd in jumps)
+            lab["ends12"] = dates[-1] <= j12 and dates[-1] < study_last
             recs.append({"code": code, "d": dates[i], **x, **lab})
         if n % 500 == 0:
             print("[80] scanned", n, "stocks,", len(recs), "stock-months", flush=True)
@@ -197,6 +201,16 @@ def main():
     out = {"consolidations_fixed": fixed, "stock_months": len(recs), "stocks": len({r["code"] for r in recs}), "first": min(r["d"] for r in recs),
            "last": max(r["d"] for r in recs)}
 
+    # survivorship check: how many stocks stop trading, and does a plain rule (no model) already look this good?
+    ok = comp & (X[:, 0] >= 0.01) & (X[:, 0] < 0.10) & (X[:, 1] >= 2000)
+    E = np.array([r["ends12"] for r in recs])
+    rule = ok & (X[:, keys.index("off_high3y")] < -0.6) & (X[:, keys.index("r12")] > 0.3)
+    out["survivorship"] = {"stocks_dead_before_this_year": len(dead), "stocks": len(files),
+        "penny_buyable_stock_months": int(ok.sum()), "penny_ends_within_12m_pct": round(100 * float(E[ok].mean()), 2),
+        "penny_r12_median_pct": round(100 * float(np.median(r12[ok])), 1),
+        "rule_months": int(rule.sum()), "rule_r12_median_pct": round(100 * float(np.median(r12[rule])), 1) if rule.any() else None,
+        "rule_hit_pct": round(100 * float((r12[rule] > 0).mean()), 1) if rule.any() else None,
+        "by_year_dead": dict(sorted(Counter(r["d"][:4] for r in recs if r["ends12"]).items()))}
     # a. base rates (complete 3-year windows only)
     m = comp
     out["base"] = {"x10_rate_pct": round(100 * y10[m].mean(), 3), "x5_rate_pct": round(100 * y5[m].mean(), 3),
