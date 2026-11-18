@@ -122,7 +122,7 @@ def series(sym):
     if not sym.endswith(".INDX") and rows:
         import study80
         rows, _ = study80.fix_consolidations([r + (r[6] * r[5],) for r in rows])   # unadjusted ASX consolidations
-    return [r[0] for r in rows], [r[4] for r in rows], [r[6] for r in rows], [r[6] * r[5] for r in rows]
+    return [r[0] for r in rows], [r[4] for r in rows], [r[6] for r in rows], [r[6] * r[5] for r in rows], [r[1] for r in rows]
 
 
 def at(dates, day):   # index of the last trading row on or before day
@@ -150,12 +150,12 @@ def stats(xs, days):
 
 
 def events(lists):
-    cal, bc, _, _ = series("AXJO.INDX")
+    cal, bc, _, _, bo = series("AXJO.INDX")
     bench_name = "AXJO.INDX"
     for sym in ("AXSO.INDX", "XSO.INDX"):
-        d2, c2, _, _ = series(sym)
+        d2, c2, _, _, o2 = series(sym)
         if len(d2) > 1000:
-            cal, bc, bench_name = d2, c2, sym
+            cal, bc, bo, bench_name = d2, c2, o2, sym
             break
     ev = []
     dropped = Counter()
@@ -174,7 +174,7 @@ def events(lists):
                 continue
             for side in ("add", "del"):
                 for code in rec[side]:
-                    d, c, raw, val = series(code + ".AU")
+                    d, c, raw, val, op = series(code + ".AU")
                     if len(d) < 30:
                         continue
                     ix = {k: at(d, v) for k, v in dts.items()}
@@ -190,9 +190,18 @@ def events(lists):
                         r = c[ix[a1]] / c[ix[a0]] - 1
                         rn = (1 + r) * (1 - min(cost(raw[ix[a1]]), .9)) * (1 - min(cost(raw[ix[a0]]), .9)) - 1
                         return rn - (b[a1] / b[a0] - 1)
+                    def w_next(a1):   # the list comes out after the close: buy at the NEXT day's open
+                        i0 = ix["ann"] + 1
+                        bi = at(cal, dts["ann"]) + 1
+                        if i0 >= len(d) or i0 > ix[a1] or op[i0] <= 0:
+                            return None
+                        p0raw = raw[i0] * op[i0] / c[i0] if c[i0] else raw[i0]
+                        r = c[ix[a1]] / op[i0] - 1
+                        rn = (1 + r) * (1 - min(cost(raw[ix[a1]]), .9)) * (1 - min(cost(p0raw), .9)) - 1
+                        return rn - (b[a1] / (bo[bi] or bc[bi]) - 1)
                     ev.append({"date": A, "eff": dts["eff"], "index": grp, "side": side, "code": code, "price": raw[ix["pre"]], "liq": round(liq),
-                               "cap_5pct": round(0.05 * liq), "W1": w("pre", "ann"), "W2": w("ann", "eff"), "W3": w("eff", "post"),
-                               "W23": w("ann", "post"), "W12": w("pre", "eff")})
+                               "cap_5pct": round(0.05 * liq), "W1": w("pre", "ann"), "W2_close": w("ann", "eff"), "W2": w_next("eff"), "W3": w("eff", "post"),
+                               "W23": w_next("post"), "W12": w("pre", "eff")})
     return ev, bench_name, dict(dropped)
 
 
@@ -249,7 +258,7 @@ def main():
             E = [e for e in ev if e["index"] == grp and e["side"] == side]
             for part, f in (("in_2015_2021", lambda e: e["date"] < "2022"), ("out_2022_on", lambda e: e["date"] >= "2022")):
                 P = [e for e in E if f(e)]
-                res[f"{grp}_{side}_{part}"] = {W: stats([e[W] for e in P], [e["date"] for e in P]) for W in ("W1", "W2", "W3", "W12", "W23")}
+                res[f"{grp}_{side}_{part}"] = {W: stats([e[W] for e in P if e[W] is not None], [e["date"] for e in P if e[W] is not None]) for W in ("W1", "W2", "W2_close", "W3", "W12", "W23")}
                 res[f"{grp}_{side}_{part}"]["capacity_per_rebalance_median"] = round(float(np.median(
                     [sum(e["cap_5pct"] for e in P if e["date"] == d) for d in {e["date"] for e in P}]))) if P else None
     out["event_study"] = res
