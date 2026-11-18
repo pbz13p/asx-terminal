@@ -201,7 +201,7 @@ class Handler(SimpleHTTPRequestHandler):
             (out / name).write_bytes(sealed)
             self.send_json({"ok": True, "data": {"saved": str(out / name), "bytes": len(sealed)}})
             return
-        if path == "/api/earwise":   # own-PC only: fetch one video's full transcript from Frank's 慧听 and keep it in drop/earwise
+        if path == "/api/earwise":   # own-PC only: fetch one video's full transcript from Frank's 慧听 and keep it in sealed/<folder>
             if self._users() or self.client_address[0] != "127.0.0.1":
                 self.send_error(404)
                 return
@@ -210,7 +210,7 @@ class Handler(SimpleHTTPRequestHandler):
                 body = json.loads(self.rfile.read(min(n, 20000)) or b"{}")
                 import urllib.request
                 vid = re.sub(r"[^\w-]", "", body.get("vid", ""))[:20]
-                out = ROOT / "drop" / re.sub(r"[^\w-]", "", body.get("folder", "earwise"))[:40]
+                out = ROOT / "sealed" / re.sub(r"[^\w-]", "", body.get("folder", "earwise"))[:40]   # the folder Claude can pick files up from
                 out.mkdir(parents=True, exist_ok=True)
                 f = out / f"{vid}.json"
                 if not f.exists():
