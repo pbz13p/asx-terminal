@@ -23,10 +23,18 @@ try:
     print("models:", len(models))
     flash = [m for m in models if "flash" in m and "image" not in m and "tts" not in m and "live" not in m]
     print("flash models:", flash[:15])
-    pick = "models/gemini-flash-latest" if "models/gemini-flash-latest" in models else (flash[0] if flash else models[0])
-    out = call(f"/{pick}:generateContent", {"contents": [{"parts": [{"text": "用一句中文回答：1+1等于几？"}]}]})
-    text = out["candidates"][0]["content"]["parts"][0]["text"]
-    print("test model:", pick, "| reply:", text.strip()[:60], "| usage:", out.get("usageMetadata"))
+    tried = []
+    for pick in ["models/gemini-3.8-flash", "models/gemini-flash-latest", "models/gemini-3.5-flash", "models/gemini-flash-lite-latest"]:
+        if pick not in models:
+            continue
+        try:
+            out = call(f"/{pick}:generateContent", {"contents": [{"parts": [{"text": "用一句中文回答：1+1等于几？"}]}]})
+            text = out["candidates"][0]["content"]["parts"][0]["text"]
+            print("test model:", pick, "| reply:", text.strip()[:60], "| usage:", out.get("usageMetadata"))
+            break
+        except urllib.error.HTTPError as e:
+            tried.append((pick, e.code))
+    print("tried:", tried)
 except urllib.error.HTTPError as e:
     print("HTTP", e.code, e.read()[:300])
     raise SystemExit(1)
