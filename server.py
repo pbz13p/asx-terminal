@@ -201,6 +201,17 @@ class Handler(SimpleHTTPRequestHandler):
             (out / name).write_bytes(sealed)
             self.send_json({"ok": True, "data": {"saved": str(out / name), "bytes": len(sealed)}})
             return
+        if path == "/api/earwise_batch":   # own-PC only: same as /api/earwise for a list of videos, in a background thread
+            if self._users() or self.client_address[0] != "127.0.0.1":
+                self.send_error(404)
+                return
+            n = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(min(n, 200000)) or b"{}")
+            folder = re.sub(r"[^\w-]", "", body.get("folder", "earwise"))[:40]
+            vids = [re.sub(r"[^\w-]", "", v)[:20] for v in body.get("vids", [])][:1000]
+            threading.Thread(target=_earwise_batch, args=(vids, str(body.get("token", "")), folder), daemon=True).start()
+            self.send_json({"ok": True, "data": {"queued": len(vids)}})
+            return
         if path == "/api/earwise":   # own-PC only: fetch one video's full transcript from Frank's 慧听 and keep it in sealed/<folder>
             if self._users() or self.client_address[0] != "127.0.0.1":
                 self.send_error(404)
@@ -558,6 +569,44 @@ def _stamp():
 
 
 _update_lock = threading.Lock()
+
+
+def _earwise_fetch(vid, token, folder):
+    """One video's full transcript from Frank's 慧听 into sealed/<folder>/<vid>.json (kept; never fetched twice)."""
+    import urllib.request
+    out = ROOT / "sealed" / folder
+    out.mkdir(parents=True, exist_ok=True)
+    f = out / f"{vid}.json"
+    if f.exists():
+        return "have"
+    req = urllib.request.Request("https://tingowl.com/captions", method="POST",
+                                 data=json.dumps({"url": f"https://www.youtube.com/watch?v={vid}", "lang": "zh", "translate": False}).encode(),
+                                 headers={"Content-Type": "application/json", "X-App-Token": "kandong2026", "Origin": "https://tingowl.com",
+                                          "User-Agent": BROWSER_UA, "Authorization": "Bearer " + token})
+    with urllib.request.urlopen(req, timeout=1800) as r:
+        f.write_bytes(r.read())
+    return "new"
+
+
+def _earwise_batch(vids, token, folder):
+    prog = {"total": len(vids), "done": 0, "new": 0, "failed": {}, "started": time.time()}
+    pf = ROOT / "sealed" / folder / "_progress.json"
+    pf.parent.mkdir(parents=True, exist_ok=True)
+    for v in vids:
+        for attempt in range(30):
+            try:
+                if _earwise_fetch(v, token, folder) == "new":
+                    prog["new"] += 1
+                prog["failed"].pop(v, None)
+                break
+            except Exception as e:
+                prog["failed"][v] = f"{type(e).__name__}: {str(e)[:120]}"
+                time.sleep(30 if "429" in str(e) else 15)
+                if attempt >= 3 and "429" not in str(e):
+                    break
+        prog["done"] += 1
+        prog["minutes"] = round((time.time() - prog["started"]) / 60, 1)
+        pf.write_text(json.dumps(prog, ensure_ascii=False, indent=1))
 
 
 def do_update():
