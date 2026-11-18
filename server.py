@@ -89,6 +89,43 @@ def card_tier(card, track, today=None):
     return ("live_ok", "实盘撑住", msg) if ok else ("live_fail", "实盘没撑住", msg)
 
 
+NEWS = ROOT / "data" / "news.json"   # data/ is gitignored: news lives only on this PC
+_news_lock = threading.Lock()
+
+
+def news_load():
+    try:
+        return json.loads(NEWS.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+
+
+def news_add(items):
+    """Add news items (only-add, de-duplicated by id or title). Item: {time, title, what, why, impact, tags[], sources[{name,url}]}."""
+    keep = ("id", "time", "title", "what", "why", "impact", "tags", "sources", "tickers")
+    with _news_lock:
+        cur = news_load()
+        seen = {x.get("id") or x.get("title") for x in cur}
+        added = 0
+        for it in items:
+            if not isinstance(it, dict) or not str(it.get("title") or "").strip():
+                continue
+            it = {k: it[k] for k in keep if k in it}
+            it["id"] = str(it.get("id") or it["title"])[:200]
+            it.setdefault("time", time.strftime("%Y-%m-%d %H:%M"))
+            if it["id"] in seen:
+                continue
+            seen.add(it["id"])
+            cur.append(it)
+            added += 1
+        cur.sort(key=lambda x: str(x.get("time", "")), reverse=True)
+        NEWS.parent.mkdir(exist_ok=True)
+        tmp = NEWS.with_suffix(".tmp")
+        tmp.write_text(json.dumps(cur, ensure_ascii=False, indent=1), encoding="utf-8")
+        tmp.replace(NEWS)
+        return {"added": added, "total": len(cur)}
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *a, **k):
         super().__init__(*a, directory=str(ROOT / "web"), **k)
@@ -236,6 +273,17 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_json({"ok": True, "data": {"saved": str(f), "lines": len(j.get("lines") or []), "source": j.get("source"), "duration": j.get("duration")}})
             except Exception as e:
                 self.send_json({"ok": False, "error": f"{type(e).__name__}: {str(e)[:200]}"})
+            return
+        if path == "/api/news":   # own-PC only: the 经济热点快讯 task saves each pushed news item here (kept on this PC, never in the public repo)
+            if self._users() or self.client_address[0] != "127.0.0.1":
+                self.send_error(404)
+                return
+            try:
+                n = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(min(n, 2_000_000)).decode("utf-8") or "{}")
+                self.send_json({"ok": True, "data": news_add(body.get("items") or [])})
+            except Exception as e:
+                self.send_json({"ok": False, "error": str(e)[:300]}, 400)
             return
         if path != "/login":
             self.send_error(404)
@@ -434,6 +482,8 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("加密货币模式暂不支持这个功能")
 
     def route(self, name, q):
+        if name == "news":
+            return news_load()[:int(q.get("n") or 300)]
         if q.get("m") == "cx" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cx(name, q)
         if q.get("m") == "cn" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):

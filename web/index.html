@@ -80,6 +80,11 @@ td.w{white-space:normal;min-width:260px}
 .cd .ft{color:#C3CCEE;font-size:16.5px;margin-top:auto}
 #rct{border:1px solid rgba(255,212,59,.35);border-radius:10px;padding:10px 14px;margin-bottom:12px;background:linear-gradient(90deg,rgba(255,212,59,.06),transparent)}#rct h3{margin:0 0 6px;font:700 17px var(--disp);color:var(--y)}#rct table{width:auto}#rct td,#rct th{padding:3px 12px 3px 0;border:0;background:none}
 #rcn{background:linear-gradient(90deg,rgba(25,255,156,.08),transparent);border:1px solid rgba(25,255,156,.35);border-radius:10px;padding:10px 14px;margin-bottom:12px}#rcn h3{margin:0 0 6px;font:700 17px var(--disp);color:var(--up)}#rcn div{font-size:18.5px;line-height:1.75;color:#F2F5FF}#rcn b{color:var(--y);font-weight:500;margin-right:6px}
+#nw{position:fixed;top:46px;left:0;right:0;bottom:0;background:#05060C;z-index:40;display:none;overflow-y:auto;padding:16px 22px 40px;font-family:"Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif}#nw.on{display:block}
+#nwf button{all:unset;cursor:pointer;padding:4px 12px;margin-right:4px;border:1px solid #2E3D80;border-radius:6px;color:#DCE3FF;font-size:17px}#nwf button.on{color:#05060C;background:#FFD23F;border-color:#FFD23F;font-weight:700}
+#nwl{max-width:1100px}.nwi{background:#0A0D18;border:1px solid #222B4D;border-radius:10px;padding:14px 18px;margin-bottom:12px}.nwi.new{border-color:rgba(255,210,63,.7);box-shadow:0 0 18px rgba(255,210,63,.12)}
+.nwi .t{font-size:15.5px;color:#FFD23F;margin-bottom:4px}.nwi .t span{color:#C9D2F5;margin-left:8px;border:1px solid #2E3D80;border-radius:4px;padding:0 6px;font-size:14.5px}.nwi h3{margin:0 0 8px;font-size:21px;line-height:1.5;color:#FFFFFF}
+.nwi p{margin:4px 0;font-size:18px;line-height:1.75;color:#E6ECFF}.nwi p b{color:#22E4F5;font-weight:700;margin-right:6px}.nwi .src{margin-top:8px;font-size:15.5px;color:#C9D2F5}.nwi .src a{color:#22E4F5;margin-right:12px}
 .newdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--dn);box-shadow:0 0 8px var(--dn);margin-left:5px;vertical-align:middle}
 #ai{position:fixed;top:46px;right:0;bottom:0;width:min(560px,100vw);background:#0A0D18;border-left:1px solid var(--v);box-shadow:-10px 0 40px rgba(164,75,255,.2);transform:translateX(105%);transition:transform .25s;z-index:55;display:flex;flex-direction:column}
 #ai.on{transform:none}#ai .dh{display:flex;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid var(--ln)}#ai .dh b{flex:1}
@@ -99,7 +104,7 @@ td.w{white-space:normal;min-width:260px}
   <div class="brand"><i></i>NEON <b>TERMINAL</b></div><div class="mk" id="mkt"><button data-m="au" class="on">🇦🇺 澳股</button><button data-m="cn">🇨🇳 A 股</button><button data-m="cx">₿ 加密</button></div>
   <form id="sf" role="search"><input id="si" placeholder="搜代码：CND 或 600519" maxlength="6" autocomplete="off" aria-label="搜索股票代码"></form>
   <div class="idx num" id="idx"></div>
-  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
+  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
 </header>
 <main>
   <aside>
@@ -135,6 +140,7 @@ td.w{white-space:normal;min-width:260px}
 <div id="ai" role="dialog" aria-label="问 AI"><div class="dh"><b>🤖 问 AI <span class="mu" id="aiw" style="font:400 15px var(--mono)"></span></b><button class="btn" id="aiideas" style="display:none">待审核想法</button><button class="btn" id="aix" aria-label="关闭">✕</button></div>
 <div id="aim"></div><form id="aif"><textarea id="aii" placeholder="输入你的想法或问题，比如：我觉得最近跌得多的电子股会反弹，可行吗？（Enter 发送，Shift+Enter 换行）"></textarea><button class="btn" style="align-self:flex-end;color:#fff;background:var(--v);border-color:var(--v)">发送</button></form></div>
 <div id="rc" role="dialog" aria-label="研究中心"><div class="rch"><h2>🔬 研究中心</h2><div class="rcs num" id="rcs"></div><div class="tabs" id="rcf" style="border:0;white-space:nowrap"><button data-f="all" class="on">全部</button><button data-f="ASX">澳股</button><button data-f="A股">A 股</button><button data-f="加密">加密</button><button data-f="无效">测过无效</button></div><span style="flex:1"></span><button class="btn" id="rcx">关闭 ✕</button></div><div id="rcn"></div><div id="rct"></div><div class="cards" id="rcc"></div></div>
+<div id="nw" role="dialog" aria-label="新闻"><div class="rch"><h2>📰 新闻</h2><span class="mu" style="font-size:16px;color:#C9D2F5">经济、市场大事，每 2 小时自动更新（早 7 点到晚 11 点），最新的在最上面</span><div class="tabs" id="nwf" style="border:0;white-space:nowrap"></div><span style="flex:1"></span><button class="btn" id="nwx">关闭 ✕</button></div><div id="nwl"></div></div>
 <div id="dr" role="dialog" aria-label="公告"><div class="dh"><b id="drt"></b><button class="btn" id="dro">原文页</button><button class="btn" id="drx" aria-label="关闭">✕</button></div><div class="db" id="drb"></div></div>
 <script>
 var $=function(i){return document.getElementById(i);};
@@ -459,7 +465,7 @@ $('aim').addEventListener('click',async function(e){var id=e.target.getAttribute
  try{await postApi('idea',{id:id,note:note});e.target.textContent='✓ 已发给 Frank';e.target.disabled=true;}catch(err){alert(err.message);}});
 $('aiideas').onclick=async function(){try{var L=await api('ideas');$('aim').innerHTML='<h4 style="margin:4px 0 10px;color:var(--y)">待审核想法（'+L.length+'）</h4>'+(L.length?L.map(function(m){return '<div class="mu" style="font-size:14.5px">'+esc(m.sent)+' · 来自 '+esc(m.user)+(m.note?' · 留言：'+esc(m.note):'')+'</div>'+aiMsg(m);}).join(''):'<p class="mu">还没有</p>');}catch(e){$('aim').innerHTML='<p class="err">'+esc(e.message)+'</p>';}};
 var RC=null,rcf=null;
-async function openRC(){$('rc').classList.add('on');if(!RC){$('rcc').innerHTML='<div class="empty">读取研究结论…</div>';try{RC=await api('research');}catch(e){$('rcc').innerHTML='<div class="empty">'+esc(e.message)+'</div>';return;}}renderRC();}
+async function openRC(){$('rc').classList.add('on');$('nw').classList.remove('on');if(!RC){$('rcc').innerHTML='<div class="empty">读取研究结论…</div>';try{RC=await api('research');}catch(e){$('rcc').innerHTML='<div class="empty">'+esc(e.message)+'</div>';return;}}renderRC();}
 function renderRC(){var TK=(RC.track||{})[st.m==='cn'?'cn':'au'],TL=TK&&TK.lists?Object.keys(TK.lists).map(function(k){return TK.lists[k];}):[];
  $('rct').innerHTML='<h3>📈 实盘记录 <span class="mu" style="font:400 15px var(--mono)">每天自动记下信号和当时价格，跟踪之后的真实表现（造不了假、补不回来）</span></h3>'+(TL.length?'<table class="num"><tr><th>名单</th><th>开始</th><th>信号数</th><th>平均至今</th><th>比指数</th><th>上涨比例</th><th>最好 / 最差</th></tr>'+TL.map(function(t){return '<tr><td>'+esc(t.label)+'</td><td>'+esc(t.first||'—')+'</td><td>'+t.signals+'</td><td>'+(t.avg_ret==null?'—':pc(t.avg_ret))+'</td><td>'+(t.avg_vs_index==null?'—':pc(t.avg_vs_index))+'</td><td>'+(t.win_rate==null?'—':t.win_rate+'%')+'</td><td>'+(t.best==null?'—':pc(t.best)+' / '+pc(t.worst))+'</td></tr>';}).join('')+'</table>':'<div class="mu" style="font-size:14.5px">从下一个交易日开始记录，几天后这里就会出现数字。</div>');var N=(RC.news||[]).filter(function(n){return n.market===({cn:'A股',cx:'加密'}[st.m]||'ASX')||rcf==='all';}).slice(0,8);$('rcn').innerHTML=N.length?'<h3>🆕 最新更新</h3>'+N.map(function(n){return '<div><b>'+esc(n.date)+' · '+esc(n.market)+'</b>'+esc(n.text)+'</div>';}).join(''):'';if(RC.news&&RC.news[0])lss('nt_seen_news',RC.news[0].date+RC.news[0].text.slice(0,20));$('rcb').innerHTML='🔬 研究中心';if(!rcf)rcf={cn:'A股',cx:'加密'}[st.m]||'ASX';[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b.getAttribute('data-f')===rcf);});var C=RC.cards||[],ok=C.filter(function(c){return c.verdict==='有效';}),hits=0;C.forEach(function(c){if(c.hits)hits+=c.hits.length;});
  var TC={};C.forEach(function(c){if(c.tier)TC[c.tier]=(TC[c.tier]||0)+1;});
@@ -471,12 +477,25 @@ function renderRC(){var TK=(RC.track||{})[st.m==='cn'?'cn':'au'],TL=TK&&TK.lists
   '<div class="rl">'+esc(c.rule)+'</div><div class="us">👉 '+esc(c.use)+'</div>'+
   ((c.numbers||[]).length?'<div class="nums num">'+c.numbers.map(function(n){return '<span>'+esc(n[0])+'<b>'+esc(n[1])+'</b></span>';}).join('')+'</div>':'')+
   (c.tier_note?'<div class="ev">📏 '+esc(c.tier_note)+'</div>':'')+(c.hits?'<div class="ft">今日命中 '+c.hits.length+' 只'+(c.hits.length?'，点代码看图：':'')+'</div><div class="hits">'+c.hits.slice(0,40).map(function(h){return '<button data-c="'+esc(h.code)+'" title="'+esc(h.note||'')+'">'+esc(h.code)+'</button>';}).join('')+'</div>':'')+'</div>';}).join('')||'<div class="empty">没有</div>';}
+var NW=null,nwf='全部',NWSEEN='';
+function nwHtml(x){var nw=NWSEEN&&String(x.time)>NWSEEN;return '<div class="nwi'+(nw?' new':'')+'"><div class="t">'+(nw?'🆕 ':'')+esc(x.time||'')+(x.tags||[]).map(function(t){return '<span>'+esc(t)+'</span>';}).join('')+'</div><h3>'+esc(x.title)+'</h3>'+
+ (x.what?'<p><b>发生了什么</b>'+esc(x.what)+'</p>':'')+(x.why?'<p><b>为什么</b>'+esc(x.why)+'</p>':'')+(x.impact?'<p><b>对股市</b>'+esc(x.impact)+'</p>':'')+
+ ((x.sources||[]).length?'<div class="src">出处：'+x.sources.map(function(s){return /^https?:/.test(s.url||'')?'<a href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.name||s.url)+'</a>':'';}).join('')+'</div>':'')+'</div>';}
+function renderNW(){var tags=['全部'];NW.forEach(function(x){(x.tags||[]).forEach(function(t){if(tags.indexOf(t)<0)tags.push(t);});});
+ $('nwf').innerHTML=tags.map(function(t){return '<button data-f="'+esc(t)+'"'+(t===nwf?' class="on"':'')+'>'+esc(t)+'</button>';}).join('');
+ var L=NW.filter(function(x){return nwf==='全部'||(x.tags||[]).indexOf(nwf)>=0;});
+ $('nwl').innerHTML=L.length?L.map(nwHtml).join(''):'<div class="empty" style="font-size:18px;color:#C9D2F5">还没有新闻。定时任务下次运行（每天 7 点到 23 点，每 2 小时一次）有大事时会自动放进来。</div>';}
+async function openNW(){$('nw').classList.add('on');$('rc').classList.remove('on');$('ai').classList.remove('on');NWSEEN=lsg('nt_seen_nw','');$('nwl').innerHTML='<div class="empty">读取新闻…</div>';
+ try{NW=await api('news');}catch(e){$('nwl').innerHTML='<div class="empty">'+esc(e.message)+'</div>';return;}renderNW();if(NW[0])lss('nt_seen_nw',String(NW[0].time));$('nwb').innerHTML='📰 新闻';}
+$('nwb').onclick=openNW;$('nwx').onclick=function(){$('nw').classList.remove('on');};$('nwf').onclick=function(e){var f=e.target.getAttribute('data-f');if(f){nwf=f;renderNW();}};
+async function checkNW(){try{var r=await api('news?n=1');if(r[0]&&String(r[0].time)>lsg('nt_seen_nw',''))$('nwb').innerHTML='📰 新闻<span class="newdot"></span>';}catch(e){}}
+setInterval(checkNW,300000);
 $('rcb').onclick=openRC;$('rcx').onclick=function(){$('rc').classList.remove('on');};
 $('rcf').addEventListener('click',function(e){var f=e.target.getAttribute('data-f');if(!f)return;rcf=f;[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b===e.target);});renderRC();});
 $('rcc').addEventListener('click',function(e){var c=e.target.getAttribute('data-c');if(c){$('rc').classList.remove('on');select(c);}});
 $('drx').onclick=function(){$('dr').classList.remove('on');};
 $('dro').onclick=function(){if(DR.ids)window.open('/ann.html?code='+encodeURIComponent(DR.code)+'&ids='+DR.ids,'_blank');};
-document.addEventListener('keydown',function(e){if(e.key==='Escape'){$('dr').classList.remove('on');$('rc').classList.remove('on');$('ai').classList.remove('on');}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){$('dr').classList.remove('on');$('rc').classList.remove('on');$('ai').classList.remove('on');$('nw').classList.remove('on');}});
 async function research(c,ins){var h='';
  try{var p=await apim('profile?code='+c);if(st.sel!==c)return;SIGS=(p.lists||[]).filter(function(r){return r.since;}).map(function(r){return {date:r.since,text:r.list==='爆拉候选'?'爆拉信号':r.list};});setMarks();
   (p.lists||[]).forEach(function(r){var t=r.list==='爆拉候选'?'第 66 轮规则：跌过 50%、成交放大 2 倍、重新站上 200 日线。历史上约 34% 一年内碰到翻倍、20% 腰斩。'+(r.days!=null?'信号已 '+r.days+' 天，之后 '+(r.ret_since>=0?'+':'')+r.ret_since+'%。':''):(r.why?'模型分 '+r.score+'（100 分最看好）。影响最大的因素：'+r.why.map(function(w){return esc(w.f)+' '+esc(w.v);}).join('；')+'。':'今日扫描名单');
@@ -551,7 +570,7 @@ document.addEventListener('fullscreenchange',function(){if(!document.fullscreenE
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('fs'))setFs(false);});
 function select(c){st.sel=c;ANNS=[];SIGS=[];DM=null;if(typeof markTool==='function')markTool();loadDraws();lss('nt_sel_'+st.m,c);$('annhint').textContent=st.m==='cn'?'· 点一下打开原文 PDF（巨潮资讯）':'· 点一下，中文直接弹出';head();renderList();loadChart();loadRight(c);if(!Q[c])loadQuotes();}
 async function checkNews(){try{var r=await api('research');var k=r.news&&r.news[0]?r.news[0].date+r.news[0].text.slice(0,20):'';if(k&&k!==lsg('nt_seen_news',''))$('rcb').innerHTML='🔬 研究中心<span class="newdot"></span>';}catch(e){}}
-async function boot(){document.body.classList.toggle('cn',st.m==='cn');mkCharts();checkNews();try{var s=await api('status');$('src').textContent=s.provider.toUpperCase()+' · '+s.latency;}catch(e){$('src').textContent='本地服务未连接';}
+async function boot(){document.body.classList.toggle('cn',st.m==='cn');mkCharts();checkNews();checkNW();try{var s=await api('status');$('src').textContent=s.provider.toUpperCase()+' · '+s.latency;}catch(e){$('src').textContent='本地服务未连接';}
  [].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===st.m);});setTfs();renderBTabs();$('si').setAttribute('data-ph',$('si').placeholder);if(st.m!=='au'){$('breadth').style.display='none';$('si').placeholder=st.m==='cx'?'搜合约，如 BTC、ETH、SOL':'搜 A 股代码，如 600519';$('addi').placeholder=st.m==='cx'?'加自选，如 SOL':'加自选，如 600036';}
  select(lsg('nt_sel_'+st.m,st.watch[0]));loadIdx();loadQuotes();loadScan();loadCN();loadMarket();renderBottom();
  setInterval(loadQuotes,60000);setInterval(function(){if(st.m==='cx'&&!document.hidden){loadMarket();loadQuotes();loadIdx();}},20000);setInterval(loadIdx,120000);setInterval(loadMarket,1800000);setInterval(loadScan,1800000);setInterval(loadCN,1800000);
