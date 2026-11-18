@@ -160,6 +160,8 @@ def main():
         rows, k = fix_consolidations(rows)
         rows = to_calendar(rows, cal)
         fixed += k
+        if k:
+            fixed_codes.add(f.name[:-8])
         dates = [r[0] for r in rows]
         first = dates[0]
         code = f.name[:-8]
@@ -231,6 +233,7 @@ def main():
         lgb = None
     wf = []
     picks = []
+    imp = []
     if lgb is not None:
         for ty in range(2014, max(year) + 1):
             tr = (year <= ty - 4) & comp     # labels need 3 years: a gap so no training label sees the test year
@@ -241,6 +244,7 @@ def main():
                                      subsample=0.8, subsample_freq=1, colsample_bytree=0.8, verbose=-1,
                                      scale_pos_weight=float((1 - y10[tr].mean()) / max(y10[tr].mean(), 1e-6)))
             mdl.fit(X[tr], y10[tr])
+            imp.append(mdl.booster_.feature_importance("gain"))
             p = mdl.predict_proba(X[te])[:, 1]
             idx = np.where(te)[0]
             # top 10% each month
@@ -262,6 +266,15 @@ def main():
             picks += list(sel)
         print("[80] walk-forward years", len(wf), flush=True)
     out["walk_forward"] = wf
+    if imp:   # which features the model leans on (share of total gain)
+        g = np.mean(imp, axis=0)
+        out["importance"] = {k: round(float(v / g.sum()), 3) for k, v in sorted(zip(keys, g), key=lambda t: -t[1])}
+    if picks:   # private diagnostics (the file is encrypted): what the picks look like, and the 40 biggest winners
+        P0 = np.array(picks)
+        out["pick_profile"] = {k: [round(float(np.nanmedian(X[P0, j])), 4), round(float(np.nanmedian(X[:, j])), 4)] for j, k in enumerate(keys)}
+        top = sorted(P0, key=lambda i: -r12[i])[:40]
+        out["top_picks"] = [{"code": recs[i]["code"], "d": recs[i]["d"], "price": recs[i]["price"], "liq": round(recs[i]["liq"]),
+                             "r12n": round(float(r12[i]), 2), "mult3y": round(float(recs[i]["mult3y"]), 1)} for i in top]
     if picks:
         P = np.array(picks)
         rr = r12[P]
@@ -281,6 +294,9 @@ def main():
             "expectancy_per_dollar": round(float(rr.mean()), 3),
             "top1pct_winners_share_of_gains": round(float(np.sort(rr)[-max(1, len(rr) // 100):].sum() / max(rr[rr > 0].sum(), 1e-9)), 3),
             "median_days_to_build_7500": round(med([min(999, 7500 / max(0.05 * recs[i]["liq"], 1)) for i in P]), 1),
+            "unfixed_stocks_only": (lambda Q: {"picks": int(len(Q)), "r12_median_pct": round(100 * float(np.median(r12[Q])), 1) if len(Q) else None,
+                "hit_rate_pct": round(100 * float((r12[Q] > 0).mean()), 1) if len(Q) else None})(np.array([i for i in P if recs[i]["code"] not in fixed_codes], dtype=int)),
+            "fixed_stocks": len(fixed_codes),
             "calendar": "every stock on the index trading calendar (no-trade days = previous close, volume 0)", "note": "12-month returns net of round-71 costs both sides; picks only from stocks >= 1c trading >= $2k/day; no stops (round 82)",
         }
     OUT.parent.mkdir(parents=True, exist_ok=True)
