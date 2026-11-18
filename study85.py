@@ -110,12 +110,18 @@ def collect():
     return by_date
 
 
+FLOOR = {"ASX200": 500_000, "ASX300": 100_000, "AllOrds": 20_000}   # $ a day; fixed before looking at results
+
+
 def cost(p):   # round 71: 0.2% + one tick per side
     return 0.002 + ((0.001 if p < 0.10 else 0.005 if p < 2 else 0.01) / p if p > 0 else 1)
 
 
 def series(sym):
     rows = study.load(sym)
+    if not sym.endswith(".INDX") and rows:
+        import study80
+        rows, _ = study80.fix_consolidations([r + (r[6] * r[5],) for r in rows])   # unadjusted ASX consolidations
     return [r[0] for r in rows], [r[4] for r in rows], [r[6] for r in rows], [r[6] * r[5] for r in rows]
 
 
@@ -152,6 +158,7 @@ def events(lists):
             cal, bc, bench_name = d2, c2, sym
             break
     ev = []
+    dropped = Counter()
     for L in lists:
         if not L["effective"]:
             continue
@@ -175,6 +182,9 @@ def events(lists):
                         continue
                     b = {k: bc[at(cal, v)] for k, v in dts.items()}
                     liq = float(np.median(val[max(0, ix["pre"] - 60):ix["pre"] + 1])) if ix["pre"] > 0 else 0
+                    if liq < FLOOR[grp]:   # an index member trading this little is a re-used code (EODHD keeps the new owner)
+                        dropped[grp] += 1
+                        continue
 
                     def w(a0, a1):
                         r = c[ix[a1]] / c[ix[a0]] - 1
@@ -183,7 +193,7 @@ def events(lists):
                     ev.append({"date": A, "index": grp, "side": side, "code": code, "price": raw[ix["pre"]], "liq": round(liq),
                                "cap_5pct": round(0.05 * liq), "W1": w("pre", "ann"), "W2": w("ann", "eff"), "W3": w("eff", "post"),
                                "W23": w("ann", "post"), "W12": w("pre", "eff")})
-    return ev, bench_name
+    return ev, bench_name, dict(dropped)
 
 
 def main():
@@ -225,8 +235,8 @@ def main():
         if L["effective"] and L["changes"] and k not in seen:
             seen.add(k)
             uniq.append(L)
-    ev, bench = events(uniq)
-    res = {"benchmark": bench, "events": len(ev)}
+    ev, bench, dropped = events(uniq)
+    res = {"benchmark": bench, "events": len(ev), "dropped_reused_code_or_no_trading": dropped, "liquidity_floor": FLOOR}
     for grp in ("ASX200", "ASX300", "AllOrds"):
         for side in ("add", "del"):
             E = [e for e in ev if e["index"] == grp and e["side"] == side]
