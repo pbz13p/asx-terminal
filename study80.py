@@ -146,7 +146,7 @@ def labels(rows, i):
     r12n = (1 + r12) * (1 - min(cost(rows[j][6]), 0.9)) * (1 - min(cost(rows[i][6]), 0.9)) - 1
     complete = len(fut) >= H3 or rows[-1][0] < study_last  # delisted within 3y: history is complete
     return {"mult3y": mult, "x10": float(mult >= 10 and tradable), "x5": float(mult >= 5 and tradable),
-            "r12": r12, "r12n": r12n, "r12raw": r12raw, "adj_drift": (rows[j][4] / rows[j][6]) / (c0 / rows[i][6]) if rows[i][6] > 0 and rows[j][6] > 0 else np.nan, "complete": complete, "x10_any": float(mult >= 10)}
+            "fr12": r12, "r12n": r12n, "r12raw": r12raw, "adj_drift": (rows[j][4] / rows[j][6]) / (c0 / rows[i][6]) if rows[i][6] > 0 and rows[j][6] > 0 else np.nan, "complete": complete, "x10_any": float(mult >= 10)}
 
 
 def main():
@@ -187,6 +187,7 @@ def main():
             j12 = dates[min(i + H12, len(dates) - 1)]
             lab["jump12"] = any(dates[i] < jd <= j12 for jd in jumps)
             lab["ends12"] = dates[-1] <= j12 and dates[-1] < study_last
+            assert not set(x) & set(lab), "feature and label names must differ (round 80 bug: future r12 overwrote past r12)"
             recs.append({"code": code, "d": dates[i], **x, **lab})
         if n % 500 == 0:
             print("[80] scanned", n, "stocks,", len(recs), "stock-months", flush=True)
@@ -321,7 +322,7 @@ def main():
             "median_days_to_build_7500": round(med([min(999, 7500 / max(0.05 * recs[i]["liq"], 1)) for i in P]), 1),
             "unfixed_stocks_only": (lambda Q: {"picks": int(len(Q)), "r12_median_pct": round(100 * float(np.median(r12[Q])), 1) if len(Q) else None,
                 "hit_rate_pct": round(100 * float((r12[Q] > 0).mean()), 1) if len(Q) else None})(np.array([i for i in P if recs[i]["code"] not in fixed_codes], dtype=int)),
-            "raw_check": (lambda Q: {"picks": int(len(Q)), "r12_adj_median_pct": round(100 * float(np.median([recs[i]["r12"] for i in Q])), 1),
+            "raw_check": (lambda Q: {"picks": int(len(Q)), "r12_adj_median_pct": round(100 * float(np.median([recs[i]["fr12"] for i in Q])), 1),
                 "r12_raw_median_pct": round(100 * float(np.nanmedian([recs[i]["r12raw"] for i in Q])), 1),
                 "r12_raw_hit_pct": round(100 * float(np.nanmean([recs[i]["r12raw"] > 0 for i in Q])), 1),
                 "adj_drift_median": round(float(np.nanmedian([recs[i]["adj_drift"] for i in Q])), 3),
