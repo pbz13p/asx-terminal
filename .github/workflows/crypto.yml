@@ -1,0 +1,27 @@
+name: crypto-data
+# Round 86: crypto perpetual futures data (Binance public bulk files, data.binance.vision). Daily top-up.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 1 * * *'
+  push:
+    branches: [main]
+    paths: ['crypto_download.py', '.github/workflows/crypto.yml']
+permissions:
+  contents: read
+concurrency: crypto-data
+jobs:
+  crypto:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@v4
+        with:
+          path: data/crypto
+          key: crypto-${{ github.run_id }}
+          restore-keys: crypto-
+      - run: python crypto_download.py
