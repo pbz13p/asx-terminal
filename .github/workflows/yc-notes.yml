@@ -1,0 +1,41 @@
+name: yc-notes
+# Round 87 prep: DeepSeek reads every 云聪 transcript in full and writes study notes (yc_notes.py).
+# Notes are encrypted and pushed to the quick-results branch as yc_notes.json.enc; per-video cache means no double pay.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['yc_notes.py', 'research/creators/云聪/transcripts.json.gz.enc', '.github/workflows/yc-notes.yml']
+permissions:
+  contents: write
+concurrency: yc-notes
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: actions/cache/restore@v4
+        with: {path: data/ycnotes, key: ycnotes-none, restore-keys: ycnotes-}
+      - name: Read transcripts
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          python yc_notes.py
+          python securedata.py encrypt-dir out
+      - uses: actions/cache/save@v4
+        if: always()
+        with: {path: data/ycnotes, key: "ycnotes-${{ github.run_id }}"}
+      - name: Push encrypted notes to the quick-results branch
+        run: |
+          cd out
+          git init -q -b quick-results
+          git config user.name "asx-study-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" quick-results && git reset -q --soft FETCH_HEAD || true
+          git add yc_notes.json.enc
+          git commit -q -m "yc notes $(date -u +%FT%T)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results
