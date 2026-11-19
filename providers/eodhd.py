@@ -182,7 +182,7 @@ class EodhdProvider(Provider):
             return self._cached(f"i:{code}:{tf}", TTL["intraday"], lambda: self._intraday(symbol, tf))
         # daily: always the full adjusted history (the chart shows the chosen range and zooms out to everything)
         def load():
-            rows = self._get(f"eod/{symbol}", **{"from": "1990-01-01"})
+            rows = self._get(f"eod/{symbol}", **{"from": "1900-01-01"})   # everything EODHD has
             out = []
             for r in rows:
                 if not r.get("close"):

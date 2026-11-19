@@ -2,10 +2,7 @@ name: yc-notes
 # Round 87 prep: DeepSeek reads every 云聪 transcript in full and writes study notes (yc_notes.py).
 # Notes are encrypted and pushed to the quick-results branch as yc_notes.json.enc; per-video cache means no double pay.
 on:
-  workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['yc_notes.py', 'research/creators/云聪/transcripts.json.gz.enc', '.github/workflows/yc-notes.yml']
+  workflow_dispatch:   # manual only: it calls DeepSeek (paid) -- Frank 2026-11-20: no more DeepSeek
 permissions:
   contents: write
 concurrency: yc-notes
