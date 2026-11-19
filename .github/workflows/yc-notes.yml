@@ -35,7 +35,7 @@ jobs:
           git init -q -b quick-results
           git config user.name "asx-study-bot"
           git config user.email "actions@users.noreply.github.com"
-          git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" quick-results && git reset -q --soft FETCH_HEAD || true
+          git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" quick-results && git reset -q FETCH_HEAD || true   # mixed reset: keep the files other jobs put there
           git add yc_notes.json.enc
           git commit -q -m "yc notes $(date -u +%FT%T)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results
