@@ -87,7 +87,8 @@ def load_docs():
 
 def chunks(text):
     words = re.sub(r"\[page \d+\]", " ", text).split()
-    parts = [" ".join(words[i:i + WORDS]) for i in range(0, len(words), WORDS)] or [""]
+    words = [w[:60] for w in words]   # a "word" can be a huge run without spaces (tables, scans): cap it
+    parts = [" ".join(words[i:i + WORDS])[:4000] for i in range(0, len(words), WORDS)] or [""]
     if len(parts) > MAX_CHUNKS:
         idx = np.linspace(0, len(parts) - 1, MAX_CHUNKS).round().astype(int)
         parts = [parts[i] for i in idx]
@@ -111,7 +112,10 @@ def embed_all(docs, t0):
         for d in todo:
             by_code[d["code"]].append(d)
         done = 0
-        for code, ds in by_code.items():
+        batches = []
+        for code, ds in by_code.items():   # big companies in slices of 150 docs, so one lane never holds too much at once
+            batches += [(code, ds[i:i + 150]) for i in range(0, len(ds), 150)]
+        for code, ds in batches:
             if time.time() - t0 > BUDGET:
                 break
             texts, owner = [], []
