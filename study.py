@@ -23,7 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 CACHE = DATA / "eod"
-START = "1980-01-01"   # 2026-11-19 (Frank): full price history for every ASX stock, delisted ones included (was 2014)
+START = "1900-01-01"   # 2026-11-19 (Frank): full price history for every ASX stock, delisted ones included (was 2014)
 SPLIT = "2022-01-01"
 HORIZONS = (1, 2, 5)
 COMMISSION = 0.001  # 0.1% round trip assumed broker cost
@@ -95,7 +95,7 @@ def fetch(symbol):
 
 def download(symbols):
     CACHE.mkdir(parents=True, exist_ok=True)
-    marker = CACHE / ".full_history.json"
+    marker = CACHE / ".full_history_1900.json"
     if marker.exists():
         FULL.update(json.loads(marker.read_text()))
     done, lock, t0 = [0], threading.Lock(), time.time()
