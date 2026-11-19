@@ -1,0 +1,42 @@
+name: ann-inventory
+# Per-company count of the ASX announcement archive (ann_inventory.py), encrypted to the quick-results branch.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['ann_inventory.py', '.github/workflows/ann-inventory.yml']
+permissions:
+  contents: write
+concurrency: ann-inventory
+jobs:
+  inv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - {uses: actions/cache/restore@v4, with: {path: data/eod, key: eod-none, restore-keys: eod-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/ann, key: ann-none, restore-keys: ann-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/ann, key: ann-none, restore-keys: ann-s0-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/ann, key: ann-none, restore-keys: ann-s1-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/ann, key: ann-none, restore-keys: ann3-s0-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/ann, key: ann-none, restore-keys: ann3-s1-}}
+      - {uses: actions/cache/restore@v4, with: {path: data/ann, key: ann-none, restore-keys: ann3-s2-}}
+      - name: Count
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+        run: |
+          ls data/ann | wc -l
+          python ann_inventory.py
+          python securedata.py encrypt-dir out
+      - name: Push encrypted inventory to the quick-results branch
+        run: |
+          cd out
+          git init -q -b quick-results
+          git config user.name "asx-study-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" quick-results && git reset -q --soft FETCH_HEAD || true
+          git add ann_inventory.json.enc
+          git commit -q -m "ann inventory $(date -u +%FT%T)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results

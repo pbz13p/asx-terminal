@@ -531,11 +531,11 @@ class Handler(SimpleHTTPRequestHandler):
         if name == "quick":   # own-PC only: decrypted quick-study results, so Claude can read them without holding the key
             f = q.get("f", "")
             br = q.get("branch", "quick-results")
-            if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"(study\d*_results|yc_notes)\.json", f) \
+            if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"(study\d*_results|yc_notes|ann_inventory)\.json", f) \
                     or br not in ("quick-results", "results", "cn-results"):
                 raise ValueError("not available")
             data = fetch_result(f, branch=br)
-            if q.get("save") == "1" and f in ("yc_notes.json", "study87_results.json"):   # keep a plain copy on this PC for Claude to pick up
+            if q.get("save") == "1" and f in ("yc_notes.json", "study87_results.json", "ann_inventory.json"):   # keep a plain copy on this PC for Claude to pick up
                 (ROOT / "sealed").mkdir(exist_ok=True)
                 (ROOT / "sealed" / f).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
                 return {"saved": str(ROOT / "sealed" / f), "read": data.get("read")}
