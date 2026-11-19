@@ -78,18 +78,26 @@ def universe():
     return out
 
 
+FULL = set()   # symbols already fetched with the full history (START 1980); others are refetched once even if fresh
+
+
 def fetch(symbol):
     f = CACHE / (symbol.replace("/", "_") + ".json")
-    if f.exists() and time.time() - f.stat().st_mtime < 20 * 3600:
+    if f.exists() and time.time() - f.stat().st_mtime < 20 * 3600 and symbol in FULL:
         return
     rows = api(f"eod/{symbol}", **{"from": START})
     keep = [[r["date"], r.get("open"), r.get("high"), r.get("low"), r.get("close"),
              r.get("adjusted_close"), r.get("volume")] for r in rows or []]
-    f.write_text(json.dumps(keep), encoding="utf-8")
+    if keep or not f.exists():
+        f.write_text(json.dumps(keep), encoding="utf-8")
+    FULL.add(symbol)
 
 
 def download(symbols):
     CACHE.mkdir(parents=True, exist_ok=True)
+    marker = CACHE / ".full_history.json"
+    if marker.exists():
+        FULL.update(json.loads(marker.read_text()))
     done, lock, t0 = [0], threading.Lock(), time.time()
 
     def job(s):
@@ -106,6 +114,11 @@ def download(symbols):
 
     with ThreadPoolExecutor(max_workers=6) as ex:
         list(ex.map(job, symbols))
+    marker.write_text(json.dumps(sorted(FULL)))
+    first = sorted(json.loads(p.read_text())[0][0] for p in CACHE.glob("*.AU.json") if p.stat().st_size > 10)
+    if first:
+        print(f"[history] stocks {len(first)}, earliest day {first[0]}, starting before 2000: {sum(d < '2000' for d in first)}, "
+              f"before 2014: {sum(d < '2014' for d in first)}", flush=True)
     print()
 
 
