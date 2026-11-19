@@ -195,7 +195,10 @@ def main():
         top = G[G.q > .9]
         D[g] = {"top10": evaluate(top), "bottom10": evaluate(G[G.q <= .1]),
                 "top10_net_by_year": {y: round(100 * float((top.ex20 - top.cost)[top.date.str[:4] == y].mean()), 2) for y in sorted(top.date.str[:4].unique())},
-                "top10_abs_20d": round(100 * float(top.fwd20.clip(-1, 5).mean()), 2), "group_abs_20d": round(100 * float(G.fwd20.clip(-1, 5).mean()), 2)}
+                "top10_abs_20d": round(100 * float(top.fwd20.clip(-1, 5).mean()), 2), "group_abs_20d": round(100 * float(G.fwd20.clip(-1, 5).mean()), 2),
+                # round 89 multiple-testing gates: per sample date, mean net excess of the top / bottom 10%
+                "series_top": {d: round(float(v), 5) for d, v in (top.ex20 - top.cost).groupby(top.date).mean().items()},
+                "series_bottom": {d: round(float(v), 5) for d, v in (G[G.q <= .1].ex20 - G[G.q <= .1].cost).groupby(G[G.q <= .1].date).mean().items()}}
     out["D_lgb"] = D
     out["seconds"] = round(time.time() - t0)
     path = os.environ.get("STUDY72_OUT", "study72_results.json")

@@ -217,7 +217,8 @@ def evaluate(P, pred, label, n_features=None):
                   "episodes": epi, "worst_month": round(100 * float(pm.min()), 2),
                   "top10_net_month_2019on": round(100 * float(oos.mean()), 2), "t_2019on": round(tstat(oos) or 0, 2),
                   "by_year": {y: round(100 * float(v), 2) for y, v in pm.groupby(pm.index.str[:4]).mean().items()},
-                  "positive_years": f"{int((pm.groupby(pm.index.str[:4]).mean() > 0).sum())}/{pm.index.str[:4].nunique()}"}
+                  "positive_years": f"{int((pm.groupby(pm.index.str[:4]).mean() > 0).sum())}/{pm.index.str[:4].nunique()}",
+                  "series": {d: round(float(v), 5) for d, v in pm.items()}}   # round 89 multiple-testing gates
     return out
 
 
