@@ -95,7 +95,7 @@ jobs:
           git config user.name "asx-study-bot"
           git config user.email "actions@users.noreply.github.com"
           git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" quick-results && git reset -q FETCH_HEAD || true   # mixed reset: keep the files other jobs put there
-          git add -A .
+          git add -- $(ls)   # only this run's files; never stage deletions of the others
           git commit -q -m "Quick results $(date -u +%FT%T)"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results
       - name: "Round 76 reading unfinished: run again"
