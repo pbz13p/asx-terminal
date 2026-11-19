@@ -20,7 +20,7 @@ jobs:
         with: {python-version: "3.12"}
       - uses: actions/cache/restore@v4
         with: {path: data/commodities, key: "comm-${{ github.run_id }}", restore-keys: comm-}
-      - run: python commodities.py
+      - run: pip install openpyxl && python commodities.py
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
       - uses: actions/cache/save@v4

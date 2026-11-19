@@ -49,18 +49,62 @@ FRED = [  # id, FRED series, name, unit, frequency
 ]
 
 
+FRED_OK = [True]
+
+
 def fred(series):
+    if not FRED_OK[0]:
+        return None
     req = urllib.request.Request(f"https://fred.stlouisfed.org/graph/fredgraph.csv?id={series}", headers={"User-Agent": "Mozilla/5.0"})
-    for attempt in range(4):
+    for attempt in range(1):
         try:
-            with urllib.request.urlopen(req, timeout=60) as r:
+            with urllib.request.urlopen(req, timeout=20) as r:
                 text = r.read().decode()
             return [[row[0], float(row[1])] for row in list(csv.reader(io.StringIO(text)))[1:] if len(row) >= 2 and row[1] not in (".", "")]
         except Exception as e:
             err = e
             time.sleep(5 * (attempt + 1))
-    print(f"[commodities] {series} failed: {type(err).__name__}", flush=True)
+    print(f"[commodities] FRED unreachable from here ({type(err).__name__}); skipping FRED this run", flush=True)
+    FRED_OK[0] = False
     return None
+
+
+WB_URL = "https://thedocs.worldbank.org/en/doc/18675f1d1639c7a34d463f59263ba0a2-0050012025/related/CMO-Historical-Data-Monthly.xlsx"
+
+
+def world_bank():
+    """World Bank 'Pink Sheet' monthly prices (free, official): {column title: [[YYYY-MM-01, price], ...]}."""
+    import openpyxl
+    req = urllib.request.Request(WB_URL, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        raw = r.read()
+    wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+    ws = wb["Monthly Prices"]
+    rows = list(ws.iter_rows(values_only=True))
+    hdr_i = next(i for i, r in enumerate(rows) if r and any(isinstance(c, str) and "Crude oil" in c for c in r))
+    names, units = rows[hdr_i], rows[hdr_i + 1]
+    out = {}
+    for r in rows[hdr_i + 2:]:
+        if not r or not isinstance(r[0], str) or "M" not in r[0]:
+            continue
+        y, m = r[0].split("M")
+        for j, v in enumerate(r[1:], 1):
+            if isinstance(v, (int, float)) and names[j]:
+                out.setdefault(str(names[j]).strip(), {"unit": str(units[j] or "").strip("() "), "data": []})["data"].append([f"{y}-{int(m):02d}-01", float(v)])
+    return out
+
+
+WB = [  # id, column title in the Pink Sheet, Chinese name
+    ("wb_brent", "Crude oil, Brent", "布伦特原油（世行月度）"), ("wb_wti", "Crude oil, WTI", "WTI 原油（世行月度）"),
+    ("wb_coal_aus", "Coal, Australian", "澳洲动力煤"), ("wb_lng_japan", "Liquefied natural gas, Japan", "日本液化天然气"),
+    ("wb_gas_us", "Natural gas, US", "美国天然气"), ("wb_iron_ore", "Iron ore, cfr spot", "铁矿石"),
+    ("wb_copper", "Copper", "铜"), ("wb_aluminium", "Aluminum", "铝"), ("wb_nickel", "Nickel", "镍"), ("wb_zinc", "Zinc", "锌"),
+    ("wb_lead", "Lead", "铅"), ("wb_tin", "Tin", "锡"), ("wb_gold", "Gold", "黄金（世行月度）"), ("wb_silver", "Silver", "白银（世行月度）"),
+    ("wb_platinum", "Platinum", "铂金（世行月度）"), ("wb_wheat", "Wheat, US HRW", "小麦"), ("wb_maize", "Maize", "玉米"),
+    ("wb_soybeans", "Soybeans", "大豆"), ("wb_sugar", "Sugar, world", "糖"), ("wb_coffee", "Coffee, Arabica", "咖啡"),
+    ("wb_beef", "Beef", "牛肉"), ("wb_cotton", "Cotton, A Index", "棉花"), ("wb_rice", "Rice, Thai 5%", "大米"),
+    ("wb_palm_oil", "Palm oil", "棕榈油"), ("wb_urea", "Urea", "尿素（化肥）"),
+]
 
 
 def main():
@@ -83,9 +127,24 @@ def main():
             data = json.loads((OUT / f"{cid}.json").read_text())   # keep yesterday's copy if FRED is down
         index.append({"id": cid, "name": name, "unit": unit, "source": "FRED " + ser, "freq": freq,
                       "first": data[0][0] if data else None, "last": data[-1][0] if data else None, "n": len(data or [])})
+    try:
+        wbd = world_bank()
+    except Exception as e:
+        wbd = {}
+        print(f"[commodities] World Bank file failed: {type(e).__name__} {str(e)[:80]}", flush=True)
+    for cid, col, name in WB:
+        hit = next((k for k in wbd if k.startswith(col)), None)
+        data = wbd[hit]["data"] if hit else None
+        if data:
+            (OUT / f"{cid}.json").write_text(json.dumps(data))
+            ok += 1
+        elif (OUT / f"{cid}.json").exists():
+            data = json.loads((OUT / f"{cid}.json").read_text())
+        index.append({"id": cid, "name": name, "unit": wbd[hit]["unit"] if hit else "", "source": "World Bank Pink Sheet " + col,
+                      "freq": "月", "first": data[0][0] if data else None, "last": data[-1][0] if data else None, "n": len(data or [])})
     (OUT / "index.json").write_text(json.dumps({"updated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "series": index},
                                                ensure_ascii=False, indent=1))
-    print(f"[commodities] {ok}/{len(EOD) + len(FRED)} series updated", flush=True)
+    print(f"[commodities] {ok}/{len(EOD) + len(FRED) + len(WB)} series updated", flush=True)
     for x in index:
         print(f"[commodities] {x['id']}: {x['n']} rows {x['first']}..{x['last']}", flush=True)   # dates only, no prices
 
