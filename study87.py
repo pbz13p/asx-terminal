@@ -69,7 +69,7 @@ def asx_stocks():
 
 def cn_stocks():
     for f in sorted(Path("data/cn").glob("*.json.gz")):
-        rows = [r for r in json.loads(gzip.decompress(f.read_bytes())) if r[4] and r[5] and r[4] > 0 and r[5] > 0]
+        rows = [r for r in json.loads(gzip.decompress(f.read_bytes())) if r[4] and r[5] and r[4] > 0 and r[5] > 0 and r[0] >= "2014-06-01"]
         if len(rows) < 80:
             continue
         d = [r[0] for r in rows]
@@ -137,6 +137,10 @@ def prep(s, market):
         s["limdn_close"] = s["raw"] <= np.round(prc * (1 - s["lim"]), 2) + 0.005
         s["limup_open"] = s["rawo"] >= np.round(prc * (1 + s["lim"]), 2) - 0.005
         s["limdn_open"] = s["rawo"] <= np.round(prc * (1 - s["lim"]), 2) + 0.005
+        # adjusted-price glitches (a day moving far beyond the price limit): drop any trade that spans one
+        bad = np.abs(np.nan_to_num(s["ret"])) > s["lim"] + 0.06
+        bad[:5] = False
+        s["badc"] = np.cumsum(bad)
     return s
 
 
@@ -217,6 +221,8 @@ def book(market, rule, s, e, parts, side=1, entry_price=None):
             k = k2
         tot += w * net_of(market, s, side, ep, px, ei, k)
         k_last = max(k_last, k)
+    if "badc" in s and s["badc"][k_last] - s["badc"][max(0, ei - 60)] > 0:
+        return
     T[(market, rule)].append((s["d"][e - 1], tot, s["d"][e - 1], s["d"][k_last]))
 
 
@@ -406,7 +412,10 @@ def stats(rows, idx, split, hold_hint=None):
 def main():
     t0 = time.time()
     res = {"method": __doc__.strip(), "markets": {}}
-    for market in ("ASX", "A股", "加密"):
+    only = [m for m in os.environ.get("S87_MARKETS", "ASX,A股,加密").split(",") if m]
+    if OUT.exists() and len(only) < 3:          # keep the other markets' earlier results
+        res = json.loads(OUT.read_text())
+    for market in only:
         if (market == "A股" and not Path("data/cn").exists()) or (market == "加密" and not Path("data/crypto").exists()):
             res["markets"][market] = {"skipped": "no data"}
             continue
