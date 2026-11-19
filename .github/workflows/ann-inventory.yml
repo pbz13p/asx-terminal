@@ -2,6 +2,8 @@ name: ann-inventory
 # Per-company count of the ASX announcement archive (ann_inventory.py), encrypted to the quick-results branch.
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '40 11 * * 1-5'   # after the daily announcement download (09:20 UTC)
   push:
     branches: [main]
     paths: ['ann_inventory.py', '.github/workflows/ann-inventory.yml']
