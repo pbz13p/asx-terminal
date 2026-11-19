@@ -534,7 +534,12 @@ class Handler(SimpleHTTPRequestHandler):
             if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"(study\d*_results|yc_notes)\.json", f) \
                     or br not in ("quick-results", "results", "cn-results"):
                 raise ValueError("not available")
-            return fetch_result(f, branch=br)
+            data = fetch_result(f, branch=br)
+            if q.get("save") == "1" and f == "yc_notes.json":   # public-video notes: keep a plain copy Claude can pick up
+                (ROOT / "sealed").mkdir(exist_ok=True)
+                (ROOT / "sealed" / f).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+                return {"saved": str(ROOT / "sealed" / f), "read": data.get("read")}
+            return data
         if name == "status":
             return {"provider": provider.name, "latency": provider.latency,
                     "capabilities": provider.capabilities}
