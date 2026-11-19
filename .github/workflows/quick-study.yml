@@ -47,6 +47,8 @@ jobs:
           path: data/ai
           key: ai-${{ github.run_id }}
           restore-keys: ai-
+      - uses: actions/cache/restore@v4      # round 87: Binance perps (crypto.yml keeps it up to date)
+        with: {path: data/crypto, key: crypto-none, restore-keys: crypto-}
       - uses: actions/cache@v4
         with:
           path: data/cn
