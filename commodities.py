@@ -34,18 +34,9 @@ EOD = [  # id, EODHD symbol, Chinese name, unit / note
     ("etf_steel", "SLX.US", "钢铁股（SLX 基金）", "美元/份"), ("etf_rare_earth", "REMX.US", "稀土股（REMX 基金）", "美元/份"),
     ("etf_battery_metals", "BATT.US", "电池金属（BATT 基金）", "美元/份"),
 ]
-FRED = [  # id, FRED series, name, unit, frequency
+FRED = [  # id, FRED series, name, unit, frequency -- daily only (monthly prices come from the World Bank file, one source each)
     ("wti", "DCOILWTICO", "原油 WTI 现货", "美元/桶", "日"), ("brent", "DCOILBRENTEU", "布伦特原油现货", "美元/桶", "日"),
-    ("henry_hub", "DHHNGSP", "天然气 Henry Hub", "美元/百万英热", "日"), ("heating_oil", "DHOILNYH", "取暖油（纽约港）", "美元/加仑", "日"),
-    ("gasoline", "DGASNYH", "汽油（纽约港）", "美元/加仑", "日"),
-    ("iron_ore", "PIORECRUSDM", "铁矿石", "美元/吨", "月"), ("copper", "PCOPPUSDM", "铜", "美元/吨", "月"),
-    ("aluminium", "PALUMUSDM", "铝", "美元/吨", "月"), ("nickel", "PNICKUSDM", "镍", "美元/吨", "月"),
-    ("zinc", "PZINCUSDM", "锌", "美元/吨", "月"), ("lead", "PLEADUSDM", "铅", "美元/吨", "月"), ("tin", "PTINUSDM", "锡", "美元/吨", "月"),
-    ("uranium", "PURANUSDM", "铀", "美元/磅", "月"), ("coal_aus", "PCOALAUUSDM", "澳洲动力煤", "美元/吨", "月"),
-    ("lng_asia", "PNGASJPUSDM", "亚洲液化天然气", "美元/百万英热", "月"), ("wheat", "PWHEAMTUSDM", "小麦", "美元/吨", "月"),
-    ("soybeans", "PSOYBUSDM", "大豆", "美元/吨", "月"), ("corn", "PMAIZMTUSDM", "玉米", "美元/吨", "月"),
-    ("sugar", "PSUGAISAUSDM", "糖", "美分/磅", "月"), ("coffee", "PCOFFOTMUSDM", "咖啡", "美分/磅", "月"),
-    ("beef", "PBEEFUSDM", "牛肉", "美分/磅", "月"), ("wool", "PWOOLCUSDM", "羊毛", "美分/公斤", "月"),
+    ("henry_hub", "DHHNGSP", "天然气 Henry Hub", "美元/百万英热", "日"),
 ]
 
 

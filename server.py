@@ -46,6 +46,8 @@ CODE = re.compile(r"^[A-Z0-9]{1,6}$")
 CN_CODE = re.compile(r"^\d{6}$")
 _cnp = None
 _cxp = None
+_cmp = None
+CM_CODE = re.compile(r"^[A-Z0-9]{2,12}$")
 BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 CX_CODE = re.compile(r"^[A-Z0-9]{1,15}$")
 TF = {"1D", "5D", "1M", "6M", "1Y", "5Y", "ALL"}
@@ -502,11 +504,41 @@ class Handler(SimpleHTTPRequestHandler):
             return {"code": code, "lists": [], "watch": None, "vol": None}
         raise ValueError("加密货币模式暂不支持这个功能")
 
+    def route_cm(self, name, q):
+        """Commodity mode (?m=cm): metals and commodity funds (EODHD, delayed) + World Bank monthly prices."""
+        from providers.commodities import CommodityProvider
+        global _cmp
+        if _cmp is None:
+            _cmp = CommodityProvider()
+        if name == "market":
+            return _cmp.market()
+        if name == "indices":
+            return _cmp.indices()
+        if name == "quotes":
+            codes = [c for c in q.get("codes", "").split(",") if c]
+            if not codes or len(codes) > 60 or not all(CM_CODE.match(c) for c in codes):
+                raise ValueError("品种代码不正确，例如 GOLD")
+            return _cmp.quotes(codes)
+        code = q.get("code", "")
+        if not CM_CODE.match(code):
+            raise ValueError("品种代码不正确，例如 GOLD")
+        if name == "candles":
+            if q.get("tf") not in TF:
+                raise ValueError("周期不正确")
+            return _cmp.candles(code, q["tf"])
+        if name == "ann":
+            return []
+        if name == "profile":
+            return {"code": code, "lists": [], "watch": None, "vol": None}
+        raise ValueError("商品模式暂不支持这个功能")
+
     def route(self, name, q):
         if name == "news":
             return news_load()[:int(q.get("n") or 300)]
         if q.get("m") == "cx" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cx(name, q)
+        if q.get("m") == "cm" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
+            return self.route_cm(name, q)
         if q.get("m") == "cn" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cn(name, q)
         if name == "eodstatus" and not self._users() and self.client_address[0] == "127.0.0.1":   # own PC: why EODHD refuses
