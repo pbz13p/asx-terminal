@@ -1,0 +1,28 @@
+name: commodities
+# Gold, oil, gas, metals, farm goods (commodities.py): EODHD spot metals + commodity ETFs, FRED/EIA/IMF prices.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 22 * * 1-5'   # after the US close
+  push:
+    branches: [main]
+    paths: ['commodities.py', '.github/workflows/commodities.yml']
+permissions:
+  contents: read
+concurrency: commodities
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - uses: actions/cache/restore@v4
+        with: {path: data/commodities, key: "comm-${{ github.run_id }}", restore-keys: comm-}
+      - run: python commodities.py
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+      - uses: actions/cache/save@v4
+        if: always()
+        with: {path: data/commodities, key: "comm-${{ github.run_id }}"}
