@@ -69,15 +69,26 @@ def fred(series):
     return None
 
 
-WB_URL = "https://thedocs.worldbank.org/en/doc/18675f1d1639c7a34d463f59263ba0a2-0050012025/related/CMO-Historical-Data-Monthly.xlsx"
+WB_URLS = [  # the World Bank moves the file to a new folder each year: newest first
+    "https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Historical-Data-Monthly.xlsx",
+    "https://thedocs.worldbank.org/en/doc/18675f1d1639c7a34d463f59263ba0a2-0050012025/related/CMO-Historical-Data-Monthly.xlsx",
+]
 
 
 def world_bank():
     """World Bank 'Pink Sheet' monthly prices (free, official): {column title: [[YYYY-MM-01, price], ...]}."""
     import openpyxl
-    req = urllib.request.Request(WB_URL, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=120) as r:
-        raw = r.read()
+    raw = None
+    for url in WB_URLS:
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}), timeout=120) as r:
+                raw = r.read()
+            print("[commodities] World Bank file:", url.split("/doc/")[1][:45], flush=True)
+            break
+        except Exception as e:
+            print("[commodities] World Bank try failed:", type(e).__name__, flush=True)
+    if raw is None:
+        raise RuntimeError("no World Bank file")
     wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
     ws = wb["Monthly Prices"]
     rows = list(ws.iter_rows(values_only=True))
