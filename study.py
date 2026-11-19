@@ -435,7 +435,7 @@ def main():
     uni = universe()
     print(f"  共 {len(uni)} 只普通股，其中已退市 {sum(1 for _, d in uni if d)} 只")
     syms = [f"{c}.AU" for c, _ in uni] + ["AXJO.INDX", "GSPC.INDX"]
-    print("第 2 步：下载 2014 年至今的日线（可中断，下次会接着下）…")
+    print("第 2 步：下载每只股票上市以来的全部日线（可中断，下次会接着下）…")
     download(syms)
     print("第 3 步：逐只股票分析…")
     stocks, events = 0, 0
