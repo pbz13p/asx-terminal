@@ -551,9 +551,9 @@ $('btbl').addEventListener('click',function(e){var tr=e.target.closest('tr.cl');
 function head(){var q=Q[st.sel],m=MKT.filter(function(s){return s.code===st.sel;})[0];var last=q?q.last:m&&m.last,prev=q?q.prev:m&&m.prev;
  $('code').textContent=st.sel||'—';$('px').textContent=last!=null?px(last):'';$('chg').innerHTML=prev?pc(100*(last/prev-1),2):'';}
 async function loadQuotes(){var cs_=st.watch.slice(0,40),my=st.m;if(st.sel&&cs_.indexOf(st.sel)<0)cs_.push(st.sel);if(!cs_.length)return;
- try{var qq=await apim('quotes?codes='+cs_.slice(0,40).join(','));if(my!==st.m)return;qq.forEach(function(q){Q[q.code]=q;if(q.name)NAMES[q.code]=NAMES[q.code]||q.name;});renderList();head();if(st.m==='cx'&&st.bt!=='find')renderBottom();}catch(e){}}
+ try{var qq=await apim('quotes?codes='+cs_.slice(0,40).join(','));if(my!==st.m)return;qq.forEach(function(q){Q[q.code]=q;if(q.name)NAMES[q.code]=NAMES[q.code]||q.name;});renderList();head();if((st.m==='cx'||st.m==='cm')&&st.bt!=='find')renderBottom();}catch(e){}}
 async function loadIdx(){var my=st.m;try{var d=await apim('indices');if(my!==st.m)return;$('idx').innerHTML=d.main.slice(0,6).map(function(o){return '<div><small>'+esc(o.label)+'</small><b>'+o.last.toLocaleString(undefined,{maximumFractionDigits:2})+'</b>'+pc(o.prev?100*(o.last/o.prev-1):null,2)+'</div>';}).join('');}catch(e){}}
-async function loadMarket(){var my=st.m;try{var d=await apim('market');if(my!==st.m)return;MKT=d.stocks;MKT.forEach(function(s){NAMES[s.code]=NAMES[s.code]||s.name;});renderList();head();}catch(e){}}
+async function loadMarket(){var my=st.m;try{var d=await apim('market');if(my!==st.m)return;MKT=d.stocks;MKT.forEach(function(s){NAMES[s.code]=NAMES[s.code]||s.name;});renderList();head();if((st.m==='cx'||st.m==='cm')&&st.bt!=='find')renderBottom();}catch(e){}}
 async function loadCN(){try{CNP=await api('cnpicks');}catch(e){CNP=null;}if(st.m==='cn'){renderBottom();if(st.lt==='sig')renderList();}}
 async function loadScan(){try{SCAN=await api('scan');$('breadth').innerHTML=(SCAN.breadth!=null?'站上 200 日线 <b>'+SCAN.breadth+'%</b> · ':'')+'扫描 '+esc(SCAN.last_day||'');}catch(e){SCAN={};}renderBottom();if(st.lt==='sig')renderList();}
 function setTfs(){var allow=st.m!=='au'?['1M','6M','1Y','5Y','ALL']:TFS;if(allow.indexOf(st.tf)<0)st.tf='6M';
