@@ -238,6 +238,27 @@ class Handler(SimpleHTTPRequestHandler):
             (out / name).write_bytes(sealed)
             self.send_json({"ok": True, "data": {"saved": str(out / name), "bytes": len(sealed)}})
             return
+        if path == "/api/seal_dir":   # own-PC only: bundle sealed/<folder>/*.json (transcripts) into one encrypted file
+            if self._users() or self.client_address[0] != "127.0.0.1":
+                self.send_error(404)
+                return
+            import gzip
+            import securedata
+            n = int(self.headers.get("Content-Length") or 0)
+            body = json.loads(self.rfile.read(min(n, 10_000)) or b"{}")
+            folder = re.sub(r"[^\w-]", "", body.get("folder", ""))[:40]
+            src = ROOT / "sealed" / folder
+            bundle = {}
+            for f in sorted(src.glob("*.json")):
+                if f.name.startswith("_"):
+                    continue
+                d = json.loads(f.read_text(encoding="utf-8"))
+                bundle[f.stem] = {"title": d.get("original_title"), "duration": d.get("duration"),
+                                  "lines": [[round(x.get("t", 0)), x.get("text", "")] for x in d.get("lines", [])]}
+            name = folder + "_bundle.json.gz.enc"
+            (ROOT / "sealed" / name).write_bytes(securedata.encrypt(gzip.compress(json.dumps(bundle, ensure_ascii=False).encode())))
+            self.send_json({"ok": True, "data": {"saved": str(ROOT / "sealed" / name), "videos": len(bundle)}})
+            return
         if path == "/api/earwise_batch":   # own-PC only: same as /api/earwise for a list of videos, in a background thread
             if self._users() or self.client_address[0] != "127.0.0.1":
                 self.send_error(404)
@@ -510,7 +531,7 @@ class Handler(SimpleHTTPRequestHandler):
         if name == "quick":   # own-PC only: decrypted quick-study results, so Claude can read them without holding the key
             f = q.get("f", "")
             br = q.get("branch", "quick-results")
-            if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"study\d*_results\.json", f) \
+            if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"(study\d*_results|yc_notes)\.json", f) \
                     or br not in ("quick-results", "results", "cn-results"):
                 raise ValueError("not available")
             return fetch_result(f, branch=br)
