@@ -23,7 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 DATA = ROOT / "data"
 CACHE = DATA / "eod"
-START = "2014-01-01"
+START = "1980-01-01"   # 2026-11-19 (Frank): full price history for every ASX stock, delisted ones included (was 2014)
 SPLIT = "2022-01-01"
 HORIZONS = (1, 2, 5)
 COMMISSION = 0.001  # 0.1% round trip assumed broker cost
