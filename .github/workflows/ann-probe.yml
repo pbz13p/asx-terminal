@@ -1,0 +1,15 @@
+name: ann-probe
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['ann_probe.py', '.github/workflows/ann-probe.yml']
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: python ann_probe.py
