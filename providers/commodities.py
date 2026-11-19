@@ -111,6 +111,7 @@ class CommodityProvider:
         self.eod = EodhdProvider()
         self._c = {}
         self._lock = threading.Lock()
+        threading.Thread(target=self._pink, daemon=True).start()   # 10 MB file: fetch in the background at start-up
 
     def _cached(self, key, ttl, fn):
         with self._lock:
@@ -143,10 +144,21 @@ class CommodityProvider:
     def market(self):
         def load():
             stocks = []
-            live = self.eod._live([d[1] for d in DAILY])
+            try:
+                live = self.eod._live([d[1] for d in DAILY])
+            except Exception:
+                live = {}
+            norm = {str(k).upper().split(".")[0]: v for k, v in live.items()}
             for code, sym, name, unit, grp in DAILY:
-                r = live.get(sym) or {}
+                r = live.get(sym) or norm.get(sym.split(".")[0]) or {}
                 last, prev = self.eod._num(r.get("close")), self.eod._num(r.get("previousClose"))
+                if not last or last <= 0:   # live quote missing (e.g. spot metals): last two daily closes
+                    try:
+                        rows = self._cached("d2:" + sym, 1800, lambda: self.eod._get(f"eod/{sym}", **{"from": time.strftime("%Y-%m-%d", time.gmtime(time.time() - 15 * 86400))}))
+                        if rows:
+                            last, prev = rows[-1]["close"], rows[-2]["close"] if len(rows) > 1 else rows[-1]["close"]
+                    except Exception:
+                        pass
                 if last:
                     stocks.append({"code": code, "name": name, "last": last, "prev": prev or last, "volume": self.eod._num(r.get("volume")) or 0,
                                    "turnover": 0, "unit": unit, "group": grp, "freq": "日", "src": "EODHD " + sym})
