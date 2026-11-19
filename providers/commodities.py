@@ -190,7 +190,9 @@ class CommodityProvider:
                          "v": r.get("volume") or 0} for r in rows if r.get("close")]
             out = self._cached("c:" + code, 600, load)
         elif any(m[0] == code for m in MONTHLY):
-            out = [{"t": t, "o": v, "h": v, "l": v, "c": v, "v": 0} for t, v in self._monthly(code)[1]]
+            data = self._monthly(code)[1]   # monthly averages: open = last month's value, so each bar shows the month's move
+            out = [{"t": t, "o": (data[i - 1][1] if i else v), "h": max(v, data[i - 1][1] if i else v),
+                    "l": min(v, data[i - 1][1] if i else v), "c": v, "v": 0} for i, (t, v) in enumerate(data)]
         else:
             raise DataUnavailable("没有这个品种")
         if not out:
