@@ -567,10 +567,21 @@ class Handler(SimpleHTTPRequestHandler):
                     or br not in ("quick-results", "results", "cn-results"):
                 raise ValueError("not available")
             data = fetch_result(f, branch=br)
-            if q.get("save") == "1" and f in ("yc_notes.json", "study87_results.json", "ann_inventory.json", "study92_results.json"):   # keep a plain copy on this PC for Claude to pick up
+            if q.get("save") == "1" and f in ("yc_notes.json", "study87_results.json", "ann_inventory.json", "study92_results.json", "study94_results.json"):   # keep a plain copy on this PC for Claude to pick up
                 (ROOT / "sealed").mkdir(exist_ok=True)
                 (ROOT / "sealed" / f).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
                 return {"saved": str(ROOT / "sealed" / f), "read": data.get("read")}
+            return data
+        if name == "ledger":   # round 94 portfolio ledger (encrypted on the quick-results branch)
+            hit = getattr(self.server, "_ledger", None)
+            if hit and time.time() - hit[0] < 600:
+                return hit[1]
+            try:
+                data = fetch_result("study94_results.json", branch="quick-results")
+            except Exception:
+                raise DataUnavailable("组合总账还在计算，稍后再看") from None
+            data = {k: v for k, v in data.items() if k != "trades"}
+            self.server._ledger = (time.time(), data)
             return data
         if name == "status":
             return {"provider": provider.name, "latency": provider.latency,

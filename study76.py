@@ -465,12 +465,19 @@ def read_all(all_docs, common):
             # Frank 2026-11-17: new ASX announcements come first -- after the backlog cap, keep reading the last 7 days'
             # new ones (about 100 a day, ~$0.1) up to S76_NEW_CAP, so the daily signals never stop
             recent = (date.today() - timedelta(days=7)).isoformat()
-            new_room = float(os.environ.get("S76_NEW_CAP", "58.0")) - ledger()["total"] - 0.3
+            new_room = float(os.environ.get("S76_NEW_CAP", str(BUDGET_STOP))) - ledger()["total"] - 0.3
+            # Frank 2026-11-20: daily new announcements stay on the API (about $3 a month), capped at S76_MONTH_CAP a
+            # calendar month so the rest of the monthly credit stays free for Earwise / Howzu
+            month = date.today().isoformat()[:7]
+            m_spent = sum(x.get("usd", 0) for x in ledger().get("entries", []) if str(x.get("date", "")).startswith(month)
+                          and "[daily]" in str(x.get("what", "")))
+            new_room = min(new_room, float(os.environ.get("S76_MONTH_CAP", "5.0")) - m_spent - 0.05)
             fresh = [x for x in todo if x["date"] >= recent]
             n = int(min(len(fresh), new_room / per_doc))
             if not fresh or n < 1:
                 return {"stage": "read", "status": f"budget stop: ${ledger()['total']} spent, {len(todo)} left unread", "left": len(todo)}
             todo = fresh
+            st["daily"] = True
         todo.sort(key=lambda x: x["date"], reverse=True)   # newest first: the out-of-sample (after the model's cutoff) period matters most
         chunk = todo[:n]
         st["read_chunk"] = [x["id"] for x in chunk]
@@ -489,7 +496,7 @@ def read_all(all_docs, common):
         if got is None:
             return {"stage": "read", "status": f"chunk of {len(chunk)} still being read", "left": len(todo), "again": True}
         res, usage, per = got
-        usd, total = spend(f"round 76 read: {len(chunk)} announcements (phase A)", usage)
+        usd, total = spend(f"round 76 read: {len(chunk)} announcements (phase A){' [daily]' if st.get('daily') else ''}", usage)
         a_file.write_text(json.dumps(res))
         st = json.loads(STATE.read_text()) if STATE.exists() else {}
         st["read_a_done"] = True
@@ -504,7 +511,7 @@ def read_all(all_docs, common):
         if gotb is None:
             return {"stage": "read", "status": "phase B still running", "left": len(todo), "again": True}
         resb, usageb, _ = gotb
-        usd2, total = spend(f"round 76 read: {len(long_)} long announcements (phase B)", usageb)
+        usd2, total = spend(f"round 76 read: {len(long_)} long announcements (phase B){' [daily]' if st.get('daily') else ''}", usageb)
         usd += usd2
         for i in long_:
             res[f"s{i}"] = resb.get(f"c{i}", "")
@@ -522,6 +529,7 @@ def read_all(all_docs, common):
     st = json.loads(STATE.read_text()) if STATE.exists() else {}
     st.pop("read_chunk", None)
     st.pop("read_a_done", None)
+    st.pop("daily", None)
     STATE.write_text(json.dumps(st))
     a_file.unlink(missing_ok=True)
     left = len(todo) - ok
