@@ -496,6 +496,8 @@ def simulate(ctx, rules, switches, rate=None, plan=PLAN_C, collect=False, vt=Tru
         for (code, rule, turn, sg, above) in ev_by_day.get(d, ()):
             if rule not in rules or ("F1" in switches and not above):
                 continue
+            if "M" in switches and not ctx.get("regime", {}).get(d, True):   # round 95 market-state switch
+                continue
             cands.append((turn, code, rule, sg, ctx["sector"].get(code)))
         cands.sort(reverse=True)
         pending = cands
