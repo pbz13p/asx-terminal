@@ -1,0 +1,16 @@
+name: cn-inventory
+on:
+  push:
+    branches: [main]
+    paths: ['cn_inventory.py']
+permissions:
+  contents: read
+jobs:
+  inv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with: {path: data/cn, key: cn-none, restore-keys: cn-}
+      - run: python cn_inventory.py
