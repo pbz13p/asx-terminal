@@ -134,7 +134,7 @@ td.w{white-space:normal;min-width:260px}
   <aside class="r" id="right">
     <div class="sec"><h3>概况</h3><div class="big num" id="rpx">—</div><div id="rname" class="mu"></div><div class="chips num" id="rchg"></div></div>
     <div class="sec"><h3>关键数据</h3><div class="kv num" id="rkv"></div></div>
-    <div class="sec"><h3>我们的研究</h3><div id="rres"></div></div>
+    <div class="sec" id="ribs"><h3>盈透 <span class="mu" style="font-size:15px" id="ribt"></span></h3><div class="kv num" id="rib"></div><div class="mu" id="ribn" style="font-size:15px;margin-top:6px;color:#C9D2F5"></div></div><div class="sec"><h3>我们的研究</h3><div id="rres"></div></div>
     <div class="sec"><h3>最新公告 <span class="mu" style="font-size:15px" id="annhint">· 点一下，中文直接弹出</span></h3><div id="rann"></div></div>
   </aside>
 </main>
@@ -423,6 +423,18 @@ $('submenu').onclick=function(e){var d=e.target.closest('[data-v]');if(d)setSub(
 document.addEventListener('click',function(){$('submenu').classList.remove('on');});
 
 /* ---------- right panel ---------- */
+
+function loadIB(c){var box=$('ribs');if(!box)return;if(st.m!=='au'){box.style.display='none';return;}box.style.display='';
+ $('rib').innerHTML='';$('ribt').textContent='· 读取中…';$('ribn').textContent='';
+ apim('ibq?code='+c).then(function(q){if(st.sel!==c)return;
+  if(!q.connected||q.error&&!q.last){$('ribt').innerHTML='· <span class="dn">'+esc(q.error||'未连接')+'</span>';$('ribn').textContent='开电脑后打开桌面上的 IB Gateway，选 IB API → 登录，终端就能连上盈透。';return;}
+  $('ribt').innerHTML='· '+(q.paper?'模拟账户':'真账户')+' · <span class="'+(q.type==='实时'?'up':'y')+'">'+esc(q.type||'')+'</span>';
+  var lb=BARS.length?BARS[BARS.length-1]:null,ev=lb&&lb.v,vf=function(v){return v==null?'—':v>=1e6?(v/1e6).toFixed(2)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':String(v);};
+  var kv=[['现价',px(q.last)],['昨收',px(q.close)],['买一 / 卖一',(q.bid?px(q.bid):'—')+' / '+(q.ask?px(q.ask):'—')],['今日高 / 低',(q.high?px(q.high):'—')+' / '+(q.low?px(q.low):'—')],
+   ['成交量（盈透，含 Cboe）','<b class="y">'+vf(q.volume)+'</b>'],['成交量（EODHD，只算 ASX）',vf(ev)+(lb&&lb.time?' <span class="mu" style="font-size:13px">'+esc(typeof lb.time==='string'?lb.time:'')+'</span>':'')]];
+  $('rib').innerHTML=kv.map(function(x){return '<div><small>'+x[0]+'</small><b>'+x[1]+'</b></div>';}).join('');
+  $('ribn').textContent=(q.volume&&ev?'盈透成交量是 EODHD 的 '+(q.volume/ev).toFixed(2)+' 倍（多出来的主要是 Cboe 澳洲的成交）。':'')+(q.type==='实时'?'':' 真账户批下来、订好 ASX 行情后会变成实时。');
+ }).catch(function(e){if(st.sel===c){$('ribt').innerHTML='· <span class="dn">'+esc(e.message)+'</span>';}});}
 async function loadRight(c){
  $('rres').innerHTML='<div class="empty">读取中…</div>';$('rann').innerHTML='<div class="empty">读取中…</div>';$('rkv').innerHTML='';$('rchg').innerHTML='';
  apim('insight?code='+c).then(function(d){if(st.sel!==c)return;NAMES[c]=d.name;$('name').textContent=d.name||'';$('rname').textContent=(d.name||'')+' · '+(d.sector||'');
@@ -432,6 +444,7 @@ async function loadRight(c){
    ['20 日波动率',d.rv20!=null?d.rv20.toFixed(0)+'%':'—'],['波动率历史分位',d.rv_pct!=null?d.rv_pct.toFixed(0)+'%':'—']];
   $('rkv').innerHTML=kv.map(function(x){return '<div><small>'+x[0]+'</small><b>'+x[1]+'</b></div>';}).join('');
   research(c,d);renderList();}).catch(function(e){if(st.sel===c){$('rres').innerHTML='<div class="empty">'+esc(e.message)+'</div>';research(c,null);}});
+ loadIB(c);
  apim('ann?code='+c).then(function(a){if(st.sel!==c)return;ANNS=a.map(function(x){return Object.assign({_t:x.date},x);});setMarks();$('rann').innerHTML=a.length?a.slice(0,25).map(function(x){return '<div class="ann" data-ids="'+esc(x.ids)+'"'+(x.pdf?' data-pdf="'+esc(x.pdf)+'"':'')+'>'+(st.m==='au'?'<button class="tr" data-tr="'+esc(x.ids)+'">译</button>':'')+'<small>'+esc(x.date)+'</small><br>'+(x.sensitive?'<span class="ps">价格敏感</span>':'')+esc(x.headline)+'</div>';}).join(''):'<div class="empty">近两年没有公告</div>';})
   .catch(function(e){if(st.sel===c)$('rann').innerHTML='<div class="empty">公告读取失败：'+esc(e.message)+'</div>';});
 }

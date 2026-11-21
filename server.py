@@ -733,6 +733,12 @@ class Handler(SimpleHTTPRequestHandler):
             return provider.market()
         if name == "indices":
             return provider.indices()
+        if name == "ibq":   # 盈透 quote for the right panel (paper = delayed until live data is subscribed)
+            import ibkr_link
+            c = (q.get("code") or "").upper()
+            if not CODE.match(c):
+                raise ValueError("股票代码不正确")
+            return ibkr_link.quote(c)
         if name == "ibkr":   # 盈透连接测试 (paper account, 2026-11-21)
             import ibkr_link
             c = (q.get("code") or "CND").upper()

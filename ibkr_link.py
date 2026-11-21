@@ -10,6 +10,7 @@ import asyncio
 import subprocess
 import sys
 import threading
+import time
 
 HOST, PORTS = "127.0.0.1", (4002, 4001, 7497, 7496)
 _lock = threading.Lock()
@@ -85,3 +86,55 @@ def _status(code):
         finally:
             ib.disconnect()
         return out
+
+
+_qcache = {}
+
+
+def quote(code):
+    """Fast quote for the terminal's right panel: connect, one ASX quote, disconnect. Cached 20 s per code."""
+    hit = _qcache.get(code)
+    if hit and time.time() - hit[0] < 20:
+        return hit[1]
+    try:
+        out = _clean(_quote(code))
+    except Exception as e:
+        out = {"connected": False, "error": f"{type(e).__name__}: {str(e)[:200]}"}
+    _qcache[code] = (time.time(), out)
+    return out
+
+
+def _quote(code):
+    with _lock:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+        ib_async = _lib()
+        ib = ib_async.IB()
+        port = None
+        for p in PORTS:
+            try:
+                ib.connect(HOST, p, clientId=18, timeout=6, readonly=True)
+                port = p
+                break
+            except Exception:
+                continue
+        if port is None:
+            return {"connected": False, "error": "IB Gateway 没打开或没登录"}
+        try:
+            ib.reqMarketDataType(3)        # live if subscribed, otherwise delayed (free)
+            c = ib_async.Stock(code, "ASX", "AUD")
+            if not ib.qualifyContracts(c):
+                return {"connected": True, "port": port, "paper": port in (4002, 7497), "error": "盈透找不到这只股票"}
+            t = ib.reqMktData(c, "", False, False)
+            for _ in range(12):
+                ib.sleep(0.5)
+                if t.last == t.last and t.volume == t.volume:
+                    break
+            out = {"connected": True, "port": port, "paper": port in (4002, 7497),
+                   "type": {1: "实时", 2: "冻结", 3: "延迟约 20 分钟", 4: "延迟（收盘后）"}.get(t.marketDataType, str(t.marketDataType)),
+                   "last": t.last, "bid": t.bid, "ask": t.ask, "bid_size": t.bidSize, "ask_size": t.askSize,
+                   "close": t.close, "open": t.open, "high": t.high, "low": t.low, "volume": t.volume,
+                   "time": t.time.isoformat() if getattr(t, "time", None) else None}
+            ib.cancelMktData(c)
+            return out
+        finally:
+            ib.disconnect()
