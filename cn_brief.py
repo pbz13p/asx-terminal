@@ -26,7 +26,7 @@ import study76
 DAYS = int(os.environ.get("CNB_DAYS", "7"))
 MAX_PRICE = float(os.environ.get("CNB_MAX_PRICE", "2.0"))     # "小盘股": share price under A$2 (simple first cut)
 MIN_VALUE = 20_000                                             # same tradable filter as round 96 (20-session median A$)
-CACHE = study.DATA / "ai" / "cnbrief"
+CACHE = study.DATA / "ai" / "cnbrief2"     # v2 2026-11-21: unit rules (million/cents), no-news items; v1 answers dropped
 OUT = Path(os.environ.get("CNB_OUT", "out/cn_brief.json"))
 MODEL = os.environ.get("CNB_MODEL", "claude-haiku-5-5")
 PRICE = {"in": 0.10, "out": 0.50}                               # USD per MTok, normal (not batch) API = 2x the batch price
@@ -40,13 +40,26 @@ PROMPT = """下面是一家澳洲上市小公司的价格敏感公告（标题�
 发生了什么、关键数字（金额、价格、折让、股数、品位、期限、现金）、有没有附带条件或还没落实的部分。
 规则：
 - 只写事实，不评价好坏，不用“利好”“利空”“值得关注”“大涨”“前景”这类词，不预测股价，不给任何买卖建议。
-- 数字照原文，单位写清楚（澳元/美元，百万＝million，亿＝100 million；例如 A$50m＝5000 万澳元）。原文没有的数字不要补。
+- 数字照原文，并换算成中文单位再写：1 million（m、M）＝100 万，1 billion（bn、B）＝10 亿，thousand（k、'000）＝千。
+  例：$17.8 million＝1780 万美元；A$50m＝5000 万澳元；$1.3B＝13 亿美元；0.47 cents＝0.47 分（不是 0.47 澳元）。不要留 million、m、bn 这类英文单位。
+- 原文没有的数字不要补；分清"分"（cent）和"澳元"。
+- franked 写成"全额抵税（franked）"；化学式、品位照写（如 Li2O、Au），不要用 LaTeX 或别的语言的文字。
+- 如果公告只是会议演示文稿、免责声明、文件封面，正文开头没有新的事实数字，就只写一句：某某公司发布了某某文件，没有新的数字。
 - 公司名、项目名保留英文原名，不要翻译。
-- 不超过 70 个汉字。只输出这一两句话，不加引号、标题或说明。
+- 不超过 80 个汉字。只输出这一两句话，不加引号、标题或说明。
 
 标题：{headline}
 正文开头：
 {text}"""
+
+
+def clean(zh):
+    """Tidy one Chinese line: one line, no quotes, no LaTeX, no stray scripts (Arabic etc. seen once), no bare 'million'."""
+    zh = re.sub(r"\s+", " ", zh or "").strip().strip("“”\"")
+    zh = re.sub(r"\$\\text\{([^}]*)\}_(\d)\\text\{([^}]*)\}\$", r"\1\2\3", zh)          # $\text{Li}_2\text{O}$ -> Li2O
+    zh = re.sub(r"[$\\]", "", zh) if "\\" in zh else zh
+    zh = re.sub(r"[\u0590-\u08ff]+", "", zh)                                                 # Hebrew/Arabic letters
+    return zh.strip()
 
 
 def ledger_total():
@@ -168,7 +181,8 @@ def main():
                 s = {}
         it = {"id": x["id"], "code": x["code"], "name": nm.get(x["code"], ""), "date": x["date"], "headline": x["headline"][:160],
               "type": TYPES.get(s.get("type"), ""), "price": round(px, 4), "value_k": round(val / 1000),
-              "numbers": {k: v for k, v in (s.get("numbers") or {}).items() if v}, "cash_q": s.get("cash_quarters")}
+              "numbers": {k: v for k, v in (s.get("numbers") or {}).items() if v}, "cash_q": s.get("cash_quarters"),
+              "importance": s.get("importance")}
         cf = CACHE / f"{x['id']}.json"
         if cf.exists():
             it["zh"] = json.loads(cf.read_text(encoding="utf-8")).get("zh", "")
@@ -193,7 +207,7 @@ def main():
                 used[m] = used.get(m, 0) + 1
                 if usage:
                     spend(usage)
-                zh = re.sub(r"\s+", " ", zh).strip().strip("“”\"")
+                zh = clean(zh)
                 if zh:
                     it["zh"] = zh
                     (CACHE / f"{it['id']}.json").write_text(json.dumps({"zh": zh, "model": m, "at": time.strftime("%F")},
