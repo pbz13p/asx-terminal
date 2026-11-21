@@ -66,7 +66,8 @@ def ask(tag, system, user, max_tokens):
 
 def cash_truth(text):
     """Appendix 5B item 8.7: estimated quarters of funding available (a number, or 'N/A' / '> 8')."""
-    m = re.search(r"8\.7\s*Estimated quarters of funding available[^0-9N>]{0,200}?(>?\s*\d+(?:\.\d+)?|N/?A)", text, re.I | re.S)
+    # skip the "(item 8.4 divided by item 8.3)" wording, whose digits were read as the answer in the first run
+    m = re.search(r"8\.7\s*Estimated quarters of funding available\s*(?:\([^)]*\))?[^0-9N>(]{0,80}?(>?\s*\d+(?:\.\d+)?|N/?A)", text, re.I | re.S)
     if not m:
         return None
     v = m.group(1).replace(" ", "")
