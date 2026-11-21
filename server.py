@@ -634,6 +634,16 @@ class Handler(SimpleHTTPRequestHandler):
                 raise DataUnavailable("公告信号还没生成（每天晚上 AI 读完新公告后更新）") from None
             self.server._annlists = (time.time(), data)
             return data
+        if name == "cnbrief":   # 中文公告速读 (cn_brief.py, encrypted on the quick-results branch; private page /cnbrief.html)
+            hit = getattr(self.server, "_cnbrief", None)
+            if hit and time.time() - hit[0] < 600:
+                return hit[1]
+            try:
+                data = fetch_result("cn_brief.json", branch="quick-results")
+            except Exception:
+                raise DataUnavailable("中文公告速读还没生成（每天晚上读完新公告后更新）") from None
+            self.server._cnbrief = (time.time(), data)
+            return data
         if name == "ladder":   # round 98 lists (encrypted on the results branch, refreshed after the daily price run)
             hit = getattr(self.server, "_ladder", None)
             if hit and time.time() - hit[0] < 600:

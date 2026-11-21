@@ -1,1 +1,2 @@
-rounds=98
+rounds=
+# 2026-11-21: empty = only run ann_lists + cn_brief (中文公告速读 first build). Put the next round number back here.

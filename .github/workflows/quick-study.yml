@@ -74,6 +74,7 @@ jobs:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}   # round 97 model test
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}       # 中文公告速读: free model first
           EMB_MINUTES: "10"   # round 81 vectors are computed by the 8-lane emb81 workflow; here only top up a few
         run: |
           ls data/eod | wc -l
@@ -86,6 +87,7 @@ jobs:
             echo "=== round $n"; env STUDY${n}_OUT=out/study${n}_results.json python study$n.py || echo "round $n failed"
           done
           if [ -d data/ai/s76 ]; then python ann_lists.py || echo "announcement lists failed"; fi   # round 96 lists + live record
+          if [ -d data/ai/s76 ]; then python cn_brief.py || echo "Chinese brief failed"; fi   # 中文公告速读 (Frank 2026-11-21, private page for now)
           if [ -f out/study81_results.json ] && python -c "import json,sys;sys.exit(0 if json.load(open('out/study81_results.json')).get('left_to_embed',0)>0 else 1)"; then echo "round 81 embeddings unfinished: run again"; echo "EMB_AGAIN=1" >> $GITHUB_ENV; fi
           if [ "$(cat s76_again 2>/dev/null)" = "1" ]; then echo "S76_AGAIN=1" >> $GITHUB_ENV; fi
           python securedata.py encrypt-dir out

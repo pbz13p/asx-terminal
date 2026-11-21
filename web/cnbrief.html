@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>澳股小盘公告速读</title>
+<style>
+  :root{--bg:#05060C;--card:#0B0F1E;--line:#222B4D;--txt:#E8EDFF;--sub:#C2CBEE;--cyan:#22E4F5;--yel:#FFD23F;--pink:#FF5C8A;--grn:#3DF29A}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 600px at 20% -10%,#14204a 0%,transparent 60%),var(--bg);color:var(--txt);
+       font:17px/1.75 "PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 18px 60px}
+  h1{margin:0;font-size:30px;letter-spacing:1px;color:#fff;text-shadow:0 0 18px rgba(34,228,245,.45)}
+  .lead{color:var(--sub);margin:6px 0 18px;font-size:16px}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px;position:sticky;top:0;padding:10px 0;background:rgba(5,6,12,.92);backdrop-filter:blur(6px);z-index:2}
+  .bar button{all:unset;cursor:pointer;padding:5px 14px;border:1px solid #2E3D80;border-radius:999px;color:var(--txt);font-size:15px}
+  .bar button.on{background:var(--cyan);color:#05060C;border-color:var(--cyan);font-weight:700}
+  .day{margin:26px 0 10px;font-size:19px;color:var(--yel);font-weight:700;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .it{display:grid;grid-template-columns:86px 1fr;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}
+  .it:hover{border-color:rgba(34,228,245,.6);box-shadow:0 0 18px rgba(34,228,245,.12)}
+  .code a{display:block;font:700 22px/1.2 ui-monospace,Consolas,monospace;color:var(--cyan);text-decoration:none}
+  .code small{display:block;color:var(--sub);font-size:14px;margin-top:4px}
+  .tag{display:inline-block;font-size:14px;padding:1px 10px;border-radius:6px;margin-right:6px;border:1px solid}
+  .t-融资{color:var(--pink);border-color:rgba(255,92,138,.6)} .t-合同{color:var(--grn);border-color:rgba(61,242,154,.6)}
+  .t-业绩{color:var(--yel);border-color:rgba(255,210,63,.6)} .t-钻探{color:#5BC0FF;border-color:rgba(91,192,255,.6)} .t-收购{color:#FF9F43;border-color:rgba(255,159,67,.6)} .t-研究{color:#B48CFF;border-color:rgba(180,140,255,.6)} .t-其他{color:var(--sub);border-color:#3a4670}
+  .txt{margin-top:4px}
+  .foot{margin-top:36px;padding-top:16px;border-top:1px solid var(--line);color:var(--sub);font-size:15px}
+  .foot b{color:var(--txt)}
+  @media (max-width:560px){.it{grid-template-columns:1fr;gap:4px}.code a{display:inline;margin-right:8px}.code small{display:inline}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>澳股小盘 · 公告速读</h1>
+  <p class="lead" id="lead">读取中…</p>
+  <div class="bar" id="bar"></div>
+  <div id="list"></div>
+  <div class="foot">
+    <p><b>数据来源：</b>ASX 上市公司公告原文（asx.com.au）；股价和成交额来自 EODHD。中文摘要由 AI 根据公告生成，以原公告为准。</p>
+    <p><b>说明：</b>本页只摘录公告中的事实，不评价好坏，不构成任何买卖建议。数字和细节以公告原文为准。股价为公告当时的大约价格。</p>
+  </div>
+</div>
+<script>
+let D=[],cur="全部",q="";const WK="日一二三四五六";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const short=t=>({"合同/订单":"合同","钻探/化验":"钻探","资源量":"钻探","收购/出售":"收购","收购要约":"收购","许可/批准":"其他","临床/监管":"其他","季报":"业绩","生产":"业绩"}[t]||t||"其他");
+function render(){
+  const types=["全部",...new Set(D.map(x=>short(x.type)))];
+  document.getElementById("bar").innerHTML=types.map(t=>`<button class="${t===cur?"on":""}" data-t="${esc(t)}">${esc(t)}${t==="全部"?" "+D.length:" "+D.filter(x=>short(x.type)===t).length}</button>`).join("")+
+    `<input id="q" placeholder="搜代码或公司名" value="${esc(q)}" style="margin-left:auto;background:#0B0F1E;border:1px solid #2E3D80;border-radius:999px;color:#E8EDFF;padding:5px 14px;font-size:15px">`;
+  let html="",last="";
+  for(const x of D){
+    if(cur!=="全部"&&short(x.type)!==cur)continue;
+    if(q&&!(x.code+" "+(x.name||"")).toLowerCase().includes(q.toLowerCase()))continue;
+    if(x.date!==last){const dt=new Date(x.date+"T00:00:00");html+=`<div class="day">${dt.getMonth()+1} 月 ${dt.getDate()} 日 · 周${WK[dt.getDay()]}</div>`;last=x.date;}
+    const t=short(x.type);
+    html+=`<div class="it"><div class="code"><a href="https://www.asx.com.au/markets/company/${esc(x.code)}" target="_blank" rel="noopener">${esc(x.code)}</a><small>约 $${esc(x.price)}</small></div><div>`+
+      `<span class="tag t-${esc(t)}">${esc(x.type||"其他")}</span><span style="color:#C2CBEE;font-size:15px">${esc(x.name||"")}</span>`+
+      `<div class="txt">${x.zh?esc(x.zh):'<span style="color:#C2CBEE">（中文摘要明天补上）</span>'}</div>`+
+      `<div style="color:#C2CBEE;font-size:14.5px;margin-top:4px">原标题：${esc(x.headline)}</div></div></div>`;
+  }
+  document.getElementById("list").innerHTML=html||'<p class="lead">没有符合条件的公告。</p>';
+  const qi=document.getElementById("q");qi.oninput=()=>{q=qi.value;const p=qi.selectionStart;render();const n=document.getElementById("q");n.focus();n.setSelectionRange(p,p);};
+}
+document.getElementById("bar").onclick=e=>{const b=e.target.closest("button");if(b){cur=b.dataset.t;render();}};
+fetch("/api/cnbrief").then(r=>r.json()).then(j=>{
+  if(!j.ok){document.getElementById("list").innerHTML=`<p class="lead">${esc(j.error)}</p>`;return;}
+  const d=j.data;D=d.items||[];
+  document.getElementById("lead").textContent=`${d.since} 以来，股价 ${d.max_price} 澳元以下、有成交量的公司发布的价格敏感公告，用中文写清楚公告里说了什么。点代码去 ASX 看原公告。更新于 ${d.generated}。`;
+  render();
+});
+</script>
+</body>
+</html>
