@@ -600,7 +600,7 @@ def main():
     out["ledger"] = ledger()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=1, default=float), encoding="utf-8")
-    print(json.dumps({k: v for k, v in out.items() if k not in ("examples", "ledger")}, ensure_ascii=False))
+    print("[76]", out.get("stage"), out.get("status", "done"))   # numbers and text stay in the encrypted file (public logs)
 
 
 if __name__ == "__main__":
