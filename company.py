@@ -155,12 +155,16 @@ def profile(code, first_day=None):
         "auditor": _pick(a, "auditor"),
         "people": people,
         "shares": _pick(s, "numOfShares", "sharesOnIssue", "sharesIssued") or _pick(h, "numOfShares"),
-        "mcap": _pick(h, "marketCap") or _pick(s, "marketCap"),
+        "mcap_asx": _pick(h, "marketCap") or _pick(s, "marketCap"),
+        "mcap": None,
         "price": _pick(h, "priceLast"),
         "isin": _pick(s, "isin"),
         "assets": _pick(s, "totalAssets"), "liabilities": _pick(s, "totalLiabilities"),
         "raw_keys": {k: sorted(v.keys()) if isinstance(v, dict) else None for k, v in info.items()},
     }
+    if out["shares"] and out["price"]:   # ASX's own marketCap lags a day (2026-11-21: CND showed $14.7M at the old 1.7c)
+        out["mcap"] = round(out["shares"] * out["price"])
+    out["mcap"] = out["mcap"] or out["mcap_asx"]
     try:
         out["top20"] = top20(code)
     except Exception as e:

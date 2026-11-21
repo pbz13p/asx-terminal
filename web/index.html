@@ -559,12 +559,12 @@ async function openCP(){$('cp').classList.add('on');$('sb').classList.remove('on
  try{var P=await api('company?code='+c);}catch(e){$('cpl').innerHTML='<div class="empty">'+esc(e.message)+'</div>';return;}
  if(st.sel!==c)return;
  var ft=BARS.length?BARS[0].time:null;if(typeof ft==='number')ft=new Date(ft*1000).toISOString().slice(0,10);else if(ft&&typeof ft==='object')ft=ft.year+'-'+('0'+ft.month).slice(-2)+'-'+('0'+ft.day).slice(-2);
- var yrs=P.listed?((Date.now()-new Date(P.listed))/3.156e10).toFixed(1):null;
+ var lc=BARS.length?BARS[BARS.length-1].close:P.price,lday=BARS.length?BARS[BARS.length-1].time:'';if(typeof lday!=='string')lday='';var mcNow=P.shares&&lc?P.shares*lc:null;var yrs=P.listed?((Date.now()-new Date(P.listed))/3.156e10).toFixed(1):null;
  var mc=function(v){return v==null?'—':v>=1e8?'$'+(v/1e8).toFixed(2)+' 亿':'$'+(v/1e4).toFixed(0)+' 万';};
  var h='<h3>'+esc(P.name||c)+' <span class="mu">'+esc(c)+'</span></h3>';
  h+='<p style="max-width:1100px;font-size:17px;line-height:1.6">'+(P.description?esc(P.description):'<span class="mu">ASX 资料里没有公司介绍</span>')+'</p>';
  h+='<div class="kvg">';
- var kv=[['行业',(P.sector||'—')+(P.industry&&P.industry!==P.sector?' · '+P.industry:'')],['上市日期',(P.listed||'—')+(yrs?'（约 '+yrs+' 年）':'')],['K 线数据从',ft||'—'],['总股本',P.shares?(P.shares>=1e8?(P.shares/1e8).toFixed(2)+' 亿股':(P.shares/1e4).toFixed(0)+' 万股'):'—'],['市值',mc(P.mcap)],['股价',P.price==null?'—':'$'+P.price],].concat(P.assets?[['总资产 / 总负债',mc(P.assets)+' / '+mc(P.liabilities)]]:[]).concat([['ISIN',P.isin||'—']]);
+ var kv=[['行业',(P.sector||'—')+(P.industry&&P.industry!==P.sector?' · '+P.industry:'')],['上市日期',(P.listed||'—')+(yrs?'（约 '+yrs+' 年）':'')],['K 线数据从',ft||'—'],['总股本',P.shares?(P.shares>=1e8?(P.shares/1e8).toFixed(2)+' 亿股':(P.shares/1e4).toFixed(0)+' 万股'):'—'],['市值（总股本 × 收盘价）',mcNow?mc(mcNow):mc(P.mcap)],['股价',lc==null?'—':'$'+lc+(lday?'（'+lday+' 收盘）':'')],].concat(P.assets?[['总资产 / 总负债',mc(P.assets)+' / '+mc(P.liabilities)]]:[]).concat([['ISIN',P.isin||'—']]);
  kv.forEach(function(x){h+='<div><small>'+x[0]+'</small><b>'+esc(x[1])+'</b></div>';});
  var ad=P.address||{};h+='<div><small>地址</small>'+esc(ad.address||'—')+(ad.phone?'<br><span class="mu">电话 '+esc(ad.phone)+'</span>':'')+'</div>';
  var rg=P.registry||{};h+='<div><small>股份登记处</small>'+esc(typeof rg==='string'?rg:(rg.name||rg.address||'—'))+'</div>';
