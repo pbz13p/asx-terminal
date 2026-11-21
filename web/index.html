@@ -426,7 +426,7 @@ document.addEventListener('click',function(){$('submenu').classList.remove('on')
 
 function loadIB(c){var box=$('ribs');if(!box)return;if(st.m!=='au'){box.style.display='none';return;}box.style.display='';
  $('rib').innerHTML='';$('ribt').textContent='· 读取中…';$('ribn').textContent='';
- apim('ibq?code='+c).then(function(q){if(st.sel!==c)return;
+ apim('ibq?code='+c).then(async function(q){if(st.sel!==c)return;for(var w=0;w<20&&!(BARS.length&&BARS[BARS.length-1].v);w++)await new Promise(function(r){setTimeout(r,500);});if(st.sel!==c)return;
   if(!q.connected||q.error&&!q.last){$('ribt').innerHTML='· <span class="dn">'+esc(q.error||'未连接')+'</span>';$('ribn').textContent='开电脑后打开桌面上的 IB Gateway，选 IB API → 登录，终端就能连上盈透。';return;}
   $('ribt').innerHTML='· '+(q.paper?'模拟账户':'真账户')+' · <span class="'+(q.type==='实时'?'up':'y')+'">'+esc(q.type||'')+'</span>';
   var lb=BARS.length?BARS[BARS.length-1]:null,ev=lb&&lb.v,vf=function(v){return v==null?'—':v>=1e6?(v/1e6).toFixed(2)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':String(v);};
