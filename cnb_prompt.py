@@ -12,7 +12,7 @@ PROMPT = """下面是一家澳洲上市小公司的价格敏感公告（标题�
 - franked 写成"全额抵税（franked）"；化学式、品位照写（如 Li2O、Au），不要用 LaTeX 或别的语言的文字。
 - 如果公告只是会议演示文稿、免责声明、文件封面，正文开头没有新的事实数字，就只写一句：某某公司发布了某某文件，没有新的数字。
 - 公司名、项目名保留英文原名，不要翻译。
-- 不超过 80 个汉字。只输出这一两句话，不加引号、标题或说明。
+- 不超过 80 个汉字，超了就删掉次要数字。直接输出这一两句话，不解释你怎么写的，不加引号、标题或说明。
 
 标题：{headline}
 正文开头：
@@ -25,4 +25,7 @@ def clean(zh):
     zh = re.sub(r"\$\\text\{([^}]*)\}_(\d)\\text\{([^}]*)\}\$", r"\1\2\3", zh)          # $\text{Li}_2\text{O}$ -> Li2O
     zh = re.sub(r"[$\\]", "", zh) if "\\" in zh else zh
     zh = re.sub(r"[\u0590-\u08ff]+", "", zh)                                                 # Hebrew/Arabic letters
+    m = re.search(r"(按规则|只写一句|规则要求)[^：:]{0,20}[：:]\s*", zh)            # model explaining itself first
+    if m:
+        zh = zh[m.end():]
     return zh.strip()

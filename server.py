@@ -642,6 +642,12 @@ class Handler(SimpleHTTPRequestHandler):
                 data = fetch_result("cn_brief.json", branch="quick-results")
             except Exception:
                 raise DataUnavailable("中文公告速读还没生成（每天晚上读完新公告后更新）") from None
+            try:
+                from cnb_prompt import clean
+                for it in data.get("items") or []:
+                    it["zh"] = clean(it.get("zh") or "")
+            except Exception:
+                pass
             self.server._cnbrief = (time.time(), data)
             return data
         if name == "ladder":   # round 98 lists (encrypted on the results branch, refreshed after the daily price run)
