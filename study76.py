@@ -38,7 +38,7 @@ STATE = AI / "s76_state.json"
 MODEL = os.environ.get("S76_MODEL", "claude-haiku-5-5")
 CUTOFF = "2026-07-01"          # first day after the model's reliable knowledge cutoff (June 2026)
 PRICE = {"in": 0.05, "out": 0.25, "cache_read": 0.005, "cache_write": 0.0625}   # USD per MTok, Batch API, prompts < 100k
-BUDGET_STOP = 105.0            # CLAUDE.md: Frank raised the total AI budget to $105 on 2026-11-17 (stop at $105)
+BUDGET_STOP = 270.0            # CLAUDE.md: Frank raised the total AI budget to $270 on 2026-11-21 (Haiku reads the rest; stop at $270)
 API = "https://api.anthropic.com/v1/messages/batches"
 CHARS = 6000                  # used only for the anonymiser's word statistics and the de-anonymisation probe
 SEG = 24000                   # whole announcement is read; long ones in parts of ~24k chars (~6k tokens), every part read
@@ -113,6 +113,10 @@ def anonymise(text, code, common):
     if os.environ.get("S76_FUZZ") == "1":   # 2026-11-17: probe still guessed 9.5% at the strongest word level; exact numbers may give it away
         t = re.sub(r"\d[\d,]*\.?\d*", _fuzz, t)
     t = re.sub(r"https?://\S+|www\.\S+|\S+@\S+", "[N]", t)
+    if os.environ.get("S76_ANON_V2") == "1":   # 2026-11-21 (round 97): names still leaked through these
+        t = re.sub(r"\b[\w-]+(?:\.[\w-]+)*\.(?:com|net|org|io|co|biz|info)(?:\.[a-z]{2})?\b", "[N]", t, flags=re.I)   # bare web domains
+        t = re.sub(r"\b[A-Za-z]{3,}\d+[A-Za-z]*\b|\b[A-Za-z]+\d+[A-Za-z]{2,}\b", "[N]", t)                            # Mach7, Regener8, NTI164
+        t = re.sub(r"\b(?:[A-Z] ){2,}[A-Z]\b", "[N]", t)                                                              # S R J - T E C H
     t = re.sub(r"\b" + re.escape(code) + r"\b", "[N]", t)
     t = re.sub(r"\((?:ASX|TSX|AIM|NYSE|NASDAQ|OTCQB|OTCQX|FSE|JSE)[:\s][^)]*\)", "[N]", t, flags=re.I)   # (ASX: ABC), (TSX-V: XYZ)
     t = re.sub(r"\b[A-Z]{2,5}\b", lambda m: m.group(0) if m.group(0).lower() in common else "[N]", t)        # other tickers / acronyms
@@ -458,7 +462,11 @@ def read_all(all_docs, common):
         per_doc = float(os.environ.get("S76_USD_PER_DOC", "0.0012"))
         # Frank 2026-11-17: this month only the Max plan's free API credit (US$59.41 left on 17 Nov, no card on file) --
         # stop at S76_STOP_AT (ledger total), read the rest when the next month's credit arrives
-        stop = min(BUDGET_STOP, float(os.environ.get("S76_STOP_AT", "55.3")))
+        # Frank 2026-11-21: read the remaining ~227k with Haiku over the Dec/Jan/Feb credits. The Max plan's API credit
+        # (~US$100, arrives about the 12th) is the only money (no card on file); ~US$85 a month goes to the backlog.
+        t_ = date.today()
+        months = (t_.year * 12 + t_.month) - (2026 * 12 + 11) - (1 if t_.day < 13 else 0)
+        stop = min(BUDGET_STOP, float(os.environ.get("S76_STOP_AT", str(55.3 + 85 * max(0, months)))))
         room = stop - ledger()["total"] - 0.5
         n = int(min(int(os.environ.get("S76_CHUNK", "12000")), room / per_doc))
         if n < 50:
@@ -573,7 +581,7 @@ def main():
         out = read_all(all_docs, common)
         Path("s76_again").write_text("1" if out.get("again") else "0")
     elif stage == "deanon":
-        dd = AI / f"s76_deanon_{os.environ.get('S76_ANON_LEVELS', '20,60,150').replace(',', '-')}{'_fuzz' if os.environ.get('S76_FUZZ') == '1' else ''}.json"   # never paid twice
+        dd = AI / f"s76_deanon_{os.environ.get('S76_ANON_LEVELS', '20,60,150').replace(',', '-')}{'_fuzz' if os.environ.get('S76_FUZZ') == '1' else ''}{'_v2' if os.environ.get('S76_ANON_V2') == '1' else ''}.json"   # never paid twice
         if dd.exists():
             out = json.loads(dd.read_text(encoding="utf-8"))
         else:
