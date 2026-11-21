@@ -733,6 +733,10 @@ class Handler(SimpleHTTPRequestHandler):
             return provider.market()
         if name == "indices":
             return provider.indices()
+        if name == "ibkr":   # 盈透连接测试 (paper account, 2026-11-21)
+            import ibkr_link
+            c = (q.get("code") or "CND").upper()
+            return ibkr_link.status(c if CODE.match(c) else "CND")
         if name == "board":   # 行业页 (Frank 2026-11-21)
             return provider.board()
         if name == "weekly":   # 周报 (Saturday weekly report, 2026-11-21)
@@ -777,7 +781,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 CODE_FILES = ("server.py", "providers/binance.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
-              "providers/ibkr.py", "providers/__init__.py", "company.py")
+              "providers/ibkr.py", "providers/__init__.py", "company.py", "ibkr_link.py")
 
 
 def _stamp():
