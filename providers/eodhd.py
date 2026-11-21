@@ -211,6 +211,73 @@ class EodhdProvider(Provider):
                 pass
         return m
 
+    def weekly(self):
+        """周报 (Saturday weekly report, 2026-11-21): this calendar week's index and sector moves (Friday close vs the last
+        close before Monday), sectors ranked, and the 3 strongest liquid stocks per sector."""
+        return self._cached("weekly", 1800, self._load_weekly)
+
+    WEEK_MIN_VALUE = 200_000   # 扣除流动性太差的: last day's turnover (price x volume) at least A$200k ...
+    WEEK_MIN_PRICE = 0.05      # ... and price at least 5 cents
+
+    def _load_weekly(self):
+        xjo = self._long("AXJO.INDX")
+        if len(xjo) < 10:
+            raise DataUnavailable("ASX 200 数据不足，周报暂时做不了")
+        last = xjo[-1][0]
+        monday = date.fromisoformat(last) - timedelta(days=date.fromisoformat(last).weekday())
+        base_day = max(d for d, _ in xjo if d < monday.isoformat())
+        days_in_week = sum(1 for d, _ in xjo if d > base_day)
+
+        def wk(rows):
+            m = dict(rows)
+            return round(100 * (rows[-1][1] / m[base_day] - 1), 2) if rows and rows[-1][0] == last and m.get(base_day) else None
+        idx = []
+        for grp, code, label, gics in self.BOARD:
+            try:
+                rows = self._long(f"{self.INDEX_SYMBOLS[code]}.INDX")
+            except DataUnavailable:
+                continue
+            w = wk(rows)
+            if w is not None:
+                idx.append({"group": grp, "code": code, "label": label, "gics": gics, "w": w, "last": round(rows[-1][1], 1)})
+        # every stock: last close (market) vs the base day's adjusted close (bulk file; adjusted for splits/consolidations)
+        mk = self.market()
+        base = {r["code"]: r.get("adjusted_close") or r["close"]
+                for r in self._cached(f"bulk:{base_day}", 86400, lambda: self._bulk(base_day)) if r.get("close")}
+        raw_base = {r["code"]: r["close"] for r in self._cached(f"bulk:{base_day}", 86400, lambda: self._bulk(base_day)) if r.get("close")}
+        stocks = []
+        for s in mk["stocks"]:
+            b = base.get(s["code"])
+            val = s["last"] * (s["volume"] or 0)
+            if not b or s["last"] < self.WEEK_MIN_PRICE or val < self.WEEK_MIN_VALUE:
+                continue
+            w = round(100 * (s["last"] / b - 1), 1)
+            rb = raw_base.get(s["code"])
+            check = []
+            if rb and abs(rb / b - 1) > 0.02:
+                check.append("本周有除权/合股调整")
+            if abs(w) >= 50:
+                check.append("涨跌超 50%：核对合股、配股、收购")
+            stocks.append({"code": s["code"], "name": s["name"], "last": s["last"], "w": w, "value_k": round(val / 1000),
+                           "check": "；".join(check) or None})
+        smap = self._sector_map([x["code"] for x in sorted(stocks, key=lambda x: -x["value_k"])])
+        sectors = []
+        for r in idx:
+            if r["gics"]:
+                g = [x for x in stocks if smap.get(x["code"]) == r["gics"]]
+                ws = sorted(x["w"] for x in g)
+                sectors.append({**r, "n": len(g), "median": ws[len(ws) // 2] if ws else None,
+                                "up_pct": round(100 * sum(1 for x in ws if x > 0) / len(ws)) if ws else None,
+                                "top": sorted(g, key=lambda x: -x["w"])[:3]})
+        sectors.sort(key=lambda x: -x["w"])
+        ws = sorted(x["w"] for x in stocks)
+        return {"asof": last, "stocks_asof": mk["asof"], "week_from": monday.isoformat(), "base_day": base_day, "days": days_in_week,
+                "complete": date.fromisoformat(last).weekday() == 4,
+                "index": [r for r in idx if not r["gics"]], "sectors": sectors,
+                "breadth": {"n": len(stocks), "up_pct": round(100 * sum(1 for x in ws if x > 0) / len(ws)) if ws else None,
+                            "median": ws[len(ws) // 2] if ws else None},
+                "filter": f"成交额 ≥ {self.WEEK_MIN_VALUE // 1000}k 澳元、股价 ≥ {self.WEEK_MIN_PRICE} 澳元"}
+
     def board(self):
         return self._cached("board", 1800, self._load_board)
 

@@ -1,0 +1,25 @@
+{
+  "week_end": "2026-11-20",
+  "written": "2026-11-21",
+  "summary": "ASX 200 连跌 5 天，一周跌 5.39%（-489.6 点，收 8,592.6），Bloomberg 称是 2022 年以来最差的一周；原材料 -12.3%、黄金股 -15.2% 领跌，只有公用事业小涨。小盘指数跌 8.06%，比大盘更惨。起因：AI 科技股回落、澳洲就业转差、美联储会议纪要偏鹰。",
+  "past": [
+    {"date": "2026-11-17", "region": "澳洲", "event": "RBA 11 月会议纪要", "result": "加息和不动有分歧；三位委员反对上次加息，担心经济下滑更快。现金利率 4.85%"},
+    {"date": "2026-11-17", "region": "美国", "event": "10 月零售", "result": "总体 +0.2%（前值 +0.8%）；控制组 +0.6%，好于预期 0.4%"},
+    {"date": "2026-11-18", "region": "美国", "event": "美联储 10 月会议纪要", "result": "偏鹰：几乎所有人认为还要再加息，有人认为 12 月可以加超过 25 个基点"},
+    {"date": "2026-11-19", "region": "澳洲", "event": "10 月就业", "result": "就业 -4.35 万（预期 +2.5 万），失业率 4.9%（预期 4.7%），疫情以来最高"},
+    {"date": "本周", "region": "美国", "event": "10 月 CPI", "result": "总体 +0.4%（预期 0.3%），核心 +0.3%（预期 0.2%），都高于预期"}
+  ],
+  "next": [
+    {"date": "2026-11-23", "region": "美国", "event": "11 月 S&P 全球 PMI 初值", "note": ""},
+    {"date": "2026-11-25", "region": "澳洲", "event": "10 月 CPI（月度）", "note": "12 月 RBA 开会前最后一份通胀数据；市场预期值待核"},
+    {"date": "2026-11-25", "region": "美国", "event": "10 月 PCE + 三季度 GDP 修正 + 褐皮书", "note": "核心 PCE 预期月 +0.3%、年 3.2%（前值 3.1%）"},
+    {"date": "2026-11-26", "region": "美国", "event": "感恩节休市", "note": "隔夜美股不开，周五（27 日）早收盘"},
+    {"date": "12 月", "region": "美国", "event": "美联储 12 月会议", "note": "CME 期货显示约 99% 概率加息 25 个基点（2026-11-20 报道）"}
+  ],
+  "sources": [
+    "https://sharetrader.com.au/news/2026-11-20-asx-200-sheds-almost-500-points-for-the-week-as-materials-slump-12-3-per-cent",
+    "https://smallcaps.com.au/article/weekly-wrap-2026-11-20-0f4f75bb-dcf7-450e-9fa5-4e5f7d27a94e",
+    "https://www.bloomberg.com/news/articles/2026-11-20/australian-stocks-asx200-worst-week-since-2022-as-miners-tumble",
+    "https://www.newsquawk.com/headlines/week-in-focus--november-23rd-27th-highlights-include-us-pce-flash-pmis-aussie-cpi-and-ecb-minutes"
+  ]
+}

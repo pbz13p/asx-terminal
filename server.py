@@ -391,6 +391,37 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def weekly(self):
+        """周报: this week's index/sector moves and leaders (live from EODHD on this PC), Australia/US macro events
+        (research/weekly/<friday>.json, written by the Saturday task from public calendars), next week's volatility
+        forecast (round 61) and how last week's forecast did (voltrack)."""
+        out = {"market": None, "macro": None, "vol": None, "errors": []}
+        try:
+            out["market"] = provider.weekly()
+        except Exception as e:
+            out["errors"].append(f"行情：{e}")
+        try:
+            files = sorted((ROOT / "research" / "weekly").glob("*.json"))
+            out["macro"] = json.loads(files[-1].read_text(encoding="utf-8")) if files else None
+            out["weeks"] = [f.stem for f in files]
+        except Exception as e:
+            out["errors"].append(f"宏观：{e}")
+        try:
+            hit = getattr(self.server, "_volml", None)
+            V = hit[1] if hit and time.time() - hit[0] < 600 else fetch_result("study61_results.json")
+            L = [x for x in V.get("latest") or [] if x.get("vol5")]
+            v5 = sorted(x["vol5"] for x in L)
+            up = [x for x in L if x.get("naive_vol5") and x["vol5"] > x["naive_vol5"]]
+            out["vol"] = {"generated": V.get("generated"), "asof": max((x.get("date") or "" for x in L), default=None),
+                          "n": len(L), "median_vol5": v5[len(v5) // 2] if v5 else None,
+                          "up_pct": round(100 * len(up) / len(L)) if L else None,
+                          "top": [{k: x.get(k) for k in ("code", "name", "sector", "vol5", "naive_vol5", "pct20", "conf5")}
+                                  for x in sorted(L, key=lambda x: -x["vol5"])[:10]],
+                          "track": V.get("track")}
+        except Exception:
+            out["errors"].append("波动率：模型结果还没生成")
+        return out
+
     def research(self):
         """Research centre: the findings registry (research/findings.json.enc, updated after every round) plus today's
         stocks that match each finding, taken from the daily scan and the volatility model."""
@@ -678,6 +709,8 @@ class Handler(SimpleHTTPRequestHandler):
             return provider.indices()
         if name == "board":   # 行业页 (Frank 2026-11-21)
             return provider.board()
+        if name == "weekly":   # 周报 (Saturday weekly report, 2026-11-21)
+            return self.weekly()
         if name == "quotes":
             codes = [c for c in q.get("codes", "").upper().split(",") if c]
             if not codes or len(codes) > 40 or not all(CODE.match(c) for c in codes):

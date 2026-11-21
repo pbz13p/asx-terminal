@@ -31,6 +31,10 @@ class Provider:
         """Index and sector readings: {main: [index], sectors: [index]}."""
         raise DataUnavailable
 
+    def weekly(self):
+        """周报: this week's sector moves and leaders."""
+        raise DataUnavailable("周报只在 EODHD 数据源下可用")
+
     def board(self):
         """行业页: sector and small-cap indices, small-cap mood, sector leaders."""
         raise DataUnavailable("行业页只在 EODHD 数据源下可用")
