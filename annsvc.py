@@ -146,15 +146,26 @@ def translate(code, ids):
 BRIEF_MODEL = os.environ.get("BRIEF_MODEL", "claude-haiku-5-5")
 
 
+def _env_file(name):
+    try:
+        for line in (ROOT / ".env").read_text(encoding="utf-8-sig").splitlines():
+            k, _, v = line.partition("=")
+            if k.strip() == name and v.strip():
+                return v.strip().strip('"')
+    except OSError:
+        pass
+    return ""
+
+
 def brief(code, ids):
     """One-line Chinese facts-only summary of one announcement (same rules as the nightly 中文速读), cached per id.
     Used by /cnbrief.html for a searched stock's older price-sensitive announcements (Frank 2026-11-21)."""
     f = CACHE / f"{ids}.brief.json"
     if f.exists():
         return json.loads(f.read_text(encoding="utf-8"))
-    key = os.environ.get("ANTHROPIC_API_KEY", "")
+    key = os.environ.get("ANTHROPIC_API_KEY", "") or _env_file("ANTHROPIC_API_KEY")   # re-read .env: no restart needed
     if not key:
-        raise ValueError("还没有设置 AI 密钥")
+        raise ValueError("这台电脑还没有设置 AI 密钥（.env 里的 ANTHROPIC_API_KEY）")
     from cnb_prompt import PROMPT, clean
     src = text(code, ids)
     req = urllib.request.Request("https://api.anthropic.com/v1/messages", method="POST",
