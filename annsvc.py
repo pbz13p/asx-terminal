@@ -141,3 +141,33 @@ def translate(code, ids):
         g.write(json.dumps({"t": time.strftime("%Y-%m-%d %H:%M"), "ids": ids, "model": MODEL, "in": out["tokens_in"], "out": out["tokens_out"]}) + "\n")
     out["cached"] = False
     return out
+
+
+BRIEF_MODEL = os.environ.get("BRIEF_MODEL", "claude-haiku-5-5")
+
+
+def brief(code, ids):
+    """One-line Chinese facts-only summary of one announcement (same rules as the nightly 中文速读), cached per id.
+    Used by /cnbrief.html for a searched stock's older price-sensitive announcements (Frank 2026-11-21)."""
+    f = CACHE / f"{ids}.brief.json"
+    if f.exists():
+        return json.loads(f.read_text(encoding="utf-8"))
+    key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not key:
+        raise ValueError("还没有设置 AI 密钥")
+    from cnb_prompt import PROMPT, clean
+    src = text(code, ids)
+    req = urllib.request.Request("https://api.anthropic.com/v1/messages", method="POST",
+                                 data=json.dumps({"model": BRIEF_MODEL, "max_tokens": 600,
+                                                  "messages": [{"role": "user", "content": PROMPT.format(headline=src["headline"], text=src["text"][:3500])}]}).encode(),
+                                 headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        res = json.loads(r.read())
+    u = res.get("usage", {})
+    zh = clean("".join(b.get("text", "") for b in res.get("content", []) if b.get("type") == "text"))
+    out = {"ids": ids, "code": code, "date": src["date"], "headline": src["headline"], "zh": zh, "model": BRIEF_MODEL}
+    f.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
+    with (CACHE / "usage.jsonl").open("a", encoding="utf-8") as g:
+        g.write(json.dumps({"t": time.strftime("%Y-%m-%d %H:%M"), "ids": ids, "model": BRIEF_MODEL, "what": "brief",
+                            "in": u.get("input_tokens", 0), "out": u.get("output_tokens", 0)}) + "\n")
+    return out

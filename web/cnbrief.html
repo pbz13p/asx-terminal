@@ -71,7 +71,9 @@ let oldT;function older(c){clearTimeout(oldT);oldT=setTimeout(async()=>{
   if(q.trim().toUpperCase()!==c)return;
   const since=document.getElementById("lead").dataset.since||"";
   el.innerHTML=`<p class="lead">${c} 在 ${since} 以来没有价格敏感公告，或股价不在 2 澳元以下，所以本页没有它。</p>`+
-    (a.length?`<p class="lead" style="margin-top:6px">它最近的价格敏感公告（英文原标题）：</p>`+a.map(x=>`<div class="it"><div class="code"><a href="https://www.asx.com.au/markets/company/${c}" target="_blank" rel="noopener">${c}</a><small>${esc(x.date)}</small></div><div class="txt">${esc(x.headline)}</div></div>`).join(""):`<p class="lead">没找到 ${c} 的公告，请检查代码。</p>`);
+    (a.length?`<p class="lead" style="margin-top:6px">它最近的价格敏感公告：</p>`+a.map(x=>`<div class="it"><div class="code"><a href="https://www.asx.com.au/markets/company/${c}" target="_blank" rel="noopener">${c}</a><small>${esc(x.date)}</small></div><div><div class="txt" id="b${esc(x.ids)}" style="color:#C2CBEE">中文摘要生成中…</div><div style="color:#C2CBEE;font-size:14.5px;margin-top:4px">原标题：${esc(x.headline)}</div></div></div>`).join(""):`<p class="lead">没找到 ${c} 的公告，请检查代码。</p>`);
+  a.forEach(x=>fetch(`/api/annbrief?code=${c}&ids=${x.ids}`).then(r=>r.json()).then(j=>{const e=document.getElementById("b"+x.ids);if(!e)return;
+    if(j.ok&&j.data.zh){e.textContent=j.data.zh;e.style.color="";}else e.textContent="（中文摘要没生成出来："+(j.error||"未知原因")+"）";}).catch(()=>{}));
 },400);}
 document.getElementById("bar").onclick=e=>{const b=e.target.closest("button");if(!b)return;if(b.id==="imp"){imp=!imp;render();return;}cur=b.dataset.t;render();};
 fetch("/api/cnbrief").then(r=>r.json()).then(j=>{

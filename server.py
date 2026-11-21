@@ -752,11 +752,13 @@ class Handler(SimpleHTTPRequestHandler):
             return provider.candles(code, q["tf"])
         if name == "sales":
             return provider.sales(code)
-        if name in ("ann", "anntext", "anntr"):
+        if name in ("ann", "anntext", "anntr", "annbrief"):
             import annsvc
             if name == "ann":
                 return annsvc.listing(code)
             ids = q.get("ids", "")
+            if name == "annbrief":
+                return annsvc.brief(code, ids)
             return annsvc.text(code, ids) if name == "anntext" else annsvc.translate(code, ids)
         if name == "profile":
             return self.profile(code)
