@@ -576,9 +576,19 @@ async function openCP(){$('cp').classList.add('on');$('sb').classList.remove('on
  var T=P.top20||{};
  if(T.rows&&T.rows.length){
   h+='<h3>前 20 大股东（合计 '+esc(T.top20_pct)+'%）</h3><p class="mu" style="color:#C9D2F5">出自 '+esc(T.date)+' 《'+esc(T.headline)+'》第 '+esc(T.page)+' 页'+(T.pdf?'，<a href="'+esc(T.pdf)+'" target="_blank">打开原文 PDF</a>':'')+'。年报一年一次，之后的配售和买卖不在里面。</p>';
-  h+='<table><tr><th>#</th><th class="l">股东</th><th>股数</th><th>占比</th></tr>';
-  T.rows.forEach(function(r,i){h+='<tr><td>'+(i+1)+'</td><td class="l">'+esc(r.name)+cpTag(r.name,P.people)+'</td><td>'+(r.shares||0).toLocaleString()+'</td><td><b>'+r.pct+'%</b></td></tr>';});
+  var PV=T.prev,nm=function(x){return (x||'').toUpperCase().replace(/[^A-Z0-9]/g,'');},pm={},used={};
+  if(PV&&PV.rows)PV.rows.forEach(function(r){pm[nm(r.name)]=r;});
+  var cnt={n:0,u:0,d:0,s:0};
+  var chg=function(r){if(!PV||!PV.rows)return '';var o=pm[nm(r.name)];if(!o){cnt.n++;return '<b style="color:#FFD23F">🆕 新进前 20</b>';}used[nm(r.name)]=1;var d=r.shares-o.shares;if(d===0){cnt.s++;return '<span class="mu">没变</span>';}var p=o.shares?d/o.shares*100:0;if(d>0){cnt.u++;return '<b style="color:#22E4F5">▲ 增持 '+(d/1e6).toFixed(2)+' 百万股（+'+p.toFixed(0)+'%）</b>';}cnt.d++;return '<b style="color:#FF9F43">▼ 减持 '+(-d/1e6).toFixed(2)+' 百万股（'+p.toFixed(0)+'%）</b>';};
+  h+='<table><tr><th>#</th><th class="l">股东</th><th>股数</th><th>占比</th>'+(PV?'<th class="l">和去年年报比</th>':'')+'</tr>';
+  T.rows.forEach(function(r,i){var c=chg(r);h+='<tr><td>'+(i+1)+'</td><td class="l">'+esc(r.name)+cpTag(r.name,P.people)+'</td><td>'+(r.shares||0).toLocaleString()+'</td><td><b>'+r.pct+'%</b></td>'+(PV?'<td class="l">'+c+'</td>':'')+'</tr>';});
   h+='</table>';
+  if(PV&&PV.rows){var gone=PV.rows.filter(function(r){return !used[nm(r.name)];});
+   h+='<p style="color:#E6ECFF;max-width:1100px;font-size:17px">和去年（'+esc(PV.date)+' 年报）比：<b style="color:#FFD23F">新进 '+cnt.n+' 个</b>、<b style="color:#22E4F5">增持 '+cnt.u+' 个</b>、<b style="color:#FF9F43">减持 '+cnt.d+' 个</b>、没变 '+cnt.s+' 个、<b style="color:#FF5A7A">跌出前 20 共 '+gone.length+' 个</b>；前 20 大合计 '+esc(PV.top20_pct)+'% → '+esc(T.top20_pct)+'%。</p>';
+   if(gone.length){h+='<h3>⬇ 跌出前 20 的（去年在，今年不在；可能卖了，也可能只是被别人超过）</h3><table><tr><th class="l">股东</th><th>去年股数</th><th>去年占比</th></tr>';
+    gone.forEach(function(r){h+='<tr><td class="l">'+esc(r.name)+cpTag(r.name,P.people)+'</td><td>'+(r.shares||0).toLocaleString()+'</td><td>'+r.pct+'%</td></tr>';});h+='</table>';}
+   h+='<p class="mu" style="color:#C9D2F5">去年的表出自 '+esc(PV.date)+' 《'+esc(PV.headline)+'》'+(PV.pdf?'，<a href="'+esc(PV.pdf)+'" target="_blank">打开原文 PDF</a>':'')+'。同一个人换了户头名字会被当成"新进 + 跌出"，看名字判断。</p>';
+  }else h+='<p class="mu" style="color:#C9D2F5">没找到去年的年报股东表，暂时没法对比。</p>';
   var top1=T.rows[0]?T.rows[0].pct:0;h+='<p style="color:#C9D2F5;max-width:1100px">怎么看：前 20 大合计 '+T.top20_pct+'%'+(T.top20_pct<40?'，筹码很分散，散户多，容易被消息推着大涨大跌':T.top20_pct>70?'，筹码很集中，少数人说了算，流通盘小':'，集中程度一般')+'；最大股东 '+top1+'%'+(top1>=20?'，有实际控制人':'')+'。</p>';
  }else h+='<h3>前 20 大股东</h3><div class="empty">最近两年的年报里没找到前 20 大股东表'+(T.tried&&T.tried.length?'（试过：'+esc(T.tried.join('；'))+'）':'')+'。</div>';
  $('cpl').innerHTML=h;}

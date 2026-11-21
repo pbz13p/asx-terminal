@@ -102,12 +102,14 @@ def parse_top20(pages):
 
 def top20(code):
     y = date.today().year
-    items = study67.listing(code, [y, y - 1, y - 2])
+    items = study67.listing(code, [y, y - 1, y - 2])   # two years back so last year's report is there to compare
     cands = [i for i in items if re.search(r"annual report|top\s*20|twenty largest|top twenty|shareholder information", i["headline"], re.I)
              and not re.search(r"notice of|letter|proxy|appendix 4g|corporate governance", i["headline"], re.I)]
     cands.sort(key=lambda i: i["date"], reverse=True)
-    tried = []
-    for it in cands[:4]:
+    tried, found = [], []
+    for it in cands[:8]:
+        if found and (date.fromisoformat(found[0]["date"]) - date.fromisoformat(it["date"])).days < 200:
+            continue          # same year's report again (e.g. a re-lodged copy) -- we want last year's for the comparison
         f = CACHE / f"top20v2_{it['ids']}.json"
         if f.exists():
             d = json.loads(f.read_text(encoding="utf-8"))
@@ -123,8 +125,15 @@ def top20(code):
         tried.append(it["headline"])
         if d.get("rows"):
             d["top20_pct"] = round(sum(r["pct"] for r in d["rows"]), 2)
-            return d
-    return {"rows": None, "tried": tried}
+            found.append(d)
+            if len(found) == 2:
+                break
+    if not found:
+        return {"rows": None, "tried": tried}
+    out = dict(found[0])
+    if len(found) > 1:
+        out["prev"] = {k: found[1].get(k) for k in ("date", "headline", "pdf", "rows", "page", "top20_pct")}
+    return out
 
 
 def _pick(d, *keys):
