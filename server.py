@@ -102,6 +102,26 @@ def news_load():
         return []
 
 
+_news_synced = [0.0]
+
+
+def news_sync():
+    """2026-11-21: the news task often cannot reach this PC's Chrome, so it also commits its items to the `news` branch
+    (news.json, public market-news summaries only). Pull that file at most every 10 minutes and merge (de-duplicated)."""
+    if time.time() - _news_synced[0] < 600:
+        return
+    _news_synced[0] = time.time()
+    try:
+        import urllib.request
+        url = "https://raw.githubusercontent.com/pbz13p/asx-terminal/news/news.json"
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"Cache-Control": "no-cache"}), timeout=15) as r:
+            items = json.load(r)
+        if isinstance(items, list):
+            news_add(items)
+    except Exception as e:
+        print("news sync:", type(e).__name__, flush=True)
+
+
 def news_add(items):
     """Add news items (only-add, de-duplicated by id or title). Item: {time, title, what, why, impact, tags[], sources[{name,url}]}."""
     keep = ("id", "time", "title", "what", "why", "impact", "tags", "sources", "tickers")
@@ -534,6 +554,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def route(self, name, q):
         if name == "news":
+            news_sync()
             return news_load()[:int(q.get("n") or 300)]
         if q.get("m") == "cx" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cx(name, q)
