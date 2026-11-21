@@ -76,10 +76,16 @@ def parse_top20(pages):
             line = line.strip()
             if not line:
                 continue
-            m = ROW.match((pend + " " + line).strip()) if pend else ROW.match(line)
+            m = ROW.match(line)
+            if pend and (not m or len(m.group(1)) < 12):   # a wrapped name: "CITICORP NOMINEES PTY" / "LIMITED 1,234 5.6"
+                m = ROW.match(pend + " " + line) or m
             if m:
                 name = re.sub(r"\s+", " ", m.group(1)).strip(" .-")
+                if re.match(r"(holder|name|rank|shareholder|registered|investor)", name, re.I):   # header words glued to row 1
+                    cut = re.search(r"\s1[.)]?\s+(?=[A-Z])", name) or re.search(r"(?:%|\bIC\b|capital|units|holding|held)\s+(?=[A-Z])", name)
+                    name = name[cut.end():] if cut else name
                 if re.search(r"^(total|top 20|twenty)", name, re.I):
+                    pend = ""
                     if rows:
                         break
                     continue
@@ -102,7 +108,7 @@ def top20(code):
     cands.sort(key=lambda i: i["date"], reverse=True)
     tried = []
     for it in cands[:4]:
-        f = CACHE / f"top20_{it['ids']}.json"
+        f = CACHE / f"top20v2_{it['ids']}.json"
         if f.exists():
             d = json.loads(f.read_text(encoding="utf-8"))
         else:
@@ -137,18 +143,22 @@ def profile(code, first_day=None):
         "code": code,
         "name": _pick(h, "displayName", "name") or _pick(a, "displayName", "name"),
         "sector": _pick(h, "sector") or _pick(a, "sector"),
-        "industry": _pick(h, "industry") or _pick(a, "industry"),
+        "industry": _pick(h, "industryGroup", "industry") or _pick(a, "industry"),
         "description": _pick(a, "description", "principalActivities") or _pick(h, "description"),
-        "website": _pick(a, "website") or _pick(h, "website"),
+        "website": _pick(a, "websiteUrl", "website") or _pick(h, "website"),
         "listed": _pick(a, "dateListed", "listingDate", "listedDate") or _pick(h, "dateListed", "listingDate"),
         "first_trade": first_day,
         "address": _pick(a, "addressContact", "address", "registeredOffice"),
         "phone": _pick(a, "phoneNumber", "phone"),
-        "registry": _pick(a, "registry", "shareRegistry", "registryName"),
+        "registry": _pick(a, "addressShareRegistry", "registry", "shareRegistry"),
+        "secretaries": _pick(a, "secretaries") or [],
         "auditor": _pick(a, "auditor"),
         "people": people,
         "shares": _pick(s, "numOfShares", "sharesOnIssue", "sharesIssued") or _pick(h, "numOfShares"),
         "mcap": _pick(h, "marketCap") or _pick(s, "marketCap"),
+        "price": _pick(h, "priceLast"),
+        "isin": _pick(s, "isin"),
+        "assets": _pick(s, "totalAssets"), "liabilities": _pick(s, "totalLiabilities"),
         "raw_keys": {k: sorted(v.keys()) if isinstance(v, dict) else None for k, v in info.items()},
     }
     try:
