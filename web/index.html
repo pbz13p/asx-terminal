@@ -528,7 +528,7 @@ async function openSB(){$('sb').classList.add('on');$('rc').classList.remove('on
  h+='</table><p class="mu" style="color:#C9D2F5">数据：EODHD 收盘价；行业分类来自 ASX 公司资料。商品价格在顶部"商品"模式里看。</p>';
  $('sbl').innerHTML=h;}
 $('sbb').onclick=openSB;$('sbx').onclick=function(){$('sb').classList.remove('on');};
-$('sbl').addEventListener('click',function(e){var t=e.target.closest('[data-c],[data-s]');if(!t)return;var c=t.getAttribute('data-c')||t.getAttribute('data-s');var lb=t.getAttribute('data-c')?(t.querySelector('b')||{}).textContent:'';$('sb').classList.remove('on');if(st.m!=='au')setMarket('au',c);else select(c);if(lb){NAMES[c]=lb;setTimeout(function(){if(st.sel===c){$('name').textContent=lb;$('rname').textContent=lb+' · 指数';}},300);}});
+$('sbl').addEventListener('click',function(e){var t=e.target.closest('[data-c],[data-s]');if(!t)return;var c=t.getAttribute('data-c')||t.getAttribute('data-s');var lb=t.getAttribute('data-c')?(t.querySelector('b')||{}).textContent:'';$('sb').classList.remove('on');if(st.m!=='au')setMarket('au',c);else select(c);if(lb){NAMES[c]=lb;setTimeout(function(){if(st.sel===c){$('name').textContent=lb;$('rname').textContent=lb+' · 指数';var q=Q[c];$('rpx').innerHTML=q&&q.last?px(q.last)+' <span style="font-size:17px">'+pc(q.prev?100*(q.last/q.prev-1):null,2)+'</span>':'—';$('rchg').innerHTML='';}},1500);}});
 $('rcb').onclick=openRC;$('rcx').onclick=function(){$('rc').classList.remove('on');};
 $('rcf').addEventListener('click',function(e){var f=e.target.getAttribute('data-f');if(!f)return;rcf=f;[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b===e.target);});renderRC();});
 $('rcc').addEventListener('click',function(e){var c=e.target.getAttribute('data-c');if(c){$('rc').classList.remove('on');select(c);}});
