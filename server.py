@@ -572,6 +572,16 @@ class Handler(SimpleHTTPRequestHandler):
                 (ROOT / "sealed" / f).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
                 return {"saved": str(ROOT / "sealed" / f), "read": data.get("read")}
             return data
+        if name == "annlists":   # round 96 lists (encrypted on the quick-results branch, refreshed after the daily AI read)
+            hit = getattr(self.server, "_annlists", None)
+            if hit and time.time() - hit[0] < 600:
+                return hit[1]
+            try:
+                data = fetch_result("ann_lists.json", branch="quick-results")
+            except Exception:
+                raise DataUnavailable("公告信号还没生成（每天晚上 AI 读完新公告后更新）") from None
+            self.server._annlists = (time.time(), data)
+            return data
         if name == "ledger":   # round 94 portfolio ledger (encrypted on the quick-results branch)
             hit = getattr(self.server, "_ledger", None)
             if hit and time.time() - hit[0] < 600:

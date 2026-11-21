@@ -84,6 +84,7 @@ jobs:
           for n in $(echo "$ROUNDS" | tr ',' ' '); do
             echo "=== round $n"; env STUDY${n}_OUT=out/study${n}_results.json python study$n.py || echo "round $n failed"
           done
+          if [ -d data/ai/s76 ]; then python ann_lists.py || echo "announcement lists failed"; fi   # round 96 lists + live record
           if [ -f out/study81_results.json ] && python -c "import json,sys;sys.exit(0 if json.load(open('out/study81_results.json')).get('left_to_embed',0)>0 else 1)"; then echo "round 81 embeddings unfinished: run again"; echo "EMB_AGAIN=1" >> $GITHUB_ENV; fi
           if [ "$(cat s76_again 2>/dev/null)" = "1" ]; then echo "S76_AGAIN=1" >> $GITHUB_ENV; fi
           python securedata.py encrypt-dir out
