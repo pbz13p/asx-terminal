@@ -106,7 +106,7 @@ td.w{white-space:normal;min-width:260px}
   <div class="brand"><i></i>NEON <b>TERMINAL</b></div><div class="mk" id="mkt"><button data-m="au" class="on">🇦🇺 澳股</button><button data-m="cn">🇨🇳 A 股</button><button data-m="cx">₿ 加密</button><button data-m="cm">🛢 商品</button></div>
   <form id="sf" role="search"><input id="si" placeholder="搜代码：CND 或 600519" maxlength="6" autocomplete="off" aria-label="搜索股票代码"></form>
   <div class="idx num" id="idx"></div>
-  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="cnbb" style="color:#22E4F5;border-color:rgba(34,228,245,.55)" title="澳股小盘股最近 7 天的价格敏感公告，中文一句话写清楚">🀄 中文速读</button><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="sbb" style="color:#4FC3FF;border-color:rgba(79,195,255,.55)" title="宏观到微观：大盘、小盘、11 个行业，谁强谁弱，行业里最强的股票">🏭 行业</button><button class="btn" id="cpb" style="color:#FF9EE0;border-color:rgba(255,158,224,.55)" title="公司简介：做什么、什么时候上市、董事是谁、前 20 大股东">🏢 简介</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
+  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="cnbb" style="color:#22E4F5;border-color:rgba(34,228,245,.55)" title="澳股小盘股最近 7 天的价格敏感公告，中文一句话写清楚">🀄 中文速读</button><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="sbb" style="color:#4FC3FF;border-color:rgba(79,195,255,.55)" title="宏观到微观：大盘、小盘、11 个行业，谁强谁弱，行业里最强的股票">🏭 行业</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
 </header>
 <main>
   <aside>
@@ -116,7 +116,7 @@ td.w{white-space:normal;min-width:260px}
   </aside>
   <section id="center">
     <div class="sym">
-      <h2 id="code">—</h2><span class="nmx" id="name"></span><span class="px num" id="px"></span><span class="num" id="chg"></span>
+      <h2 id="code">—</h2><span class="nmx" id="name"></span><span class="px num" id="px"></span><span class="num" id="chg"></span><button class="tf" id="cpb" style="margin-left:10px;color:#FF9EE0;border-color:rgba(255,158,224,.55)" title="公司简介：做什么、什么时候上市、董事是谁、前 20 大股东（只做了澳股）">🏢 简介</button>
       <div class="tool">
         <span id="tfs"></span><span class="sep"></span><span id="pers"><button class="tf on" data-per="d" title="每根K线一天">日K</button> <button class="tf" data-per="w" title="每根K线一周">周K</button> <button class="tf" data-per="m" title="每根K线一个月">月K</button></span><span class="sep"></span>
         <span id="mabtns"></span><span class="sep"></span>
@@ -216,7 +216,7 @@ function UPC(a){var cn=st.m==='cn';return a==null?(cn?'#FF2E74':'#19FF9C'):(cn?'
 function DNC(a){var cn=st.m==='cn';return a==null?(cn?'#19FF9C':'#FF2E74'):(cn?'rgba(25,255,156,'+a+')':'rgba(255,46,116,'+a+')');}
 function draw(){
  var b=BARS,c=b.map(function(x){return x.close;}),lp=c.length?c[c.length-1]:1,pr=lp<0.1?4:lp<2?3:2,pf={type:'price',precision:pr,minMove:Math.pow(10,-pr)};
- if(MAPER!==(st.per||'d'))MACFG=loadMa(st.per||'d');cs.applyOptions({priceFormat:pf,upColor:UPC(),downColor:DNC(),wickUpColor:UPC(),wickDownColor:DNC()});document.body.classList.toggle('cn',st.m==='cn');syncMaSeries(pf);
+ if(MAPER!==(st.per||'d'))MACFG=loadMa(st.per||'d');cs.applyOptions({priceFormat:pf,upColor:UPC(),downColor:DNC(),wickUpColor:UPC(),wickDownColor:DNC()});document.body.classList.toggle('cn',st.m==='cn');if($('cpb'))$('cpb').style.display=st.m==='au'?'':'none';syncMaSeries(pf);
  cs.setData(b);vs.setData(b.map(function(x){return {time:x.time,value:x.v,color:x.close>=x.open?UPC(.28):DNC(.28)};}));
  MAV=MACFG.map(function(m){return maCalc(m,c);});MACFG.forEach(function(m,k){var v=MAV[k];mas[k].setData(m.on?b.map(function(x,i){return v[i]==null?{time:x.time}:{time:x.time,value:v[i]};}):[]);});
  var mb=sma(c,20);bol.forEach(function(sr,k){sr.setData(BOLL?b.map(function(x,i){if(mb[i]==null)return null;var sd=0;for(var j=i-19;j<=i;j++)sd+=Math.pow(c[j]-mb[i],2);sd=Math.sqrt(sd/20);return {time:x.time,value:mb[i]+(k-1)*2*sd};}).filter(Boolean):[]);});
@@ -564,7 +564,7 @@ async function openCP(){$('cp').classList.add('on');$('sb').classList.remove('on
  var h='<h3>'+esc(P.name||c)+' <span class="mu">'+esc(c)+'</span></h3>';
  h+='<p style="max-width:1100px;font-size:17px;line-height:1.6">'+(P.description?esc(P.description):'<span class="mu">ASX 资料里没有公司介绍</span>')+'</p>';
  h+='<div class="kvg">';
- var kv=[['行业',(P.sector||'—')+(P.industry?' · '+P.industry:'')],['上市日期',(P.listed||'—')+(yrs?'（约 '+yrs+' 年）':'')],['我们最早的 K 线',ft||'—'],['总股本',P.shares?(P.shares>=1e8?(P.shares/1e8).toFixed(2)+' 亿股':(P.shares/1e4).toFixed(0)+' 万股'):'—'],['市值',mc(P.mcap)],['股价',P.price==null?'—':'$'+P.price],['总资产 / 总负债',(P.assets==null?'—':mc(P.assets))+' / '+(P.liabilities==null?'—':mc(P.liabilities))],['ISIN',P.isin||'—']];
+ var kv=[['行业',(P.sector||'—')+(P.industry&&P.industry!==P.sector?' · '+P.industry:'')],['上市日期',(P.listed||'—')+(yrs?'（约 '+yrs+' 年）':'')],['K 线数据从',ft||'—'],['总股本',P.shares?(P.shares>=1e8?(P.shares/1e8).toFixed(2)+' 亿股':(P.shares/1e4).toFixed(0)+' 万股'):'—'],['市值',mc(P.mcap)],['股价',P.price==null?'—':'$'+P.price],].concat(P.assets?[['总资产 / 总负债',mc(P.assets)+' / '+mc(P.liabilities)]]:[]).concat([['ISIN',P.isin||'—']]);
  kv.forEach(function(x){h+='<div><small>'+x[0]+'</small><b>'+esc(x[1])+'</b></div>';});
  var ad=P.address||{};h+='<div><small>地址</small>'+esc(ad.address||'—')+(ad.phone?'<br><span class="mu">电话 '+esc(ad.phone)+'</span>':'')+'</div>';
  var rg=P.registry||{};h+='<div><small>股份登记处</small>'+esc(typeof rg==='string'?rg:(rg.name||rg.address||'—'))+'</div>';
