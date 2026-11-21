@@ -105,7 +105,7 @@ td.w{white-space:normal;min-width:260px}
   <div class="brand"><i></i>NEON <b>TERMINAL</b></div><div class="mk" id="mkt"><button data-m="au" class="on">🇦🇺 澳股</button><button data-m="cn">🇨🇳 A 股</button><button data-m="cx">₿ 加密</button><button data-m="cm">🛢 商品</button></div>
   <form id="sf" role="search"><input id="si" placeholder="搜代码：CND 或 600519" maxlength="6" autocomplete="off" aria-label="搜索股票代码"></form>
   <div class="idx num" id="idx"></div>
-  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><a class="btn" href="/cnbrief.html" target="_blank" style="color:#22E4F5;border-color:rgba(34,228,245,.55);text-decoration:none" title="澳股小盘中文公告速读（网站样板，只给自己看）">🀄 中文速读</a><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="sbb" style="color:#4FC3FF;border-color:rgba(79,195,255,.55)" title="宏观到微观：大盘、小盘、11 个行业，谁强谁弱，行业里最强的股票">🏭 行业</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
+  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="cnbb" style="color:#22E4F5;border-color:rgba(34,228,245,.55)" title="澳股小盘股最近 7 天的价格敏感公告，中文一句话写清楚">🀄 中文速读</button><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="sbb" style="color:#4FC3FF;border-color:rgba(79,195,255,.55)" title="宏观到微观：大盘、小盘、11 个行业，谁强谁弱，行业里最强的股票">🏭 行业</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
 </header>
 <main>
   <aside>
@@ -573,7 +573,7 @@ var FIND='<div class="find"><p class="y">完整的研究结论和今日命中的
 '<h4>交易成本</h4><p>小股票最大的成本是价差（2 分以下约 6–8%），不是佣金。用限价单挂买一价，少买卖、拿久一点。</p></div>';
 function tbl(cols,rows,click){if(!rows||!rows.length)return '<div class="empty" style="padding:12px">暂无</div>';
  return '<table><thead><tr>'+cols.map(function(c){return '<th>'+c[0]+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr'+(click?' class="cl" data-c="'+esc(r.code)+'"':'')+'>'+cols.map(function(c){return '<td'+(c[2]?' class="w"':'')+'>'+c[1](r)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';}
-var BT={cm:[['cmall','全部品种'],['find','研究结论']],cx:[['cxall','全部合约'],['cxfund','资金费率'],['find','研究结论']],au:[['ladr4','🚀 底部放量突破'],['ladr1','🌱 底部弹簧'],['ladwatch','⏳ 底部观察'],['annavoid','⛔ 不碰名单'],['anngood','✅ 干净好消息'],['rockets','爆拉候选'],['breakouts','放量突破'],['watchalerts','自选提醒'],['mkt','市场公告'],['find','研究结论']],cn:[['cntop','模型选股（前 10%）'],['cnavoid','要避开的'],['cnexplain','模型说明'],['find','研究结论']]};
+var BT={cm:[['cmall','全部品种'],['find','研究结论']],cx:[['cxall','全部合约'],['cxfund','资金费率'],['find','研究结论']],au:[['cnb','🀄 中文速读'],['ladr4','🚀 底部放量突破'],['ladr1','🌱 底部弹簧'],['ladwatch','⏳ 底部观察'],['annavoid','⛔ 不碰名单'],['anngood','✅ 干净好消息'],['rockets','爆拉候选'],['breakouts','放量突破'],['watchalerts','自选提醒'],['mkt','市场公告'],['find','研究结论']],cn:[['cntop','模型选股（前 10%）'],['cnavoid','要避开的'],['cnexplain','模型说明'],['find','研究结论']]};
 function renderBTabs(){if(!BT[st.m].some(function(x){return x[0]===st.bt;}))st.bt=BT[st.m][0][0];$('btabs').innerHTML=BT[st.m].map(function(x){return '<button data-t="'+x[0]+'"'+(x[0]===st.bt?' class="on"':'')+'>'+x[1]+'</button>';}).join('');}
 function renderBottom(){var t=st.bt,S=SCAN||{},h='';
  if(st.m==='cm'&&t!=='find'){var A=MKT.slice();if(!A.length){$('btbl').innerHTML='<div class="empty" style="padding:12px">商品行情读取中…</div>';return;}
@@ -614,8 +614,16 @@ function renderBottom(){var t=st.bt,S=SCAN||{},h='';
  if(t==='watchalerts')h=tbl([['代码',function(r){return '<b>'+esc(r.code)+'</b>';}],['股价',function(r){return '$'+r.price;}],['今日',function(r){return pc(r.chg_1d);}],['成交 / 平时',function(r){return r.value_today_x+'× · 5日 '+r.value_5d_x+'×';}],['离 200 日线',function(r){return r.above_ma200+'%';}],['月 MACD',function(r){return r.macd_m_hist_pos?'正 '+r.macd_m_hist_months_pos+' 个月':'负';}],['提醒',function(r){return r.alerts&&r.alerts.length?'<span class="y">'+r.alerts.map(esc).join('；')+'</span>':'<span class="mu">无</span>';},1]],S.watch,1);
  if(t==='mkt'){var A=[];Object.keys(S.announcements||{}).forEach(function(k){(S.announcements[k]||[]).forEach(function(a){A.push(Object.assign({bucket:k},a));});});A.sort(function(a,b){return a.time<b.time?1:-1;});
   h=tbl([['时间',function(r){return esc(r.time);}],['类别',function(r){return '<span class="y">'+esc(r.bucket)+'</span>';}],['代码',function(r){return '<b>'+esc(r.code)+'</b>';}],['标题',function(r){return esc(r.headline);},1]],A,1);}
+ if(t==='cnb'){if(!CNB){$('btbl').innerHTML='<div class="empty" style="padding:12px">中文速读读取中…</div>';apim('cnbrief').then(function(d){CNB=d;if(st.bt==='cnb')renderBottom();}).catch(function(e){CNB={items:[],err:e.message};if(st.bt==='cnb')renderBottom();});return;}
+  var I=(CNB.items||[]).filter(function(x){return cnbAll||(x.importance==null?3:x.importance)>=3;});
+  h='<p class="mu" style="margin:6px 12px;font-size:15px;color:#C9D2F5">'+(CNB.err?esc(CNB.err):esc(CNB.since)+' 以来，股价 '+CNB.max_price+' 澳元以下、有成交的公司发的价格敏感公告，AI 只摘录事实。点一行看 K 线和原公告。')+
+   ' <a href="#" id="cnball" style="color:#22E4F5">'+(cnbAll?'只看重要的':'显示全部 '+(CNB.items||[]).length+' 条')+'</a></p>'+
+   tbl([['日期',function(r){return esc(r.date.slice(5));}],['代码',function(r){return '<b>'+esc(r.code)+'</b>';}],['公司',function(r){return esc((r.name||'').replace(/ (LIMITED|LTD\.?|GROUP|HOLDINGS)/gi,'').slice(0,22));}],['类型',function(r){return '<span class="y">'+esc(r.type||'其他')+'</span>';}],['现价',function(r){return '$'+esc(r.price);}],['中文摘要',function(r){return esc(r.zh||r.headline);},1]],I,1);}
  if(t==='find'){openRC();h=FIND;}
  $('btbl').innerHTML=h;}
+var CNB=null,cnbAll=false;
+$('btbl').addEventListener('click',function(e){if(e.target.id==='cnball'){e.preventDefault();cnbAll=!cnbAll;renderBottom();}});
+$('cnbb').onclick=function(){if(st.m!=='au'){location.search='?m=au';return;}st.bt='cnb';renderBTabs();renderBottom();};
 $('btabs').addEventListener('click',function(e){var t=e.target.getAttribute('data-t');if(!t)return;st.bt=t;[].forEach.call($('btabs').children,function(b){b.classList.toggle('on',b===e.target);});renderBottom();});
 $('btbl').addEventListener('click',function(e){var tr=e.target.closest('tr.cl');if(tr)select(tr.getAttribute('data-c'));});
 
