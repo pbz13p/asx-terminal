@@ -739,6 +739,9 @@ class Handler(SimpleHTTPRequestHandler):
             if not CODE.match(c):
                 raise ValueError("股票代码不正确")
             return ibkr_link.quote(c)
+        if name == "ibprobe":   # what the IBKR account can download (bars, fundamentals)
+            import ibkr_link
+            return ibkr_link.probe()
         if name == "ibkr":   # 盈透连接测试 (paper account, 2026-11-21)
             import ibkr_link
             c = (q.get("code") or "CND").upper()

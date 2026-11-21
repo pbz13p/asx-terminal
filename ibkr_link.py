@@ -148,3 +148,53 @@ def _quote(code):
             return out
         finally:
             ib.disconnect()
+
+
+def probe(codes=("CND", "BHP", "PLS", "WES", "LTR")):
+    """What can this account pull through the API? Daily bars (TRADES, 60 days) per stock and the fundamental reports."""
+    with _lock:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+        ib_async = _lib()
+        ib = ib_async.IB()
+        errs = []
+        ib.errorEvent += lambda reqId, code, msg, *a: errs.append(f"{code}: {msg[:140]}")
+        try:
+            ib.connect(HOST, 4002, clientId=19, timeout=12, readonly=True)
+        except Exception as e:
+            return {"connected": False, "error": f"{type(e).__name__}"}
+        out = {"connected": True, "bars": {}, "fundamentals": {}}
+        try:
+            for code in codes:
+                c = ib_async.Stock(code, "ASX", "AUD")
+                if not ib.qualifyContracts(c):
+                    out["bars"][code] = "not found"
+                    continue
+                for what in ("TRADES",):
+                    try:
+                        b = ib.reqHistoricalData(c, "", "3 M", "1 day", what, True, timeout=30)
+                        out["bars"][code] = [[str(x.date), x.close, x.volume] for x in b[-15:]]
+                    except Exception as e:
+                        out["bars"][code] = f"{type(e).__name__}: {str(e)[:120]}"
+                if code in ("BHP", "CND"):
+                    try:
+                        cd = ib.reqContractDetails(c)
+                        if cd:
+                            d = cd[0]
+                            out["fundamentals"][code + "_details"] = {"longName": d.longName, "industry": d.industry, "category": d.category,
+                                                                      "subcategory": d.subcategory, "validExchanges": d.validExchanges}
+                    except Exception as e:
+                        out["fundamentals"][code + "_details"] = type(e).__name__
+                    for rep in ("ReportSnapshot", "ReportsFinStatements", "RESC"):
+                        try:
+                            x = ib.reqFundamentalData(c, rep)
+                            out["fundamentals"][f"{code}_{rep}"] = (len(x or ""), (x or "")[:200])
+                        except Exception as e:
+                            out["fundamentals"][f"{code}_{rep}"] = f"{type(e).__name__}: {str(e)[:120]}"
+            try:
+                out["head_ts"] = str(ib.reqHeadTimeStamp(ib_async.Stock("BHP", "ASX", "AUD"), "TRADES", True, 1))
+            except Exception as e:
+                out["head_ts"] = type(e).__name__
+        finally:
+            out["errors"] = errs[-25:]
+            ib.disconnect()
+        return _clean(out)
