@@ -634,6 +634,16 @@ class Handler(SimpleHTTPRequestHandler):
                 raise DataUnavailable("公告信号还没生成（每天晚上 AI 读完新公告后更新）") from None
             self.server._annlists = (time.time(), data)
             return data
+        if name == "ladder":   # round 98 lists (encrypted on the results branch, refreshed after the daily price run)
+            hit = getattr(self.server, "_ladder", None)
+            if hit and time.time() - hit[0] < 600:
+                return hit[1]
+            try:
+                data = fetch_result("ladder_lists.json")
+            except Exception:
+                raise DataUnavailable("底部反转名单还没生成（每天收盘后更新）") from None
+            self.server._ladder = (time.time(), data)
+            return data
         if name == "ledger":   # round 94 portfolio ledger (encrypted on the quick-results branch)
             hit = getattr(self.server, "_ledger", None)
             if hit and time.time() - hit[0] < 600:

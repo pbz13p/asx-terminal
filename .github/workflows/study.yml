@@ -59,6 +59,7 @@ jobs:
             if [ "$n" = "1" ]; then f=study.py; v=STUDY_OUT; o=study_results.json; else f=study$n.py; v=STUDY${n}_OUT; o=study${n}_results.json; fi
             echo "=== round $n"; env $v=out/$o python $f || echo "round $n failed"
           done
+          python ladder_lists.py || echo "ladder lists failed"   # round 98 daily lists + live record
       - name: Publish results to the results branch
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}

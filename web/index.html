@@ -160,7 +160,7 @@ function loadW(){try{st.watch=JSON.parse(lsg('nt_watch'+(st.m==='au'?'':'_'+st.m
 function saveW(){lss('nt_watch'+(st.m==='au'?'':'_'+st.m),JSON.stringify(st.watch));}
 function okCode(v){return st.m==='cn'?/^\d{6}$/.test(v):st.m==='cm'?/^[A-Z0-9]{2,12}$/.test(v):st.m==='cx'?/^[A-Z0-9]{1,15}$/.test(v):/^[A-Z0-9]{1,6}$/.test(v);}
 function apim(p){return api(p+(p.indexOf('?')>=0?'&':'?')+'m='+st.m);}
-var Q={},MKT=[],SCAN=null,NAMES={},CNP=null,ANNL=null;
+var Q={},MKT=[],SCAN=null,NAMES={},CNP=null,ANNL=null,LADL=null;
 
 /* ---------- chart ---------- */
 var MAPER='d',MACFG=loadMa(),MANS=null,LC=window.LightweightCharts,chart,sub,cs,vs,mas=[],subs=[],bol=[],BOLL=false,ANNON=true,ANNS=[],SIGS=[];
@@ -573,7 +573,7 @@ var FIND='<div class="find"><p class="y">完整的研究结论和今日命中的
 '<h4>交易成本</h4><p>小股票最大的成本是价差（2 分以下约 6–8%），不是佣金。用限价单挂买一价，少买卖、拿久一点。</p></div>';
 function tbl(cols,rows,click){if(!rows||!rows.length)return '<div class="empty" style="padding:12px">暂无</div>';
  return '<table><thead><tr>'+cols.map(function(c){return '<th>'+c[0]+'</th>';}).join('')+'</tr></thead><tbody>'+rows.map(function(r){return '<tr'+(click?' class="cl" data-c="'+esc(r.code)+'"':'')+'>'+cols.map(function(c){return '<td'+(c[2]?' class="w"':'')+'>'+c[1](r)+'</td>';}).join('')+'</tr>';}).join('')+'</tbody></table>';}
-var BT={cm:[['cmall','全部品种'],['find','研究结论']],cx:[['cxall','全部合约'],['cxfund','资金费率'],['find','研究结论']],au:[['annavoid','⛔ 不碰名单'],['anngood','✅ 干净好消息'],['rockets','爆拉候选'],['breakouts','放量突破'],['watchalerts','自选提醒'],['mkt','市场公告'],['find','研究结论']],cn:[['cntop','模型选股（前 10%）'],['cnavoid','要避开的'],['cnexplain','模型说明'],['find','研究结论']]};
+var BT={cm:[['cmall','全部品种'],['find','研究结论']],cx:[['cxall','全部合约'],['cxfund','资金费率'],['find','研究结论']],au:[['ladr4','🚀 底部放量突破'],['ladr1','🌱 底部弹簧'],['ladwatch','⏳ 底部观察'],['annavoid','⛔ 不碰名单'],['anngood','✅ 干净好消息'],['rockets','爆拉候选'],['breakouts','放量突破'],['watchalerts','自选提醒'],['mkt','市场公告'],['find','研究结论']],cn:[['cntop','模型选股（前 10%）'],['cnavoid','要避开的'],['cnexplain','模型说明'],['find','研究结论']]};
 function renderBTabs(){if(!BT[st.m].some(function(x){return x[0]===st.bt;}))st.bt=BT[st.m][0][0];$('btabs').innerHTML=BT[st.m].map(function(x){return '<button data-t="'+x[0]+'"'+(x[0]===st.bt?' class="on"':'')+'>'+x[1]+'</button>';}).join('');}
 function renderBottom(){var t=st.bt,S=SCAN||{},h='';
  if(st.m==='cm'&&t!=='find'){var A=MKT.slice();if(!A.length){$('btbl').innerHTML='<div class="empty" style="padding:12px">商品行情读取中…</div>';return;}
@@ -593,6 +593,16 @@ function renderBottom(){var t=st.bt,S=SCAN||{},h='';
  if(st.m==='cn'&&t!=='find'){var P=CNP||{},L=t==='cntop'?P.top:P.avoid;
   $('btbl').innerHTML=!CNP?'<div class="empty" style="padding:12px">A 股每日选股还没生成（第一次运行后就有）</div>':(t==='cntop'?'<p class="mu" style="margin:6px 12px;font-size:14.5px">第 72 轮模型：成交额前 1000 的主板股票里，模型分最高的 10%。历史上扣成本每月多赚约 1%，13 年每年为正。持有约 20 个交易日。数据日期 '+esc(P.date||'')+'</p>':'<p class="mu" style="margin:6px 12px;font-size:14.5px">模型分最低的 10%：历史上之后一个月平均少赚约 2.8%。手上有的考虑减，别买。</p>')+
    tbl([['代码',function(r){return '<b>'+esc(r.code)+'</b>';}],['名称',function(r){return esc(r.name||'');}],['股价',function(r){return px(r.price);}],['模型分',function(r){return r.score;}],['20 日涨幅',function(r){return pc(r.ret20);}],['波动率',function(r){return r.vol20!=null?r.vol20+'%':'—';}],['为什么（影响最大的 3 个因素）',function(r){return (r.why||[]).map(function(w){return esc(w.f)+' <b class="y">'+esc(w.v)+'</b>';}).join('；');},1]],L,1);return;}
+ if(t==='ladr4'||t==='ladr1'||t==='ladwatch'){if(!LADL){$('btbl').innerHTML='<div class="empty" style="padding:12px">读取中…</div>';api('ladder').then(function(d){LADL=d;renderBottom();}).catch(function(e){LADL={err:e.message};renderBottom();});return;}
+  if(LADL.err){$('btbl').innerHTML='<div class="empty" style="padding:12px">'+esc(LADL.err)+'</div>';return;}
+  var lw=t==='ladwatch',l4=t==='ladr4',LL=lw?LADL.watch:(l4?LADL.r4:LADL.r1),TRL=lw?null:((((LADL.track||{}).lists||{})[l4?'ladder_r4':'ladder_r1'])||null);
+  var nm=function(r){var m=MKT.filter(function(s){return s.code===r.code;})[0];return esc(((m&&m.name)||NAMES[r.code]||'').replace(/ (LIMITED|LTD\.?|GROUP|HOLDINGS)/g,'').slice(0,22));};
+  var hd2='<p class="mu" style="margin:6px 12px;font-size:15px;color:#C9D2F5">'+(lw?'⏳ <b>长期下跌、还没出信号</b>的股票（两年收盘新低、离三年高点跌一半以上，一年内）。只是等待区，不是买点；出现放量突破或弹簧会进左边两张名单。共 '+esc(LADL.watch_n||0)+' 只，按成交额排。':l4?'🚀 <b>底部放量突破</b>（第 98 轮"有效"）：长期下跌股收盘突破一年新高，且 20 天成交额 ≥ 一年平均的 2 倍。回测里一年内翻倍的比例明显高于同样处境但没信号的股票，两个时期都过关。用法：信号后下一个开盘价买，按系统打法定仓位和止损。':'🌱 <b>底部弹簧</b>（第 98 轮"一般"）：长期下跌股从低点反弹到 1.5 倍以上，并收复跌破前的价位。只当候选看，攒实盘记录。')+' 只列日成交 ≥ 2 万的，最近 5 个交易日的信号。每天收盘后更新（数据到 '+esc(LADL.last_day||'')+'）。'+(TRL&&TRL.signals?' 实盘记录（从 '+esc(TRL.first)+' 起）：'+esc(TRL.signals)+' 个，至今平均 '+pc(TRL.avg_ret)+'，比小盘指数 '+(TRL.avg_vs_index==null?'—':(TRL.avg_vs_index>=0?'+':'')+TRL.avg_vs_index+'%')+'。':(lw?'':' 实盘记录从今天开始。'))+'</p>';
+  var cols=[['代码',function(r){return '<b>'+esc(r.code)+'</b>';}],['公司',nm]];
+  if(!lw)cols.push(['信号日',function(r){return esc(r.day);}],['信号价',function(r){return px(r.px);}]);
+  cols=cols.concat([['现价',function(r){return px(r.price);}],['离三年高点',function(r){return pc(r.off_high);}],['底部',function(r){return px(r.low)+' <span class="mu">'+esc(r.low_day||'')+'</span>';}],['离底部',function(r){return r.x_low==null?'—':r.x_low+'×';}],['成交额 20天/一年',function(r){return r.vol_x==null?'—':r.vol_x+'×';}],['日成交',function(r){return '$'+Math.round(r.val20/1000)+'k';}]]);
+  if(!lw)cols.push(['之后',function(r){return pc(r.since_pct);}],['已有别的信号',function(r){return (r.also||[]).map(function(x){return {R2:'站上200日线',R3:'均线多头'}[x]||x;}).join('、')||'—';},1]);
+  $('btbl').innerHTML=hd2+(LL&&LL.length?tbl(cols,LL,1):'<div class="empty" style="padding:12px">最近 5 个交易日没有这个信号。</div>');if(!MKT.length)setTimeout(renderBottom,3000);return;}
  if(t==='annavoid'||t==='anngood'){if(!ANNL){$('btbl').innerHTML='<div class="empty" style="padding:12px">读取中…</div>';api('annlists').then(function(d){ANNL=d;renderBottom();}).catch(function(e){ANNL={err:e.message};renderBottom();});return;}
   if(ANNL.err){$('btbl').innerHTML='<div class="empty" style="padding:12px">'+esc(ANNL.err)+'</div>';return;}
   var av=t==='annavoid',L=av?ANNL.avoid:ANNL.good,TR=(((ANNL.track||{}).lists||{})[av?'ann_avoid':'ann_good'])||null;
