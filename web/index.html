@@ -549,9 +549,9 @@ async function openSB(){$('sb').classList.add('on');$('cp').classList.remove('on
 
 function cpTag(n,people){var u=n.toUpperCase(),t=[];
  if(/NEXTINVESTORS|NEXT INVESTORS|S3 CONSORTIUM/.test(u))t.push(['付费推广方 Next Investors','#FF5A7A']);
- if(/NOMINEES|CUSTODIAN|CITICORP|HSBC|J P MORGAN|JP MORGAN|BNP PARIBAS|MERRILL|UBS NOMINEES|NATIONAL NOMINEES|BNP/.test(u)&&!/A\/C>?$/.test(u.replace(/\s/g,'')))t.push(['托管户（背后是基金或散户）','#9FB0E0']);
+ var nomi=/NOMINEES|NOMS|CUSTOD|CITICORP|CITIBANK|HSBC|J P MORGAN|JP MORGAN|BNP PARIBAS|MERRILL|UBS |NATIONAL NOMINEES|COMPUTERSHARE|CLEARING|CONTROL A\/C/.test(u)&&!/(MR|MRS|MS|DR) |FAMILY|SUPER/.test(u);if(nomi)t.push(['托管户 / 结算户（背后是基金或散户）','#9FB0E0']);
  (people||[]).forEach(function(p){var sn=((p.name||'').trim().split(/\s+/).pop()||'').toUpperCase();if(sn.length>2&&new RegExp('\\b'+sn+'\\b').test(u))t.push(['可能与董事 '+p.name+' 有关','#FFD23F']);});
- if(/SUPER|<.*A\/C>/.test(u)&&!t.length)t.push(['个人 / 家族','#19FF9C']);
+ if(/SUPER|FAMILY|^(MR|MRS|MS|DR) |<.*A\/C>/.test(u)&&!t.length)t.push(['个人 / 家族','#19FF9C']);
  return t.map(function(x){return '<span class="tag" style="color:'+x[1]+';border-color:'+x[1]+'">'+esc(x[0])+'</span>';}).join('');}
 async function openCP(code){$('cp').classList.add('on');$('sb').classList.remove('on');$('rc').classList.remove('on');$('nw').classList.remove('on');
  if(st.m!=='au'){$('cpl').innerHTML='<div class="empty">公司简介目前只做了澳股。</div>';return;}
@@ -689,7 +689,9 @@ function setTfs(){var allow=st.m!=='au'?['1M','6M','1Y','5Y','ALL']:TFS;if(allow
 function setMarket(m,code){if(m===st.m&&!code)return;st.m=m;$('breadth').style.display=m==='au'?'':'none';if($('cpb'))$('cpb').style.display=m==='au'?'':'none';if($('cpb'))$('cpb').style.display=m==='au'?'':'none';$('si').placeholder=m==='cx'?'搜合约，如 BTC、ETH、SOL':m==='cn'?'搜 A 股代码，如 600519':$('si').getAttribute('data-ph')||$('si').placeholder;document.body.classList.toggle('cn',m==='cn');lss('nt_m',m);loadW();Q={};MKT=[];RC=null;rcf=null;[].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===m);});
  $('si').placeholder=m==='cn'?'搜 A 股代码，如 600519':m==='cx'?'搜合约，如 BTC、ETH、SOL':m==='cm'?'搜品种，如 GOLD、BRENT、IRONORE':'搜代码，如 CND（A 股输 6 位数字）';$('addi').placeholder=m==='cn'?'加自选，如 600036':m==='cx'?'加自选，如 SOL':m==='cm'?'加自选，如 COPPER':'加自选，如 BHP';$('breadth').style.display=m==='au'?'':'none';
  setTfs();renderBTabs();renderBottom();$('idx').innerHTML='';loadIdx();loadMarket();select(code||lsg('nt_sel_'+m,st.watch[0]));loadQuotes();}
-$('mkt').addEventListener('click',function(e){var m=e.target.getAttribute('data-m');if(m)setMarket(m);});
+function closeOverlays(){['cp','sb','rc','nw'].forEach(function(id){var x=$(id);if(x)x.classList.remove('on');});}
+$('mkt').addEventListener('click',function(e){var b=e.target.closest('[data-m]');var m=b&&b.getAttribute('data-m');if(m){closeOverlays();setMarket(m);}});
+$('sf').addEventListener('submit',closeOverlays,true);(document.querySelector('header .brand')||{}).onclick=closeOverlays;if(document.querySelector('header .brand'))document.querySelector('header .brand').style.cursor='pointer';
 var LOGS=lsg('nt_log','0')==='1';function applyLog(){if(!chart)return;chart.priceScale('right').applyOptions({mode:LOGS?1:0});$('logb').classList.toggle('on',LOGS);}
 $('ktipb').classList.toggle('on',KTIP);$('ktipb').onclick=function(){KTIP=!KTIP;lss('nt_ktip',KTIP?'1':'0');this.classList.toggle('on',KTIP);if(!KTIP)$('kbox').style.display='none';};
 $('logb').onclick=function(){LOGS=!LOGS;lss('nt_log',LOGS?'1':'0');applyLog();};applyLog();

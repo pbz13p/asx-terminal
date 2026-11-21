@@ -89,6 +89,7 @@ def parse_top20(pages):
                     if rows:
                         break
                     continue
+                name = re.sub(r"(?<=[A-Za-z)>\\])\d{1,2}$", "", name).strip()   # footnote marks glued to the name ("Limited2")
                 rows.append({"name": name, "shares": int(m.group(2).replace(",", "")), "pct": float(m.group(3))})
                 pend = ""
                 if len(rows) >= 20:
@@ -110,7 +111,7 @@ def top20(code):
     for it in cands[:8]:
         if found and (date.fromisoformat(found[0]["date"]) - date.fromisoformat(it["date"])).days < 200:
             continue          # same year's report again (e.g. a re-lodged copy) -- we want last year's for the comparison
-        f = CACHE / f"top20v2_{it['ids']}.json"
+        f = CACHE / f"top20v3_{it['ids']}.json"
         if f.exists():
             d = json.loads(f.read_text(encoding="utf-8"))
         else:
