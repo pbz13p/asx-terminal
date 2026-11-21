@@ -762,13 +762,16 @@ class Handler(SimpleHTTPRequestHandler):
             return annsvc.text(code, ids) if name == "anntext" else annsvc.translate(code, ids)
         if name == "profile":
             return self.profile(code)
+        if name == "company":   # 公司简介 (Frank 2026-11-21)
+            import company
+            return company.profile(code)
         if name == "book":
             return provider.book(code)
         raise ValueError("未知接口")
 
 
 CODE_FILES = ("server.py", "providers/binance.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
-              "providers/ibkr.py", "providers/__init__.py")
+              "providers/ibkr.py", "providers/__init__.py", "company.py")
 
 
 def _stamp():
