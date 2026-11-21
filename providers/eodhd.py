@@ -115,10 +115,11 @@ class EodhdProvider(Provider):
 
     def quotes(self, codes):
         def load():
-            live = self._live([f"{c}.AU" for c in codes])
+            sym = {c: (f"{self.INDEX_SYMBOLS[c]}.INDX" if c in self.INDEX_SYMBOLS else f"{c}.AU") for c in codes}
+            live = self._live(list(sym.values()))
             result = []
             for c in codes:
-                r = live.get(f"{c}.AU")
+                r = live.get(sym[c]) or live.get(sym[c].split(".")[0])
                 if not r or self._num(r.get("close")) is None:
                     continue
                 result.append({
@@ -126,7 +127,7 @@ class EodhdProvider(Provider):
                     "prev": self._num(r.get("previousClose")),
                     "open": self._num(r.get("open")), "high": self._num(r.get("high")),
                     "low": self._num(r.get("low")), "volume": self._num(r.get("volume")) or 0,
-                    "time": r.get("timestamp"), "spark": self._safe_closes(f"{c}.AU", 40),
+                    "time": r.get("timestamp"), "spark": self._safe_closes(sym[c], 40),
                 })
             return result
         return self._cached("quotes:" + ",".join(codes), TTL["quotes"], load)
