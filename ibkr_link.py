@@ -19,12 +19,26 @@ def _lib():
     try:
         import ib_async  # noqa: F401
     except ImportError:
-        subprocess.run([sys.executable, "-m", "pip", "install", "-q", "--user", "ib_async"], check=False)
+        r = subprocess.run([sys.executable, "-m", "pip", "install", "-q", "--user", "ib_async"], capture_output=True, text=True)
+        import importlib
+        import site
+        site.addsitedir(site.getusersitepackages())
+        importlib.invalidate_caches()
+        if r.returncode:
+            raise RuntimeError("pip: " + (r.stderr or r.stdout)[-300:])
     import ib_async
     return ib_async
 
 
 def status(code="CND"):
+    try:
+        return _status(code)
+    except Exception as e:
+        import traceback
+        return {"connected": False, "error": f"{type(e).__name__}: {str(e)[:300]}", "trace": traceback.format_exc()[-800:]}
+
+
+def _status(code):
     with _lock:
         asyncio.set_event_loop(asyncio.new_event_loop())
         ib_async = _lib()
