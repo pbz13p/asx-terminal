@@ -78,6 +78,7 @@ def main():
         last_day = ix[-1][0]
     cutoff = (date.fromisoformat(last_day) - timedelta(days=45)).isoformat() if last_day else "9999"
     r4, r1, watch = [], [], []
+    recent_days = Counter()
     cov_first, cov_last, n_files, n_live = Counter(), Counter(), 0, 0
     for fp in sorted(study.CACHE.glob("*.AU.json")):
         rows = study.load(fp.name[:-5])
@@ -86,6 +87,7 @@ def main():
         n_files += 1
         if rows[-1][0] >= cutoff:
             n_live += 1
+            recent_days.update(r[0] for r in rows[-12:])
         else:                                       # stopped trading: count by year of first and last trade
             cov_last[rows[-1][0][:4]] += 1
             cov_first[rows[0][0][:4]] += 1
@@ -108,6 +110,11 @@ def main():
                 lst.append(dict(base, day=dts[i], px=round(float(raw[i]), 4), since_pct=round(100 * (float(c[-1] / c[i]) - 1), 1)))
         if not st["fired"]:
             watch.append(base)
+    mdays = sorted(d for d, k in recent_days.items() if k >= 0.5 * max(recent_days.values() or [1]))
+    if mdays:   # the index file can lag; the market's real last sessions come from the stocks themselves
+        last_day, keep = mdays[-1], set(mdays[-RECENT:])
+        r4[:] = [r for r in r4 if r["day"] in keep]
+        r1[:] = [r for r in r1 if r["day"] in keep]
     for lst in (r4, r1):
         lst.sort(key=lambda x: (x["day"], x["val20"]), reverse=True)
     watch.sort(key=lambda x: x["val20"], reverse=True)
