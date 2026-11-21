@@ -1,4 +1,4 @@
-"""Fetch the latest version from GitHub before starting. Never touches .env."""
+"""Fetch the latest version from GitHub before starting. Never touches .env. (2026-11-21: touched to force a restart.)"""
 import io
 import urllib.request
 import zipfile
