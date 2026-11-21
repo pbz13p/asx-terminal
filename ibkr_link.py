@@ -59,11 +59,11 @@ def _status(code):
         err = None
         for port in PORTS:
             try:
-                ib.connect(HOST, port, clientId=17, timeout=8, readonly=True)
+                ib.connect(HOST, port, clientId=17, timeout=12, readonly=True)
                 out.update(connected=True, port=port, paper=port in (4002, 7497))
                 break
             except Exception as e:
-                err = f"{port}: {type(e).__name__}"
+                err = (err + "; " if err else "") + f"{port}: {type(e).__name__} {str(e)[:80]}"
         if not out["connected"]:
             out["error"] = "连不上 IB Gateway（没打开或没登录？）" + (f" [{err}]" if err else "")
             return out
@@ -109,16 +109,26 @@ def _quote(code):
         asyncio.set_event_loop(asyncio.new_event_loop())
         ib_async = _lib()
         ib = ib_async.IB()
-        port = None
+        port, errs = None, []
         for p in PORTS:
-            try:
-                ib.connect(HOST, p, clientId=18, timeout=6, readonly=True)
-                port = p
+            for cid in (18, 28, 38):          # a dropped earlier session can still hold a client id for a while
+                try:
+                    ib.connect(HOST, p, clientId=cid, timeout=8, readonly=True)
+                    port = p
+                    break
+                except ConnectionRefusedError:
+                    errs.append(f"{p}: refused")
+                    break
+                except Exception as e:
+                    errs.append(f"{p}/{cid}: {type(e).__name__} {str(e)[:60]}")
+                    try:
+                        ib.disconnect()
+                    except Exception:
+                        pass
+            if port:
                 break
-            except Exception:
-                continue
         if port is None:
-            return {"connected": False, "error": "IB Gateway 没打开或没登录"}
+            return {"connected": False, "error": "IB Gateway 没打开或没登录", "detail": "; ".join(errs)[:400]}
         try:
             ib.reqMarketDataType(3)        # live if subscribed, otherwise delayed (free)
             c = ib_async.Stock(code, "ASX", "AUD")
