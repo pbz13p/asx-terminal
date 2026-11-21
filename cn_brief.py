@@ -155,7 +155,8 @@ def main():
         px = rows[-1][6] or rows[-1][4]
         if not px or px >= MAX_PRICE:
             continue
-        val = statistics.median(r[6] * r[5] for r in rows[-20:] if r[5])
+        vals = [r[6] * r[5] for r in rows[-20:] if r[5] and r[6]]
+        val = statistics.median(vals) if vals else 0
         if val < MIN_VALUE:
             continue
         s = {}
