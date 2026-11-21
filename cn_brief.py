@@ -26,7 +26,7 @@ import study76
 DAYS = int(os.environ.get("CNB_DAYS", "7"))
 MAX_PRICE = float(os.environ.get("CNB_MAX_PRICE", "2.0"))     # "小盘股": share price under A$2 (simple first cut)
 MIN_VALUE = 20_000                                             # same tradable filter as round 96 (20-session median A$)
-CACHE = study.DATA / "ai" / "cnbrief2"     # v2 2026-11-21: unit rules (million/cents), no-news items; v1 answers dropped
+CACHE = study.DATA / "ai" / "cnbrief3"     # v3 2026-11-21: Haiku first (Gemini units unreliable); v1/v2 answers dropped
 OUT = Path(os.environ.get("CNB_OUT", "out/cn_brief.json"))
 MODEL = os.environ.get("CNB_MODEL", "claude-haiku-5-5")
 PRICE = {"in": 0.10, "out": 0.50}                               # USD per MTok, normal (not batch) API = 2x the batch price
@@ -40,8 +40,8 @@ PROMPT = """下面是一家澳洲上市小公司的价格敏感公告（标题�
 发生了什么、关键数字（金额、价格、折让、股数、品位、期限、现金）、有没有附带条件或还没落实的部分。
 规则：
 - 只写事实，不评价好坏，不用“利好”“利空”“值得关注”“大涨”“前景”这类词，不预测股价，不给任何买卖建议。
-- 数字照原文，并换算成中文单位再写：1 million（m、M）＝100 万，1 billion（bn、B）＝10 亿，thousand（k、'000）＝千。
-  例：$17.8 million＝1780 万美元；A$50m＝5000 万澳元；$1.3B＝13 亿美元；0.47 cents＝0.47 分（不是 0.47 澳元）。不要留 million、m、bn 这类英文单位。
+- 币种照原文（A$ / $ 不写明时按澳元；US$ 才是美元），数字照原文，并换算成中文单位再写：1 million（m、M）＝100 万，1 billion（bn、B）＝10 亿，thousand（k、'000）＝千。
+  例：US$17.8 million＝1780 万美元；A$50m＝5000 万澳元；US$840m＝8.4 亿美元；116.4Mt＝1.164 亿吨；0.47 cents＝0.47 分（不是 0.47 澳元）。不要留 million、m、bn 这类英文单位。
 - 原文没有的数字不要补；分清"分"（cent）和"澳元"。
 - franked 写成"全额抵税（franked）"；化学式、品位照写（如 Li2O、Au），不要用 LaTeX 或别的语言的文字。
 - 如果公告只是会议演示文稿、免责声明、文件封面，正文开头没有新的事实数字，就只写一句：某某公司发布了某某文件，没有新的数字。
@@ -107,11 +107,11 @@ def ask_gemini(prompt):
 def ask(headline, text):
     """Chinese facts-only line: Gemini (free) first, Haiku (paid, ledger) only if Gemini fails. Returns (text, usage, model)."""
     prompt = PROMPT.format(headline=headline, text=text[:3500])
-    out = ask_gemini(prompt)
-    if out:
-        return out, {}, "gemini"
+    # 2026-11-21: Gemini (free) got units wrong too often for a public page (US$840m -> "840 万美元", A$ -> 美元),
+    # so Haiku writes first (about US$0.05 a day) and Gemini is only the fallback when Haiku fails or the budget is used.
     if not os.environ.get("ANTHROPIC_API_KEY"):
-        return "", {}, ""
+        out = ask_gemini(prompt)
+        return (out, {}, "gemini") if out else ("", {}, "")
     body = {"model": MODEL, "max_tokens": 300, "thinking": {"type": "disabled"}, "output_config": {"effort": "low"},
             "messages": [{"role": "user", "content": prompt}]}
     req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=json.dumps(body).encode(),
@@ -127,7 +127,8 @@ def ask(headline, text):
             if attempt == 2:
                 print("[cnb] call failed:", type(e).__name__, str(e)[:120])
             time.sleep(3 * (attempt + 1))
-    return "", {}, ""
+    out = ask_gemini(prompt)
+    return (out, {}, "gemini") if out else ("", {}, "")
 
 
 def recent_docs(since):
