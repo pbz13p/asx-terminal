@@ -868,20 +868,58 @@ def autostart():
         pass
 
 
+class Server(ThreadingHTTPServer):
+    """2026-11-21: on Windows SO_REUSEADDR let a restarted copy bind the same port next to a stuck old copy, and the old
+    copy kept answering with old code for days. Windows gets an exclusive bind instead."""
+    if os.name == "nt":
+        allow_reuse_address = False
+
+        def server_bind(self):
+            import socket
+            try:
+                self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+            except (AttributeError, OSError):
+                pass
+            super().server_bind()
+
+
+def free_port(port):
+    """Windows: end any other process still listening on our port (an old copy of this program), so new code takes over."""
+    if os.name != "nt":
+        return
+    import subprocess
+    try:
+        out = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True, timeout=15).stdout
+    except Exception:
+        return
+    pids = set()
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) >= 5 and parts[1].endswith(f":{port}") and parts[3].upper() == "LISTENING":
+            pids.add(parts[4])
+    pids.discard(str(os.getpid()))
+    for pid in pids:
+        subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, timeout=15)
+        print("stopped an old copy, pid", pid)
+    if pids:
+        time.sleep(2)
+
+
 def main():
     autostart()
     threading.Thread(target=auto_update, daemon=True).start()
     port = int(os.environ.get("PORT", "8765"))
     host = os.environ.get("HOST", "127.0.0.1")  # the hosted copy listens behind Caddy on 127.0.0.1 too
     global SERVER
+    free_port(port)
     for _ in range(60):   # after a restart the old copy may still hold the port for a moment
         try:
-            server = ThreadingHTTPServer((host, port), Handler)
+            server = Server((host, port), Handler)
             break
         except OSError:
             time.sleep(1)
     else:
-        server = ThreadingHTTPServer((host, port), Handler)
+        server = Server((host, port), Handler)
     SERVER = server
     print(f"ASX Neon Terminal 已启动: http://127.0.0.1:{port}  (关闭此窗口即停止)")
     if os.environ.get("NO_BROWSER") != "1":
