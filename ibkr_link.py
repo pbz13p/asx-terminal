@@ -30,9 +30,20 @@ def _lib():
     return ib_async
 
 
+def _clean(x):
+    import math
+    if isinstance(x, float):
+        return None if (math.isnan(x) or x < 0) else x
+    if isinstance(x, dict):
+        return {k: _clean(v) for k, v in x.items()}
+    if isinstance(x, list):
+        return [_clean(v) for v in x]
+    return x
+
+
 def status(code="CND"):
     try:
-        return _status(code)
+        return _clean(_status(code))
     except Exception as e:
         import traceback
         return {"connected": False, "error": f"{type(e).__name__}: {str(e)[:300]}", "trace": traceback.format_exc()[-800:]}
