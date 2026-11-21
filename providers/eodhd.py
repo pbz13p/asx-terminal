@@ -161,7 +161,113 @@ class EodhdProvider(Provider):
 
     INDEX_SYMBOLS = {"XJO": "AXJO", "XAO": "AORD", "XTL": "AXTL", "XSO": "AXSO",
                      "XMJ": "AXMJ", "XFJ": "AXFJ", "XIJ": "AXIJ", "XEJ": "AXEJ",
-                     "XDJ": "AXDJ", "XHJ": "AXHJ"}
+                     "XDJ": "AXDJ", "XHJ": "AXHJ", "XNJ": "AXNJ", "XSJ": "AXSJ", "XTJ": "AXTJ",
+                     "XUJ": "AXUJ", "XPJ": "AXPJ", "XEC": "AXEC", "XSR": "AXSR", "XSI": "AXSI"}
+
+    # 行业页 (Frank 2026-11-21: macro -> sector -> small caps). Group, code, Chinese label, GICS sector name for leaders.
+    BOARD = [("大盘", "XJO", "ASX 200", None), ("小盘", "XSO", "小盘指数 Small Ords", None),
+             ("小盘", "XEC", "新兴公司 Emerging", None), ("小盘", "XSR", "小盘资源", None), ("小盘", "XSI", "小盘工业", None),
+             ("行业", "XMJ", "原材料/矿业", "Materials"), ("行业", "XEJ", "能源", "Energy"), ("行业", "XFJ", "金融", "Financials"),
+             ("行业", "XHJ", "医疗", "Health Care"), ("行业", "XIJ", "信息技术", "Information Technology"),
+             ("行业", "XDJ", "可选消费", "Consumer Discretionary"), ("行业", "XSJ", "必需消费", "Consumer Staples"),
+             ("行业", "XNJ", "工业", "Industrials"), ("行业", "XTJ", "通信", "Communication Services"),
+             ("行业", "XUJ", "公用事业", "Utilities"), ("行业", "XPJ", "房地产", "Real Estate")]
+
+    def _long(self, symbol):
+        def load():
+            start = (date.today() - timedelta(days=560)).isoformat()
+            return [(r["date"], r.get("adjusted_close") or r["close"]) for r in self._get(f"eod/{symbol}", **{"from": start}) if r.get("close")]
+        return self._cached(f"long:{symbol}", TTL["history"], load)
+
+    def _sector_map(self, codes):
+        """GICS sector per stock from the ASX company API, cached on this PC (data/sector_map.json, never in git)."""
+        from pathlib import Path
+        f = Path(__file__).resolve().parent.parent / "data" / "sector_map.json"
+        try:
+            m = json.loads(f.read_text(encoding="utf-8"))
+        except Exception:
+            m = {}
+        todo = [c for c in codes if c not in m][:400]   # at most 400 new lookups per refresh; the rest fill in next time
+        if todo:
+            from concurrent.futures import ThreadPoolExecutor
+
+            def one(c):
+                try:
+                    req = urllib.request.Request(f"https://asx.api.markitdigital.com/asx-research/1.0/companies/{c.lower()}/header",
+                                                 headers={"Accept": "application/json", "User-Agent": "Mozilla/5.0"})
+                    with urllib.request.urlopen(req, timeout=10) as r:
+                        return c, (json.load(r).get("data") or {}).get("sector") or ""
+                except Exception:
+                    return c, None
+            with ThreadPoolExecutor(12) as ex:
+                for c, sct in ex.map(one, todo):
+                    if sct is not None:
+                        m[c] = sct
+            try:
+                f.parent.mkdir(parents=True, exist_ok=True)
+                f.write_text(json.dumps(m), encoding="utf-8")
+            except Exception:
+                pass
+        return m
+
+    def board(self):
+        return self._cached("board", 1800, self._load_board)
+
+    def _load_board(self):
+        def chg(rows, n):
+            return round(100 * (rows[-1][1] / rows[-1 - n][1] - 1), 1) if len(rows) > n and rows[-1 - n][1] else None
+        series, out = {}, []
+        for grp, code, label, gics in self.BOARD:
+            try:
+                rows = self._long(f"{self.INDEX_SYMBOLS[code]}.INDX")
+            except DataUnavailable:
+                rows = []
+            if len(rows) < 30:
+                continue
+            series[code] = rows
+            ma = sum(v for _, v in rows[-200:]) / 200 if len(rows) >= 200 else None
+            out.append({"group": grp, "code": code, "label": label, "gics": gics, "asof": rows[-1][0], "last": round(rows[-1][1], 1),
+                        "d1": chg(rows, 1), "w1": chg(rows, 5), "m1": chg(rows, 21), "m3": chg(rows, 63), "y1": chg(rows, 252),
+                        "above200": (rows[-1][1] >= ma) if ma else None, "ma200_gap": round(100 * (rows[-1][1] / ma - 1), 1) if ma else None})
+        xj = next((r for r in out if r["code"] == "XJO"), None)
+        for r in out:
+            r["rs3m"] = round(r["m3"] - xj["m3"], 1) if xj and r["m3"] is not None and xj["m3"] is not None else None
+        # every stock: today and ~1 month (bulk end-of-day files: two calls)
+        mk = self.market()
+        names = {s["code"]: s["name"] for s in mk["stocks"]}
+        month = {}
+        d = date.fromisoformat(mk["asof"]) - timedelta(days=30)
+        for _ in range(6):
+            rows = self._cached(f"bulk:{d.isoformat()}", 86400, lambda d=d: self._bulk(d.isoformat()))
+            if rows:
+                month = {r["code"]: r.get("adjusted_close") or r["close"] for r in rows if r.get("close")}
+                break
+            d -= timedelta(days=1)
+        stocks = []
+        for s in mk["stocks"]:
+            val = s["last"] * (s["volume"] or 0)
+            if s["last"] < 0.01 or val < 20_000:
+                continue
+            m0 = month.get(s["code"])
+            stocks.append({"code": s["code"], "name": s["name"], "last": s["last"], "d1": round(100 * (s["last"] / s["prev"] - 1), 1),
+                           "m1": round(100 * (s["last"] / m0 - 1), 1) if m0 else None, "value_k": round(val / 1000)})
+        smap = self._sector_map([x["code"] for x in sorted(stocks, key=lambda x: -x["value_k"])])
+        leaders = {}
+        for r in out:
+            if r["gics"]:
+                g = [x for x in stocks if smap.get(x["code"]) == r["gics"] and x["m1"] is not None]
+                leaders[r["code"]] = sorted(g, key=lambda x: -x["m1"])[:6]
+                r["n_stocks"] = len([x for x in stocks if smap.get(x["code"]) == r["gics"]])
+                r["breadth_up_m1"] = round(100 * sum(1 for x in g if x["m1"] > 0) / len(g)) if g else None
+        xs = next((r for r in out if r["code"] == "XSO"), None)
+        m1s = [x["m1"] for x in stocks if x["m1"] is not None]
+        mood = {"small_vs_large_3m": round(xs["m3"] - xj["m3"], 1) if xs and xj and xs["m3"] is not None and xj["m3"] is not None else None,
+                "small_above200": xs["above200"] if xs else None, "small_ma200_gap": xs["ma200_gap"] if xs else None,
+                "up_today_pct": round(100 * sum(1 for x in stocks if x["d1"] > 0) / len(stocks)) if stocks else None,
+                "up_month_pct": round(100 * sum(1 for x in m1s if x > 0) / len(m1s)) if m1s else None,
+                "median_month_pct": round(sorted(m1s)[len(m1s) // 2], 1) if m1s else None, "n": len(stocks),
+                "sector_known": sum(1 for x in stocks if smap.get(x["code"]))}
+        return {"asof": mk["asof"], "rows": out, "leaders": leaders, "mood": mood}
 
     def history(self, code, years=20):
         idx = self.INDEX_SYMBOLS.get(code)
@@ -177,7 +283,8 @@ class EodhdProvider(Provider):
         return self._cached(f"hist:{symbol}:{years}", TTL["history"], load)
 
     def candles(self, code, tf):
-        symbol = f"{code}.AU"
+        idx = self.INDEX_SYMBOLS.get(code)
+        symbol = f"{idx}.INDX" if idx else f"{code}.AU"   # 行业页: index codes (XMJ, XSO ...) chart like a stock
         if tf in ("1D", "5D"):
             return self._cached(f"i:{code}:{tf}", TTL["intraday"], lambda: self._intraday(symbol, tf))
         # daily: always the full adjusted history (the chart shows the chosen range and zooms out to everything)
@@ -191,7 +298,7 @@ class EodhdProvider(Provider):
                 out.append({"t": r["date"], "o": r["open"] * k, "h": r["high"] * k, "l": r["low"] * k,
                             "c": r["close"] * k, "v": r.get("volume") or 0})
             return out
-        return with_today(self, symbol, self._cached(f"c:{code}:all", TTL["candles"], load), "Australia/Sydney")
+        return with_today(self, symbol, self._cached(f"c:{code}:all", TTL["candles"], load), "Australia/Sydney", "AXJO.INDX")
 
     def _intraday(self, symbol, tf):
         span, interval = (3, "5m") if tf == "1D" else (9, "1h")

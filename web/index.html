@@ -80,6 +80,7 @@ td.w{white-space:normal;min-width:260px}
 .cd .ft{color:#C3CCEE;font-size:16.5px;margin-top:auto}
 #rct{border:1px solid rgba(255,212,59,.35);border-radius:10px;padding:10px 14px;margin-bottom:12px;background:linear-gradient(90deg,rgba(255,212,59,.06),transparent)}#rct h3{margin:0 0 6px;font:700 17px var(--disp);color:var(--y)}#rct table{width:auto}#rct td,#rct th{padding:3px 12px 3px 0;border:0;background:none}
 #rcn{background:linear-gradient(90deg,rgba(25,255,156,.08),transparent);border:1px solid rgba(25,255,156,.35);border-radius:10px;padding:10px 14px;margin-bottom:12px}#rcn h3{margin:0 0 6px;font:700 17px var(--disp);color:var(--up)}#rcn div{font-size:18.5px;line-height:1.75;color:#F2F5FF}#rcn b{color:var(--y);font-weight:500;margin-right:6px}
+#sb{position:fixed;top:46px;left:0;right:0;bottom:0;background:#05060C;z-index:40;display:none;overflow-y:auto;padding:16px 22px 40px;font-family:"Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;font-size:16px;color:#E6ECFF}#sb.on{display:block}#sb table{border-collapse:collapse;width:100%}#sb td,#sb th{padding:6px 10px;border-bottom:1px solid #1B2550;text-align:right;font-size:16px}#sb td:first-child,#sb th:first-child{text-align:left}#sb tr.ix{cursor:pointer}#sb tr.ix:hover{background:#0E1530}#sb .ld{cursor:pointer;display:inline-block;margin:2px 10px 2px 0}#sb .ld:hover{text-decoration:underline}#sb h3{font-size:19px;margin:18px 0 8px}#sb .mood{display:flex;gap:12px;flex-wrap:wrap}#sb .mood div{border:1px solid #2E3D80;border-radius:8px;padding:8px 14px;background:#0A0F24}#sb .mood b{font-size:20px}
 #nw{position:fixed;top:46px;left:0;right:0;bottom:0;background:#05060C;z-index:40;display:none;overflow-y:auto;padding:16px 22px 40px;font-family:"Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif}#nw.on{display:block}
 #nwf button{all:unset;cursor:pointer;padding:4px 12px;margin-right:4px;border:1px solid #2E3D80;border-radius:6px;color:#DCE3FF;font-size:17px}#nwf button.on{color:#05060C;background:#FFD23F;border-color:#FFD23F;font-weight:700}
 #nwl{max-width:1100px}.nwi{background:#0A0D18;border:1px solid #222B4D;border-radius:10px;padding:14px 18px;margin-bottom:12px}.nwi.new{border-color:rgba(255,210,63,.7);box-shadow:0 0 18px rgba(255,210,63,.12)}
@@ -104,7 +105,7 @@ td.w{white-space:normal;min-width:260px}
   <div class="brand"><i></i>NEON <b>TERMINAL</b></div><div class="mk" id="mkt"><button data-m="au" class="on">🇦🇺 澳股</button><button data-m="cn">🇨🇳 A 股</button><button data-m="cx">₿ 加密</button><button data-m="cm">🛢 商品</button></div>
   <form id="sf" role="search"><input id="si" placeholder="搜代码：CND 或 600519" maxlength="6" autocomplete="off" aria-label="搜索股票代码"></form>
   <div class="idx num" id="idx"></div>
-  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
+  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="sbb" style="color:#4FC3FF;border-color:rgba(79,195,255,.55)" title="宏观到微观：大盘、小盘、11 个行业，谁强谁弱，行业里最强的股票">🏭 行业</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
 </header>
 <main>
   <aside>
@@ -140,6 +141,7 @@ td.w{white-space:normal;min-width:260px}
 <div id="ai" role="dialog" aria-label="问 AI"><div class="dh"><b>🤖 问 AI <span class="mu" id="aiw" style="font:400 15px var(--mono)"></span></b><button class="btn" id="aiideas" style="display:none">待审核想法</button><button class="btn" id="aix" aria-label="关闭">✕</button></div>
 <div id="aim"></div><form id="aif"><textarea id="aii" placeholder="输入你的想法或问题，比如：我觉得最近跌得多的电子股会反弹，可行吗？（Enter 发送，Shift+Enter 换行）"></textarea><button class="btn" style="align-self:flex-end;color:#fff;background:var(--v);border-color:var(--v)">发送</button></form></div>
 <div id="rc" role="dialog" aria-label="研究中心"><div class="rch"><h2>🔬 研究中心</h2><div class="rcs num" id="rcs"></div><div class="tabs" id="rcf" style="border:0;white-space:nowrap"><button data-f="all" class="on">全部</button><button data-f="ASX">澳股</button><button data-f="A股">A 股</button><button data-f="加密">加密</button><button data-f="无效">测过无效</button></div><span style="flex:1"></span><button class="btn" id="lgb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="第 94 轮：所有过关的规则合在一个账户里，和只买 ETF 比">💼 组合总账</button><button class="btn" id="rcx">关闭 ✕</button></div><div id="rcn"></div><div id="rct"></div><div class="cards" id="rcc"></div></div>
+<div id="sb" role="dialog" aria-label="行业"><div class="rch"><h2>🏭 行业 · 小盘</h2><span class="mu" style="font-size:16px;color:#C9D2F5">收盘数据，每 30 分钟更新；点指数看 K 线，点股票直接打开</span><span style="flex:1"></span><button class="btn" id="sbx">关闭 ✕</button></div><div id="sbl"><div class="empty">读取中…</div></div></div>
 <div id="nw" role="dialog" aria-label="新闻"><div class="rch"><h2>📰 新闻</h2><span class="mu" style="font-size:16px;color:#C9D2F5">经济、市场大事，每 2 小时自动更新（早 7 点到晚 11 点），最新的在最上面</span><div class="tabs" id="nwf" style="border:0;white-space:nowrap"></div><span style="flex:1"></span><button class="btn" id="nwx">关闭 ✕</button></div><div id="nwl"></div></div>
 <div id="dr" role="dialog" aria-label="公告"><div class="dh"><b id="drt"></b><button class="btn" id="dro">原文页</button><button class="btn" id="drx" aria-label="关闭">✕</button></div><div class="db" id="drb"></div></div>
 <script>
@@ -508,6 +510,25 @@ async function openLedger(){$('rcn').innerHTML='';$('rct').innerHTML='';$('rcc')
  h+='<p class="mu">交易 '+esc(L.n_trades)+' 笔 · 信号 '+esc(JSON.stringify(L.signals||{}))+' · 行业已知 '+esc(L.sector_known_pct)+'% · 指数调整名单 '+esc(L.index_lists)+' 份 · 生成于 '+esc(L.built)+'</p></div>';
  $('rcc').innerHTML=h;}
 $('lgb').onclick=function(){openLedger();};
+async function openSB(){$('sb').classList.add('on');$('rc').classList.remove('on');$('nw').classList.remove('on');$('sbl').innerHTML='<div class="empty">读取中…（第一次要查每只股票的行业，约 1 分钟）</div>';
+ try{var B=await api('board');}catch(e){$('sbl').innerHTML='<div class="empty">'+esc(e.message)+'</div>';return;}
+ var M=B.mood||{},h='<h3>小盘情绪（数据日 '+esc(B.asof)+'）</h3><div class="mood">';
+ h+='<div>小盘比大盘（3 个月）<br><b>'+pc(M.small_vs_large_3m)+'</b></div>';
+ h+='<div>小盘指数 vs 200 日线<br><b class="'+(M.small_above200?'up':'dn')+'">'+(M.small_above200==null?'—':(M.small_above200?'在线上 ':'在线下 '))+'</b>'+pc(M.small_ma200_gap)+'</div>';
+ h+='<div>今天上涨的股票<br><b>'+(M.up_today_pct==null?'—':M.up_today_pct+'%')+'</b></div>';
+ h+='<div>近 1 个月上涨的股票<br><b>'+(M.up_month_pct==null?'—':M.up_month_pct+'%')+'</b></div>';
+ h+='<div>近 1 个月涨跌中位数<br><b>'+pc(M.median_month_pct)+'</b></div></div>';
+ h+='<p class="mu" style="color:#C9D2F5">只算日成交额 ≥ 2 万澳元、股价 ≥ 1 分的 '+esc(M.n)+' 只（行业已知 '+esc(M.sector_known)+' 只）。200 日线只作参考：第 95 轮测过，当买卖开关不过关。</p>';
+ var G={'大盘':[],'小盘':[],'行业':[]};(B.rows||[]).forEach(function(r){(G[r.group]=G[r.group]||[]).push(r);});
+ G['行业'].sort(function(a,b){return (b.rs3m||-99)-(a.rs3m||-99);});
+ h+='<h3>指数（行业按"3 个月比大盘强多少"排）</h3><table class="num"><tr><th>指数</th><th>点位</th><th>今天</th><th>1 周</th><th>1 个月</th><th>3 个月</th><th>1 年</th><th>比大盘（3 个月）</th><th>离 200 日线</th><th>行业内 1 个月上涨</th></tr>';
+ ['大盘','小盘','行业'].forEach(function(g){(G[g]||[]).forEach(function(r){h+='<tr class="ix" data-c="'+esc(r.code)+'"><td><b>'+esc(r.label)+'</b> <span class="mu">'+esc(r.code)+'</span></td><td>'+esc(r.last)+'</td><td>'+pc(r.d1)+'</td><td>'+pc(r.w1)+'</td><td>'+pc(r.m1)+'</td><td>'+pc(r.m3)+'</td><td>'+pc(r.y1)+'</td><td>'+pc(r.rs3m)+'</td><td>'+pc(r.ma200_gap)+'</td><td>'+(r.breadth_up_m1==null?'<span class="mu">—</span>':r.breadth_up_m1+'%（'+r.n_stocks+' 只）')+'</td></tr>';});});
+ h+='</table><h3>每个行业近 1 个月最强的股票（日成交 ≥ 2 万）</h3><table>';
+ G['行业'].forEach(function(r){var L=(B.leaders||{})[r.code]||[];h+='<tr><td style="width:150px"><b>'+esc(r.label)+'</b></td><td style="text-align:left">'+(L.length?L.map(function(x){return '<span class="ld" data-s="'+esc(x.code)+'"><b>'+esc(x.code)+'</b> '+esc((x.name||'').replace(/ (LIMITED|LTD\.?|GROUP|HOLDINGS)/g,'').slice(0,18))+' '+pc(x.m1)+'</span>';}).join(''):'<span class="mu">行业还没查到（下次刷新补上）</span>')+'</td></tr>';});
+ h+='</table><p class="mu" style="color:#C9D2F5">数据：EODHD 收盘价；行业分类来自 ASX 公司资料。商品价格在顶部"商品"模式里看。</p>';
+ $('sbl').innerHTML=h;}
+$('sbb').onclick=openSB;$('sbx').onclick=function(){$('sb').classList.remove('on');};
+$('sbl').addEventListener('click',function(e){var t=e.target.closest('[data-c],[data-s]');if(!t)return;var c=t.getAttribute('data-c')||t.getAttribute('data-s');$('sb').classList.remove('on');if(st.m!=='au')setMarket('au',c);else select(c);});
 $('rcb').onclick=openRC;$('rcx').onclick=function(){$('rc').classList.remove('on');};
 $('rcf').addEventListener('click',function(e){var f=e.target.getAttribute('data-f');if(!f)return;rcf=f;[].forEach.call($('rcf').children,function(b){b.classList.toggle('on',b===e.target);});renderRC();});
 $('rcc').addEventListener('click',function(e){var c=e.target.getAttribute('data-c');if(c){$('rc').classList.remove('on');select(c);}});

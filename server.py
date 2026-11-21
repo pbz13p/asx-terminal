@@ -645,6 +645,8 @@ class Handler(SimpleHTTPRequestHandler):
             return provider.market()
         if name == "indices":
             return provider.indices()
+        if name == "board":   # 行业页 (Frank 2026-11-21)
+            return provider.board()
         if name == "quotes":
             codes = [c for c in q.get("codes", "").upper().split(",") if c]
             if not codes or len(codes) > 40 or not all(CODE.match(c) for c in codes):
