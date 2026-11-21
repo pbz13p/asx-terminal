@@ -73,6 +73,7 @@ jobs:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}   # round 97 model test
           EMB_MINUTES: "10"   # round 81 vectors are computed by the 8-lane emb81 workflow; here only top up a few
         run: |
           ls data/eod | wc -l
