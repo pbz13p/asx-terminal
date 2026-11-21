@@ -187,7 +187,7 @@ class EodhdProvider(Provider):
             m = json.loads(f.read_text(encoding="utf-8"))
         except Exception:
             m = {}
-        todo = [c for c in codes if c not in m][:400]   # at most 400 new lookups per refresh; the rest fill in next time
+        todo = [c for c in codes if c not in m][:1500]   # first fill ~1 minute, then only new codes
         if todo:
             from concurrent.futures import ThreadPoolExecutor
 
