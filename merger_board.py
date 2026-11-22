@@ -723,6 +723,11 @@ def main():
             a = accc[c]
             d.update({"accc_case": a["case"], "accc_stage": a["stage"], "accc_status": a["status"], "accc_url": a["url"]})
             d["src"]["accc"] = {"headline": a["title"], "date": TODAY.isoformat(), "url": a["url"]}
+        if manual.get(c) and any(k in manual[c] for k in ("cash", "scrip_ratio")):   # a hand-read offer replaces the whole auto offer
+            for k in ("cash", "scrip_ratio", "currency", "acquirer_code", "special_div", "franking", "div_on_top"):
+                if k not in manual[c]:
+                    d.pop(k, None)
+                    d["src"].pop(k, None)
         for k, v in (manual.get(c) or {}).items():   # hand-read facts win; each carries its own source
             if k == "src":
                 d["src"].update(v)
