@@ -72,14 +72,17 @@ RATES = (0.0, 0.325, 0.47)
 
 DEAL = re.compile(r"scheme implementation|implementation (deed|agreement)|scheme booklet|notice of scheme meeting|scheme meeting|"
                   r"first court|second court|bidder'?s statement|target'?s statement|takeover bid|takeover offer|"
-                  r"off-market (takeover|bid)|on-market (takeover|bid)|unconditional|independent expert|binding scheme|"
+                  r"off-market (takeover|bid)|on-market (takeover|bid)|binding scheme|"
                   r"supplementary (bidder|target)|offer (increased|improved)|increased offer|improved offer|"
                   r"best and final|recommended (cash )?(offer|takeover|scheme)", re.I)
 TARGET_ONLY = re.compile(r"scheme booklet|notice of scheme meeting|scheme meeting|first court|second court|target'?s statement|"
-                         r"independent expert|results? of scheme meeting|court approv", re.I)
+                         r"results? of scheme meeting|court approv", re.I)
+NOT_DEAL = re.compile(r"demerger|de-merger|in-specie|capital reduction", re.I)
 ENDED = re.compile(r"terminat|lapse|withdraw|not proceed|scheme not approved|not approved by|did not pass|resolutions? not passed|"
-                   r"scheme effective|scheme becomes effective|effective date|implementation of (the )?scheme|scheme implemented|"
-                   r"compulsory acquisition|removal from (the )?official list|delist|close of offer|offer (has )?closed", re.I)
+                   r"scheme effective|scheme becomes effective|effective date|implementation of (the )?scheme|scheme (has been )?implemented|"
+                   r"completion of (the )?(scheme|acquisition|takeover|merger|offer)|(scheme|takeover|merger|acquisition) complet|"
+                   r"compulsory acquisition|removal from (the )?official list|delist|close of (the )?offer|offer (period )?(has )?(closed|ended)|"
+                   r"suspension of trading.{0,30}scheme", re.I)
 DEAL_CTX = re.compile(r"scheme|offer|\bbid\b|bidder|deed|implementation agreement|takeover|transaction|official list|compulsory|delist", re.I)
 TARGET_VOICE = re.compile(r"in the absence of a superior proposal", re.I)
 MONTHS = {m: i + 1 for i, m in enumerate(["january", "february", "march", "april", "may", "june", "july", "august",
@@ -108,6 +111,14 @@ def jload(p, default):
 def jsave(p, obj):
     Path(p).parent.mkdir(parents=True, exist_ok=True)
     Path(p).write_text(json.dumps(obj, ensure_ascii=False), encoding="utf-8")
+
+
+def is_deal(h):
+    if NOT_DEAL.search(h or ""):
+        return False
+    if DEAL.search(h or ""):
+        return True
+    return bool(re.search(r"independent expert|unconditional", h or "", re.I) and re.search(r"scheme|offer|\bbid\b|takeover", h or "", re.I))
 
 
 # ------------------------------------------------------------------ extraction (pure functions, tested offline)
@@ -309,7 +320,7 @@ def price_candidates(live):
             if pc > 0 and vols[10] > 0 and rows[i][6] / pc - 1 >= .10 and rows[i][5] >= 3 * vols[10]:
                 jumped = True
                 break
-        if not jumped:
+        if not jumped or statistics.median(r[6] * r[5] for r in rows[-20:]) < 20_000:
             continue
         moves = [abs(rows[k][6] / rows[k - 1][6] - 1) for k in range(len(rows) - 40, len(rows)) if rows[k - 1][6] > 0]
         if moves and statistics.median(moves) < 0.01:
@@ -323,6 +334,9 @@ def norm(name):
     return re.sub(r"\s+", " ", n).strip()
 
 
+ACCC_DEBUG = {}
+
+
 def accc_register(names):
     """ACCC acquisitions register: entries under assessment or decided in 18 months, matched to listed names."""
     base = "https://www.accc.gov.au/public-registers/acquisitions-and-mergers-registers/acquisitions-register"
@@ -334,26 +348,30 @@ def accc_register(names):
         except Exception as e:
             print("[merger] ACCC page", page, type(e).__name__)
             break
-        cards = re.split(r'(?=<h3)', html)
+        links = re.findall(r'href="(/public-registers/acquisitions-and-mergers-registers/acquisitions-register/[^"?#]+)"', html)
+        page_txt = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", html)))
+        if page == 0:
+            ACCC_DEBUG["page0"] = page_txt[:1500]
+            ACCC_DEBUG["links"] = len(links)
+        parts = re.split(r"(?=Acquisition status)", page_txt)
         n_cards = 0
-        for c in cards:
-            txt = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", c))).strip()
-            m = re.search(r"Case number\s*([A-Z]{2}-\d+)", txt)
+        for k, txt in enumerate(parts):
+            m = re.search(r"Case number:?\s*([A-Z]{2}-\d+)", txt)
             if not m:
                 continue
             n_cards += 1
-            link = re.search(r'href="(/public-registers/acquisitions-and-mergers-registers/acquisitions-register/[^"]+)"', c)
             stage = "phase_2" if re.search(r"phase 2|detailed assessment", txt, re.I) else "public_benefit" if re.search(r"public benefit", txt, re.I) \
                 else "phase_1" if re.search(r"phase 1|initial assessment", txt, re.I) else "waiver" if re.search(r"waiver", txt, re.I) else None
             status = "under_assessment" if re.search(r"under assessment", txt, re.I) else "approved_with_conditions" if re.search(r"approved with conditions", txt, re.I) \
                 else "not_approved" if re.search(r"not approved", txt, re.I) else "approved" if re.search(r"\bapproved\b", txt, re.I) \
                 else "completed" if re.search(r"assessment completed", txt, re.I) else None
-            tgt = re.search(r"Target\(s\)(?: or vendor\(s\))?\s*(.+?)\s*(?:Other party|ANZSIC|Description|$)", txt)
+            tgt = re.search(r"Target\(s\)(?: or vendor\(s\))?:?\s*(.+?)\s*(?:Other part|ANZSIC|Description|Read more|$)", txt)
+            title = parts[k - 1][-160:] if k else ""
             for chunk in re.split(r";|,(?= [A-Z])", tgt.group(1) if tgt else ""):
                 code = by_name.get(norm(chunk))
                 if code:
-                    found[code] = {"case": m.group(1), "stage": stage, "status": status, "title": txt[:120],
-                                   "url": "https://www.accc.gov.au" + link.group(1) if link else base}
+                    found[code] = {"case": m.group(1), "stage": stage, "status": status, "title": (title.strip() or txt[:120])[-140:],
+                                   "url": base + "?search_api_fulltext=" + m.group(1)}
         if n_cards == 0:
             break
         time.sleep(0.5)
@@ -362,17 +380,20 @@ def accc_register(names):
 
 def panel_names():
     """Takeovers Panel: company names in the applications list (best effort; the page layout may change)."""
-    for url in ("https://www.takeovers.gov.au/applications", "https://www.takeovers.gov.au/applications-and-decisions"):
+    names = []
+    for page in range(0, 4):
         try:
-            html = _get(url, 40)
+            html = _get(f"https://takeovers.gov.au/media-releases?page={page}", 40)
         except Exception as e:
-            print("[merger] panel", url, type(e).__name__)
-            continue
+            print("[merger] panel page", page, type(e).__name__)
+            break
         txt = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", html)))
-        names = re.findall(r"([A-Z][\w&'.-]*(?: [A-Z][\w&'.-]*){0,5} (?:Limited|Ltd))(?: \d{2}R?)?", txt)
-        if names:
-            return list(dict.fromkeys(names))
-    return []
+        for d_, n_ in re.findall(r"(\d{2}/\d{2}/20\d\d)\s*\|?\s*([A-Z][\w&'.()-]*(?: [A-Z&][\w&'.()-]*){0,6} (?:Limited|Ltd))", txt):
+            iso = f"{d_[6:]}-{d_[3:5]}-{d_[:2]}"
+            if iso >= SINCE:
+                names.append(n_)
+        time.sleep(0.5)
+    return list(dict.fromkeys(names))
 
 
 def listings(code):
@@ -413,16 +434,18 @@ def doc_text(code, it, archive):
 # ------------------------------------------------------------------ assemble one deal
 def deal_for(code, items, archive, names):
     items = sorted([i for i in items if i.get("date", "") >= SINCE], key=lambda i: (i["date"], i["ids"]))
-    deal_items = [i for i in items if DEAL.search(i["headline"])]
+    ends = [i for i in items if ENDED.search(i["headline"]) and DEAL_CTX.search(i["headline"])
+            and not re.search(r"scheme meeting|booklet|timetable|extension|extended|variation", i["headline"], re.I)]
+    last_end = ends[-1]["date"] if ends else ""
+    deal_items = [i for i in items if is_deal(i["headline"]) and i["date"] > last_end]   # the current episode only
     if not deal_items:
-        return None, "no deal headline"
+        return None, (f"ended {last_end}: {ends[-1]['headline'][:60]}" if ends else "no deal headline")
     start = deal_items[0]["date"]
-    ended = [i for i in items if i["date"] >= start and ENDED.search(i["headline"]) and DEAL_CTX.search(i["headline"])
-             and not re.search(r"scheme meeting|booklet|timetable|extension|extended", i["headline"], re.I)]
-    if ended:
-        return None, f"ended {ended[-1]['date']}: {ended[-1]['headline'][:60]}"
+    if start < (TODAY - timedelta(days=455)).isoformat() and deal_items[-1]["date"] < (TODAY - timedelta(days=120)).isoformat():
+        return None, f"stale: started {start}, nothing since {deal_items[-1]['date']}"
     facts, src = {}, {}
-    target = any(TARGET_ONLY.search(i["headline"]) for i in deal_items)
+    target = any(TARGET_ONLY.search(i["headline"]) or re.search(r"(offer|bid|proposal) (for|to acquire) " + re.escape((names.get(code) or "?").split()[0]), i["headline"], re.I)
+                 for i in deal_items)
     for it in deal_items[-12:] if len(deal_items) > 12 else deal_items:
         ex = extract(doc_text(code, it, archive))
         if ex.get("target_voice"):
@@ -436,6 +459,7 @@ def deal_for(code, items, archive, names):
         return None, "acquirer side or not confirmed as target"
     acq = [c for c in facts.get("asx_codes", []) if c != code]
     d = {"code": code, "name": names.get(code, ""), "kind": "scheme" if any(re.search(r"scheme", i["headline"], re.I) for i in deal_items) else "takeover",
+         "role_by": "headline" if any(TARGET_ONLY.search(i["headline"]) for i in deal_items) else "document wording",
          "announced": start, "first_headline": deal_items[0]["headline"], "first_url": ann_url(deal_items[0]["ids"]),
          "latest": [{"date": i["date"], "headline": i["headline"], "url": ann_url(i["ids"])} for i in deal_items[-6:]][::-1],
          "acquirer_code": acq[0] if acq else None, "src": src}
@@ -477,7 +501,11 @@ def price_deal(d, idx):
     days = max((date.fromisoformat(d["end"]) - TODAY).days, 7)
     d["days_left"] = days
     ret = gross / d["price"] - 1
-    d["spread"], d["spread_pct"], d["ann_pct"] = round(gross - d["price"], 6), round(100 * ret, 2), round(100 * annualise(ret, days), 1)
+    d["spread"], d["spread_pct"] = round(gross - d["price"], 6), round(100 * ret, 2)
+    if not -0.10 <= ret <= 0.60 and not d.get("manual"):
+        d["pending"] = f"价差 {100 * ret:.0f}% 不合理：报价提取错、看反了收购方，或交易已变，待核"
+        return d
+    d["ann_pct"] = round(100 * annualise(ret, days), 1)
     frank = d.get("franking") or 0.0
     ok45 = days >= 46          # bought today, ex-date assumed near completion
     d["after_tax"] = {}
@@ -640,10 +668,17 @@ def main():
                 d["src"].update(v)
             else:
                 d[k] = v
+                d["manual"] = True
         d["found_by"] = sorted(sources[c])
         price_deal(d, idx)
         d["next_date"], d["next_label"] = next_key_date(d)
         deals.append(d)
+    on = {d["code"]: d for d in deals}
+    for d in list(deals):   # a pair pointing at each other: the one whose price makes no sense is the acquirer
+        o = on.get(d.get("acquirer_code") or "")
+        if d.get("pending") and o and o.get("acquirer_code") == d["code"] and not o.get("pending"):
+            deals.remove(d)
+            skipped[d["code"]] = f"acquirer of {o['code']}"
     deals.sort(key=lambda d: (not d.get("after_tax"), -(d.get("after_tax") or {}).get("0.325", {}).get("ann_pct", 0)))
     msgs = alerts(prev, deals)
     pushed = ntfy("并购套利", "\n".join(msgs[:12])) if msgs else False
@@ -651,7 +686,7 @@ def main():
     out = {"generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "price_day": last_day, "deals": deals,
            "counts": {"candidates": len(cands), "deals": len(deals), "archive": len(archive), "feed": len(feed_codes),
                       "price_signal": len(px), "accc": len(accc), "panel": len(panel_codes)},
-           "feed_backfill": feed_note, "accc_not_on_board": {c: skipped.get(c, "") for c in missed},
+           "feed_backfill": feed_note, "accc_debug": ACCC_DEBUG, "panel_names": panel[:60], "accc_not_on_board": {c: skipped.get(c, "") for c in missed},
            "skipped": skipped, "alerts": msgs, "alerts_pushed": pushed,
            "rates": ["0%", "32.5%", "47%"], "note": "价格 = EODHD 最后收盘；完成日标「估计」的是按 HSF FY26 平均天数推的；拿不准的标「待核」。不构成下单。"}
     jsave(OUT, out)
