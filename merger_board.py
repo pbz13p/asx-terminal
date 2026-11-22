@@ -193,8 +193,7 @@ def extract(text):
         out["class_ruling"] = m.group(1).replace(" ", "")
     elif re.search(r"(appl\w+ for|request\w*) a class ruling", t, re.I):
         out["class_ruling"] = "已申请（未出）"
-    if re.search(r"(intends? to|will) (vote against|not accept|reject)|opposes? the (scheme|offer)", t, re.I):
-        out["opposer"] = True
+    # opposing holders: booklets are full of generic "if you vote against" text, so this is only set by hand (merger_facts)
     codes = re.findall(r"\((?:ASX|ASX code|ASX:)\s*:?\s*([A-Z0-9]{3})\)", t)
     if codes:
         out["asx_codes"] = list(dict.fromkeys(codes))
