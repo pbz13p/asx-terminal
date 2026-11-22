@@ -86,6 +86,7 @@ jobs:
           for n in $(echo "$ROUNDS" | tr ',' ' '); do
             echo "=== round $n"; env STUDY${n}_OUT=out/study${n}_results.json python study$n.py || echo "round $n failed"
           done
+          if [ "${{ github.event_name }}" != "schedule" ] && [ -n "$ROUNDS" ] && [ "$ROUNDS" != "76" ]; then echo "ROUNDS_RUN=$ROUNDS" >> $GITHUB_ENV; fi   # a real research round: ask Claude to review it
           if [ -d data/ai/s76 ]; then python ann_lists.py || echo "announcement lists failed"; fi   # round 96 lists + live record
           if [ -d data/ai/s76 ]; then python cn_brief.py || echo "Chinese brief failed"; fi   # 中文公告速读 (Frank 2026-11-21, private page for now)
           if [ -f out/study81_results.json ] && python -c "import json,sys;sys.exit(0 if json.load(open('out/study81_results.json')).get('left_to_embed',0)>0 else 1)"; then echo "round 81 embeddings unfinished: run again"; echo "EMB_AGAIN=1" >> $GITHUB_ENV; fi
@@ -93,6 +94,8 @@ jobs:
           python securedata.py encrypt-dir out
           ls -la out
       - name: Push encrypted results to the quick-results branch
+        env:
+          HAS_FIRE: ${{ secrets.CLAUDE_FIRE_URL != '' && secrets.CLAUDE_FIRE_TOKEN != '' }}
         run: |
           cd out
           git init -q -b quick-results
@@ -100,8 +103,30 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" quick-results && git reset -q FETCH_HEAD || true   # mixed reset: keep the files other jobs put there
           git add -- $(ls)   # only this run's files; never stage deletions of the others
-          git commit -q -m "Quick results $(date -u +%FT%T)"
+          TAG=""   # [review:<rounds>] marks the commit Claude was asked to review: at most once per round per 6 hours
+          if [ -n "$ROUNDS_RUN" ] && [ "$HAS_FIRE" = "true" ]; then
+            if git log -n 200 --since="6 hours ago" --format=%s 2>/dev/null | grep -qF "[review:$ROUNDS_RUN]"; then echo "round $ROUNDS_RUN: already sent for review in the last 6 hours"; else TAG=" [review:$ROUNDS_RUN]"; fi
+          fi
+          git commit -q -m "Quick results $(date -u +%FT%T)$TAG"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results
+          if [ -n "$TAG" ]; then echo "FIRE_ROUNDS=$ROUNDS_RUN" >> $GITHUB_ENV; echo "FIRE_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV; fi
+      - name: Ask the stock researcher (Claude) to review the new results
+        # Frank 2026-11-22: only after the results are on quick-results; only round numbers, file names and the commit go
+        # in the text (no results); skipped when the two secrets are not set. Never fails the workflow.
+        if: env.FIRE_ROUNDS != ''
+        continue-on-error: true
+        env:
+          FIRE_URL: ${{ secrets.CLAUDE_FIRE_URL }}
+          FIRE_TOKEN: ${{ secrets.CLAUDE_FIRE_TOKEN }}
+        run: |
+          FILES=$(for n in $(echo "$FIRE_ROUNDS" | tr ',' ' '); do printf 'study%s_results.json.enc ' "$n"; done)
+          BODY=$(F="$FILES" python -c "import json,os;print(json.dumps({'text':'回测结果出炉：第 '+os.environ['FIRE_ROUNDS']+' 轮；结果文件（quick-results 分支，已加密）：'+os.environ['F'].strip()+'；提交 '+os.environ['FIRE_SHA']}, ensure_ascii=False))")
+          CODE=$(curl -s -o fire.json -w '%{http_code}' -X POST "$FIRE_URL" -H "Authorization: Bearer $FIRE_TOKEN" \
+            -H "anthropic-beta: experimental-cc-routine-2026-04-01" -H "anthropic-version: 2023-06-01" \
+            -H "Content-Type: application/json" --data-binary "$BODY")
+          echo "review request: HTTP $CODE"
+          python -c "import json;d=json.load(open('fire.json'));print(d.get('claude_code_session_url') or d.get('error',{}).get('message',''))" 2>/dev/null || true
+          rm -f fire.json
       - name: "Round 76 reading unfinished: run again"
         if: env.S76_AGAIN == '1'
         env:

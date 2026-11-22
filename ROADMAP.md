@@ -17,6 +17,17 @@
   3. 保存。
   验收：下次运行的 progress.md 里不再出现「推送失败」。最省事的替代：把这次附带的 voltrack.patch 发回给我，下次运行我先补上。
 
+- F2（2026-11-22，约 3 分钟）. 让回测跑完后自动叫「股票研究员」审结果。为什么：现在结果出来要等人想起来复查；做完这步，quick-study 一跑完就自动叫它（我不碰 token）。
+  1. 电脑浏览器打开 claude.ai/code/routines ，点「AI组织 · 股票研究员（周三、周六）」。
+  2. 点任务名旁边的「⋯」→ Edit（编辑）。
+  3. 在 Trigger（触发器）那一行点最右边的「+」→ 选 API。
+  4. 出现一个面板：先点 Fire URL 旁边的复制，粘到记事本；再点 Generate token（生成令牌），马上复制令牌（只显示一次），也粘到记事本。不用点保存，关掉对话框即可。
+  5. 打开 github.com/pbz13p/asx-terminal → Settings → 左边 Secrets and variables → Actions → New repository secret：
+     - 名字 CLAUDE_FIRE_URL，内容贴第 4 步的 Fire URL（应该是 https://api.anthropic.com/v1/claude_code/routines/trig_01X347JzTHHirL5W3xzrYRvW/fire ）→ Add secret；
+     - 再点 New repository secret：名字 CLAUDE_FIRE_TOKEN，内容贴令牌 → Add secret。
+  6. 删掉记事本里的令牌。回 Claude 说一句「F2 好了」。
+  验收：下一次回测结果提交后 15 分钟内，手机收到一句结论。令牌泄露了就回第 2 步点 Regenerate 换新的。
+
 ## 排序表（影响 ÷ 工作量）
 
 | # | 事项 | 影响 | 工作量 | 顺序 | 状态 |
