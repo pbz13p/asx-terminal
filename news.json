@@ -1,5 +1,26 @@
 [
  {
+  "id": "20261123-overnight",
+  "time": "2026-11-23 07:20",
+  "title": "隔夜市场：周五纳指-5.3%、标普-3.7%，ASX今天恐明显低开；本周看PCE",
+  "what": "周末美股休市。周五收盘：纳指-5.28%收22,618，标普-3.70%收6,910（7连跌），道指-1.93%收48,147，罗素2000 -2.76%；VIX 35.9。WTI约$83.4，黄金$3,515（-4.6%，14个月新低），美10年期4.91%，美元指数103.8，澳元约0.666。NYT周六报道：SEC对英伟达会计的调查还在初期，可能不起诉，查的是它和新加坡Megaspeed的交易、以及按地区报销售时去掉新加坡；英伟达收$125.53，离高点跌超35%。",
+  "why": "AI投资回报担忧加上英伟达风波；美联储12月加息几乎已定。",
+  "impact": "ASX周五收8,593后美股又跌3.7%，今天大概率明显低开，科技、锂矿、金矿小盘最弱；A股有两融保证金下调到80%的利好，券商和科技成长股可能高开，能否守住看外围。本周：周三美国PCE、GDP二次估算，周四感恩节休市，周五半天。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Journalarta",
+    "url": "https://journalarta.com/en/2026/11/22/stocks-to-watch-this-week-nvidia-workday-deere-and-thanksgiving-pce-data/"
+   },
+   {
+    "name": "AFP/Yahoo",
+    "url": "https://finance.yahoo.com/technology/ai/articles/nvidia-faces-us-accounting-probe-215354861.html"
+   }
+  ]
+ },
+ {
   "id": "20261122-cn-margin-ratio-80",
   "time": "2026-11-22 23:20",
   "title": "A股稳股市组合拳：融资保证金比例从100%降到80%，11月30日起施行",
