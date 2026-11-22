@@ -36,6 +36,11 @@ jobs:
         with: {path: data/ann, key: ann-none, restore-keys: ann3-s1-}
       - uses: actions/cache/restore@v4
         with: {path: data/ann, key: ann-none, restore-keys: ann3-s2-}
+      - uses: actions/cache@v4      # round 83 merger board: ASX lists, deal documents, market feed log
+        with:
+          path: data/merger
+          key: merger-${{ github.run_id }}
+          restore-keys: merger-
       - run: pip install numpy pandas scipy arch lightgbm pypdf
       - id: mode
         run: |
@@ -48,6 +53,7 @@ jobs:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
       - name: Run selected rounds
         env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
         run: |
@@ -60,6 +66,7 @@ jobs:
             echo "=== round $n"; env $v=out/$o python $f || echo "round $n failed"
           done
           python ladder_lists.py || echo "ladder lists failed"   # round 98 daily lists + live record
+          python merger_board.py || echo "merger board failed"   # round 83 board: deals in flight, spreads, alerts
       - name: Publish results to the results branch
         env:
           ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}

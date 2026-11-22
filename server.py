@@ -660,6 +660,16 @@ class Handler(SimpleHTTPRequestHandler):
                 raise DataUnavailable("底部反转名单还没生成（每天收盘后更新）") from None
             self.server._ladder = (time.time(), data)
             return data
+        if name == "merger":   # round 83 merger-arbitrage board (encrypted on the results branch, refreshed after the daily price run)
+            hit = getattr(self.server, "_merger", None)
+            if hit and time.time() - hit[0] < 600:
+                return hit[1]
+            try:
+                data = fetch_result("merger_board.json")
+            except Exception:
+                raise DataUnavailable("并购套利看板还没生成（每天收盘后更新）") from None
+            self.server._merger = (time.time(), data)
+            return data
         if name == "ledger":   # round 94 portfolio ledger (encrypted on the quick-results branch)
             hit = getattr(self.server, "_ledger", None)
             if hit and time.time() - hit[0] < 600:
