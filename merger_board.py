@@ -78,7 +78,7 @@ DEAL = re.compile(r"scheme implementation|implementation (deed|agreement)|scheme
 TARGET_ONLY = re.compile(r"scheme booklet|notice of scheme meeting|scheme meeting|first court|second court|target'?s statement|"
                          r"results? of scheme meeting|court approv", re.I)
 NOT_DEAL = re.compile(r"demerger|de-merger|in-specie|capital reduction", re.I)
-ENDED = re.compile(r"terminat|lapse|withdraw|not proceed|scheme not approved|not approved by|did not pass|resolutions? not passed|"
+ENDED = re.compile(r"\bterminat|\blapse|withdraw|not proceed|scheme not approved|not approved by|did not pass|resolutions? not passed|"
                    r"scheme effective|scheme becomes effective|effective date|implementation of (the )?scheme|scheme (has been )?implemented|"
                    r"completion of (the )?(scheme|acquisition|takeover|merger|offer)|(scheme|takeover|merger|acquisition) complet|"
                    r"compulsory acquisition|removal from (the )?official list|delist|close of (the )?offer|offer (period )?(has )?(closed|ended)|"
@@ -138,9 +138,12 @@ def extract(text):
         ctx = t[max(0, m.start() - 160):m.start()].lower()
         if v and 0 < v < 1000 and not re.search(r"dividend|exercise|strike|option|placement|issue price|vwap|last close|closing price", ctx[-60:]):
             w = 3 if re.search(r"scheme consideration|offer price|offer consideration|cash consideration|consideration of|will receive|to acquire", ctx) else 1
-            cash += [round(v, 6)] * w
+            cur = "USD" if t[max(0, m.start() - 2):m.start()] == "US" else "NZD" if t[max(0, m.start() - 2):m.start()] == "NZ" else "AUD"
+            cash += [(round(v, 6), cur)] * w
     if cash:
-        out["cash"] = max(set(cash), key=cash.count)
+        out["cash"], cur = max(set(cash), key=cash.count)
+        if cur != "AUD":
+            out["currency"] = cur
     m = re.search(r"(\d+(?:\.\d+)?)\s+(?:new\s+|fully paid\s+)?(?:[A-Z][\w&'.]*\s+){0,3}(?:ordinary\s+)?shares?\s+for\s+(?:every|each)\s+"
                   r"(?:(\d+(?:\.\d+)?)\s+)?(?:[A-Z][\w&'.]*\s+){0,3}(?:ordinary\s+)?shares?", t)
     if m and re.search(r"consideration|offer|scheme|receive|acquire", t[max(0, m.start() - 200):m.start()], re.I):
@@ -328,6 +331,15 @@ def price_candidates(live):
     return out
 
 
+def liquid(live):
+    out = []
+    for code in live:
+        rows = study.load(f"{code}.AU")
+        if len(rows) >= 20 and statistics.median(r[6] * r[5] for r in rows[-20:]) >= 20_000:
+            out.append(code)
+    return out
+
+
 def norm(name):
     n = re.sub(r"[^a-z0-9 ]", " ", (name or "").lower())
     n = re.sub(r"\b(limited|ltd|pty|holdings?|group|the|plc|inc|corporation|corp|nl|trust|fund|reit)\b", " ", n)
@@ -349,9 +361,11 @@ def accc_register(names):
             print("[merger] ACCC page", page, type(e).__name__)
             break
         links = re.findall(r'href="(/public-registers/acquisitions-and-mergers-registers/acquisitions-register/[^"?#]+)"', html)
-        page_txt = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", html)))
+        body = re.sub(r"<(script|style|noscript)[^>]*>.*?</\1>", " ", html, flags=re.S | re.I)
+        page_txt = re.sub(r"\s+", " ", unescape(re.sub(r"<[^>]+>", " ", body)))
         if page == 0:
-            ACCC_DEBUG["page0"] = page_txt[:1500]
+            k0 = max(0, page_txt.find("Case number") - 600)
+            ACCC_DEBUG["page0"] = page_txt[k0:k0 + 1500]
             ACCC_DEBUG["links"] = len(links)
         parts = re.split(r"(?=Acquisition status)", page_txt)
         n_cards = 0
@@ -396,12 +410,12 @@ def panel_names():
     return list(dict.fromkeys(names))
 
 
-def listings(code):
-    """Yearly ASX announcement lists (this year + last), cached for 20 hours."""
+def listings(code, max_age=20 * 3600):
+    """Yearly ASX announcement lists (this year + last), cached (20 hours for deal candidates, 6 days for the sweep)."""
     import study67
     p = MDIR / "lists" / f"{code}.json"
     hit = jload(p, None)
-    if hit and time.time() - hit.get("t", 0) < 20 * 3600:
+    if hit and time.time() - hit.get("t", 0) < max_age:
         return hit["items"]
     items = study67.listing(code, [TODAY.year - 1, TODAY.year])
     if items or not hit:
@@ -432,6 +446,13 @@ def doc_text(code, it, archive):
 
 
 # ------------------------------------------------------------------ assemble one deal
+def other_prefix(headline, code):
+    """'HZN: Horizon takeover offer' on CUE's page = a document lodged by HZN, not by CUE."""
+    m = re.match(r"\s*([A-Z0-9]{3})\s*:", headline or "")
+    return bool(m and m.group(1) != code)
+
+
+
 def deal_for(code, items, archive, names):
     items = sorted([i for i in items if i.get("date", "") >= SINCE], key=lambda i: (i["date"], i["ids"]))
     ends = [i for i in items if ENDED.search(i["headline"]) and DEAL_CTX.search(i["headline"])
@@ -444,11 +465,12 @@ def deal_for(code, items, archive, names):
     if start < (TODAY - timedelta(days=455)).isoformat() and deal_items[-1]["date"] < (TODAY - timedelta(days=120)).isoformat():
         return None, f"stale: started {start}, nothing since {deal_items[-1]['date']}"
     facts, src = {}, {}
+    own = [i for i in deal_items if not other_prefix(i["headline"], code)]   # documents this company lodged itself
     target = any(TARGET_ONLY.search(i["headline"]) or re.search(r"(offer|bid|proposal) (for|to acquire) " + re.escape((names.get(code) or "?").split()[0]), i["headline"], re.I)
-                 for i in deal_items)
+                 for i in own)
     for it in deal_items[-12:] if len(deal_items) > 12 else deal_items:
         ex = extract(doc_text(code, it, archive))
-        if ex.get("target_voice"):
+        if ex.get("target_voice") and not other_prefix(it["headline"], code):
             target = True
         for k, v in ex.items():
             if k in ("target_voice",):
@@ -459,7 +481,7 @@ def deal_for(code, items, archive, names):
         return None, "acquirer side or not confirmed as target"
     acq = [c for c in facts.get("asx_codes", []) if c != code]
     d = {"code": code, "name": names.get(code, ""), "kind": "scheme" if any(re.search(r"scheme", i["headline"], re.I) for i in deal_items) else "takeover",
-         "role_by": "headline" if any(TARGET_ONLY.search(i["headline"]) for i in deal_items) else "document wording",
+         "role_by": "headline" if any(TARGET_ONLY.search(i["headline"]) for i in own) else "document wording",
          "announced": start, "first_headline": deal_items[0]["headline"], "first_url": ann_url(deal_items[0]["ids"]),
          "latest": [{"date": i["date"], "headline": i["headline"], "url": ann_url(i["ids"])} for i in deal_items[-6:]][::-1],
          "acquirer_code": acq[0] if acq else None, "src": src}
@@ -474,6 +496,14 @@ def price_deal(d, idx):
         return d
     d["price"], d["price_date"] = rows[-1][6], rows[-1][0]
     offer = d.get("cash") or 0.0
+    if offer and d.get("currency") in ("USD", "NZD"):
+        fx = fx_rate(d["currency"])
+        if fx:
+            d["fx"] = {"pair": f"AUD{d['currency'][:2]}", "rate": fx[1], "date": fx[0]}
+            offer = offer / fx[1]
+        else:
+            d["pending"] = f"报价是 {d['currency']}，汇率没拿到，待核"
+            return d
     if d.get("scrip_ratio") and d.get("acquirer_code"):
         arows = study.load(f"{d['acquirer_code']}.AU")
         if arows:
@@ -494,7 +524,8 @@ def price_deal(d, idx):
         dd = date.fromisoformat(d["announced"]) + timedelta(days=SCHEME_DAYS if d["kind"] == "scheme" else TAKEOVER_DAYS)
         if dd <= TODAY:
             dd = TODAY + timedelta(days=30)
-            d["end_basis"] = "估计（已过常见完成期，先按 30 天）"
+            d["end_basis"] = "待核（已过常见完成期，先按 30 天，不算年化）"
+            d["no_ann"] = True
         else:
             d["end_basis"] = f"估计（宣布 + {SCHEME_DAYS if d['kind'] == 'scheme' else TAKEOVER_DAYS} 天，HSF FY26 平均）"
         d["end"] = dd.isoformat()
@@ -502,18 +533,18 @@ def price_deal(d, idx):
     d["days_left"] = days
     ret = gross / d["price"] - 1
     d["spread"], d["spread_pct"] = round(gross - d["price"], 6), round(100 * ret, 2)
-    if not -0.10 <= ret <= 0.60 and not d.get("manual"):
+    if not -0.10 <= ret <= 0.30 and not d.get("manual"):
         d["pending"] = f"价差 {100 * ret:.0f}% 不合理：报价提取错、看反了收购方，或交易已变，待核"
         return d
-    d["ann_pct"] = round(100 * annualise(ret, days), 1)
+    d["ann_pct"] = None if d.get("no_ann") else round(100 * annualise(ret, days), 1)
     frank = d.get("franking") or 0.0
     ok45 = days >= 46          # bought today, ex-date assumed near completion
     d["after_tax"] = {}
     for r in RATES:
         net = after_tax(d["price"], gross, div, frank, r, bool(on_top), frank_ok=ok45)
         net_small = after_tax(d["price"], gross, div, frank, r, bool(on_top), frank_ok=True)
-        d["after_tax"][f"{r:.3f}"] = {"ret_pct": round(100 * net, 2), "ann_pct": round(100 * annualise(net, days), 1),
-                                      "ann_small_holder_pct": round(100 * annualise(net_small, days), 1)}
+        d["after_tax"][f"{r:.3f}"] = {"ret_pct": round(100 * net, 2), "ann_pct": None if d.get("no_ann") else round(100 * annualise(net, days), 1),
+                                      "ann_small_holder_pct": None if d.get("no_ann") else round(100 * annualise(net_small, days), 1)}
     d["tax_notes"] = ["持有不满 12 个月，资本利得没有折扣"]
     if div:
         d["tax_notes"].append(f"特别股息 {div:g}，{'全额' if frank == 1 else '无' if frank == 0 else '待核'}免税额度；"
@@ -541,10 +572,24 @@ def price_deal(d, idx):
         tags.append("专家：不公平")
     if d.get("opposer"):
         tags.append("有反对的大股东（待核）")
-    if d["ann_pct"] > 25:
+    if (d["ann_pct"] or 0) > 25:
         tags.append("年化 >25%：市场在担心 " + "、".join(why_wide(d)))
     d["risk"] = tags
     return d
+
+
+_FX = {}
+
+
+def fx_rate(cur):
+    """AUD per 1 unit of quote currency via EODHD (AUDUSD = USD per AUD). Returns (date, USD-or-NZD per AUD)."""
+    if cur not in _FX:
+        try:
+            rows = study.api(f"eod/AUD{cur[:2]}D.FOREX", **{"from": (TODAY - timedelta(days=10)).isoformat()})
+            _FX[cur] = (rows[-1]["date"], float(rows[-1]["close"])) if rows else None
+        except Exception:
+            _FX[cur] = None
+    return _FX[cur]
 
 
 def next_key_date(d):
@@ -639,19 +684,21 @@ def main():
         sources.setdefault(c, set()).add("收购委员会")
     for c in kept:
         sources.setdefault(c, set()).add("昨天在榜")
+    for c in liquid(live):   # weekly sweep of every liquid stock's ASX list (scrip deals don't pin the price)
+        sources.setdefault(c, set()).add("全市场扫描")
     live_set = set(live)
-    cands = sorted(c for c in sources if c in live_set)
+    cands = sorted((c for c in sources if c in live_set), key=lambda c: (sources[c] == {"全市场扫描"}, c))
     print(f"[merger] candidates {len(cands)} (archive {len(archive)}, feed {len(feed_codes)}, price {len(px)}, accc {len(accc)}, panel {len(panel_codes)})")
     manual = load_manual()
     deals, skipped = [], {}
     for c in cands:
-        if time.time() - t0 > 60 * float(os.environ.get("MERGER_MINUTES", "40")):
+        if time.time() - t0 > 60 * float(os.environ.get("MERGER_MINUTES", "80")):
             skipped[c] = "time budget"
             continue
         items = (archive.get(c) or {}).get("items") or []
         if "公告库" not in sources[c] or not items:
             try:
-                items = listings(c)
+                items = listings(c, 20 * 3600 if sources[c] - {"全市场扫描"} else 6 * 86400)
             except Exception as e:
                 skipped[c] = f"list failed {type(e).__name__}"
                 continue
@@ -679,7 +726,8 @@ def main():
         if d.get("pending") and o and o.get("acquirer_code") == d["code"] and not o.get("pending"):
             deals.remove(d)
             skipped[d["code"]] = f"acquirer of {o['code']}"
-    deals.sort(key=lambda d: (not d.get("after_tax"), -(d.get("after_tax") or {}).get("0.325", {}).get("ann_pct", 0)))
+    deals.sort(key=lambda d: (d.get("pending") is not None or (d.get("after_tax") or {}).get("0.325", {}).get("ann_pct") is None,
+                              -((d.get("after_tax") or {}).get("0.325", {}).get("ann_pct") or 0)))
     msgs = alerts(prev, deals)
     pushed = ntfy("并购套利", "\n".join(msgs[:12])) if msgs else False
     missed = sorted(c for c in accc if c not in {d["code"] for d in deals})
