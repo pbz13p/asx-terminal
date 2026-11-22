@@ -416,13 +416,14 @@ def listings(code, max_age=20 * 3600):
     import study67
     p = MDIR / "lists" / f"{code}.json"
     hit = jload(p, None)
-    if hit and time.time() - hit.get("t", 0) < max_age:
+    if hit and hit.get("items") and time.time() - hit.get("t", 0) < max_age:
         return hit["items"]
     items = study67.listing(code, [TODAY.year - 1, TODAY.year])
-    if items or not hit:
-        jsave(p, {"t": time.time(), "items": items})
     time.sleep(0.3)
-    return items or (hit or {}).get("items", [])
+    if items:   # never cache an empty answer (ASX hiccup) -- it would hide a deal for days
+        jsave(p, {"t": time.time(), "items": items})
+        return items
+    return (hit or {}).get("items", [])
 
 
 def doc_text(code, it, archive):
@@ -534,10 +535,12 @@ def price_deal(d, idx):
     d["days_left"] = days
     ret = gross / d["price"] - 1
     d["spread"], d["spread_pct"] = round(gross - d["price"], 6), round(100 * ret, 2)
-    if not -0.10 <= ret <= 0.30 and not d.get("manual"):
+    if not -0.10 <= ret <= 0.50 and not d.get("manual"):
         d["pending"] = f"价差 {100 * ret:.0f}% 不合理：报价提取错、看反了收购方，或交易已变，待核"
         return d
     d["ann_pct"] = None if d.get("no_ann") else round(100 * annualise(ret, days), 1)
+    if (d["ann_pct"] or 0) > 100 and not d.get("manual"):
+        d["pending"] = "自动提取，年化超过 100%，多半是报价或日期读错，待核（不参与排名）"
     frank = d.get("franking") or 0.0
     ok45 = days >= 46          # bought today, ex-date assumed near completion
     d["after_tax"] = {}
@@ -703,6 +706,9 @@ def main():
             except Exception as e:
                 skipped[c] = f"list failed {type(e).__name__}"
                 continue
+        if not items:
+            skipped[c] = "ASX list empty (retry next run)"
+            continue
         d, why = deal_for(c, items, archive, names)
         if not d:
             skipped[c] = why
