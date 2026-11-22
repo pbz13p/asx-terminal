@@ -173,10 +173,11 @@ def extract(text):
         out["break_fee"] = v * (1e6 if m.group(2) else 1)
     for key, lab in (("meeting", r"scheme meeting"), ("court2", r"second court (?:date|hearing)"),
                      ("implementation", r"implementation date"), ("offer_close", r"offer (?:period )?(?:is scheduled to )?clos\w*|close of the offer")):
-        hits = [pdate((m.group(1), m.group(2), m.group(3))) for m in re.finditer("(?:" + lab + r")[^.]{0,90}?" + DATE, t, re.I)]
+        hits = [pdate((m.group(1), m.group(2), m.group(3))) for m in re.finditer("(?:" + lab + r")[^.]{0,90}?" + DATE, t, re.I)
+                if not re.search(r"end date|sunset|later than|on or before|by no later|prior to|before the", m.group(0), re.I)]
         hits = [h for h in hits if h]
         if hits:
-            out[key] = max(hits)
+            out[key] = hits[0]   # the timetable's own date, not a sunset / end date further on
     conds = []
     for w, lab in ((r"\bFIRB\b|Foreign Investment Review Board", "FIRB"), (r"\bACCC\b", "ACCC"), (r"\bcourt\b", "法院"),
                    (r"scheme meeting|shareholder approval", "股东投票"), (r"independent expert", "独立专家")):
