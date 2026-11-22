@@ -144,7 +144,7 @@ def extract(text):
         out["cash"], cur = max(set(cash), key=cash.count)
         if cur != "AUD":
             out["currency"] = cur
-    m = re.search(r"(\d+(?:\.\d+)?)\s+(?:new\s+|fully paid\s+)?(?:[A-Z][\w&'.]*\s+){0,3}(?:ordinary\s+)?shares?\s+for\s+(?:every|each)\s+"
+    m = re.search(r"(\d+(?:\.\d+)?)\s+(?:new\s+|fully paid\s+)?(?:[A-Z][\w&'.]*\s+){0,3}(?:ordinary\s+)?shares?\s+(?:for\s+(?:every|each)|per)\s+"
                   r"(?:(\d+(?:\.\d+)?)\s+)?(?:[A-Z][\w&'.]*\s+){0,3}(?:ordinary\s+)?shares?", t)
     if m and re.search(r"consideration|offer|scheme|receive|acquire", t[max(0, m.start() - 200):m.start()], re.I):
         a, b = float(m.group(1)), float(m.group(2) or 1)
@@ -460,7 +460,13 @@ def deal_for(code, items, archive, names):
     ends = [i for i in items if ENDED.search(i["headline"]) and DEAL_CTX.search(i["headline"])
             and not re.search(r"scheme meeting|booklet|timetable|extension|extended|variation", i["headline"], re.I)]
     last_end = ends[-1]["date"] if ends else ""
-    deal_items = [i for i in items if is_deal(i["headline"]) and i["date"] > last_end]   # the current episode only
+    word = re.escape((norm(names.get(code)) or "?").split(" ")[0])
+    named = re.compile(r"(acquire|acquisition of|offer for|bid for|takeover of|merge with|merger with)\s+(the\s+)?" + word, re.I)
+    deal_items = [i for i in items if (is_deal(i["headline"]) or named.search(i["headline"])) and i["date"] > last_end]   # current episode
+    if named.pattern and any(named.search(i["headline"]) for i in deal_items):
+        named_target = True
+    else:
+        named_target = False
     if not deal_items:
         return None, (f"ended {last_end}: {ends[-1]['headline'][:60]}" if ends else "no deal headline")
     start = deal_items[0]["date"]
@@ -468,7 +474,7 @@ def deal_for(code, items, archive, names):
         return None, f"stale: started {start}, nothing since {deal_items[-1]['date']}"
     facts, src = {}, {}
     own = [i for i in deal_items if not other_prefix(i["headline"], code)]   # documents this company lodged itself
-    target = any(TARGET_ONLY.search(i["headline"]) or re.search(r"(offer|bid|proposal) (for|to acquire) " + re.escape((names.get(code) or "?").split()[0]), i["headline"], re.I)
+    target = named_target or any(TARGET_ONLY.search(i["headline"]) or re.search(r"(offer|bid|proposal) (for|to acquire) " + re.escape((names.get(code) or "?").split()[0]), i["headline"], re.I)
                  for i in own)
     for it in deal_items[-12:] if len(deal_items) > 12 else deal_items:
         ex = extract(doc_text(code, it, archive))
