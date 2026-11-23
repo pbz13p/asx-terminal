@@ -1,5 +1,33 @@
 [
  {
+  "id": "20261123-asia-open-kospi-futures-rebound",
+  "time": "2026-11-23 11:20",
+  "title": "亚洲周一开盘：韩股低开2.8%（期货曾-7%），韩国准备动用稳市基金；美股期货反弹1–2%",
+  "what": "11月23日Kospi开盘4,734.90（-2.77%），Kosdaq -1.66%，三星、SK海力士盘前跌超5%；上周五Kospi已-5.21%，夜盘期货一度约-7%。日本休市。美股期货早盘反弹：纳指100期货约+2%、标普约+1%。ASX 200期货开盘前约-0.6%（8,556）。",
+  "why": "上周AI抛售（纳指周跌约10%、台股周跌17%）；周末各地托底：韩国财政部称可立即动用稳市基金（若启用为18年来首次），台湾收紧做空规则，A股两融保证金比例降至80%。",
+  "impact": "美股期货反弹+政策托底，亚洲跌幅小于担心，超跌反弹可能；但外资仍在卖科技股，ASX科技、锂矿、金矿小盘仍最弱；A股券商有政策利好。本周看周三美国PCE。",
+  "tags": [
+   "澳股",
+   "A股",
+   "美股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "fnnews",
+    "url": "https://www.fnnews.com/news/202611230851363654"
+   },
+   {
+    "name": "Reuters/Investing",
+    "url": "https://www.investing.com/news/economy-news/us-futures-bounce-while-asia-markets-brace-for-ai-wipeout-5044181"
+   },
+   {
+    "name": "ABC",
+    "url": "https://www.abc.net.au/news/2026-11-23/asx-markets-business-live-news-november-23/107414602"
+   }
+  ]
+ },
+ {
   "id": "20261123-overnight",
   "time": "2026-11-23 07:20",
   "title": "隔夜市场：周五纳指-5.3%、标普-3.7%，ASX今天恐明显低开；本周看PCE",
