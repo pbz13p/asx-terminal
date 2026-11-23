@@ -12,7 +12,7 @@ import sys
 import threading
 import time
 
-HOST, PORTS = "127.0.0.1", (4002, 4001, 7497, 7496)
+HOST, PORTS = "127.0.0.1", (4001, 4002, 7496, 7497)   # live Gateway first (Frank funded the live account 2026-11-23), then paper
 _lock = threading.Lock()
 
 
