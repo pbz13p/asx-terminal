@@ -5,3 +5,6 @@ web/report.html
 data/cn/
 research/findings.json
 research/merger_facts.json
+local/
+out/ibkr_usage.json
+out/depth/

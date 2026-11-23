@@ -98,6 +98,12 @@ td.w{white-space:normal;min-width:260px}
 #aii:focus{outline:none;border-color:var(--v)}
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:#1A2244;border-radius:4px}::-webkit-scrollbar-track{background:transparent}
 @media (max-width:1100px){main{grid-template-columns:1fr}aside{max-height:260px}aside.r{max-height:none}#app{height:auto}#chart{height:380px;flex:none}}
+.pop{position:fixed;left:50%;top:80px;transform:translateX(-50%);z-index:60;background:#0A0F24;border:1px solid var(--c);border-radius:10px;padding:16px 20px;min-width:420px;max-width:92vw;max-height:80vh;overflow-y:auto;display:none;box-shadow:0 0 30px rgba(34,228,245,.25);font-size:15.5px;color:var(--ink)}
+.pop.on{display:block}.pop h3{margin:0 0 10px;font-size:18px}.pop label{display:flex;align-items:center;gap:10px;margin:8px 0}.pop label span{width:150px;color:#C9D2F5}
+.pop input{height:30px;background:var(--p2);border:1px solid var(--ln2);border-radius:6px;padding:0 8px;color:var(--ink);width:160px;font-size:15.5px}.pop .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.pop table{width:100%;border-collapse:collapse;margin-top:8px}.pop td{padding:4px 6px;border-bottom:1px solid var(--ln)}.pop .x{cursor:pointer;color:#FF5C8A}
+.cmenu{position:fixed;z-index:61;background:#0A0F24;border:1px solid var(--c);border-radius:8px;display:none;padding:4px 0;font-size:15.5px}.cmenu div{padding:7px 16px;cursor:pointer;color:var(--ink)}.cmenu div:hover{background:#13204A}
+#book table{width:100%;border-collapse:collapse;font-size:15px;margin:4px 0 8px}#book td{padding:2px 6px}#book .bq{color:#19FF9C}#book .aq{color:#FF5C8A}
 </style>
 </head>
 <body>
@@ -106,7 +112,7 @@ td.w{white-space:normal;min-width:260px}
   <div class="brand"><i></i>NEON <b>TERMINAL</b></div><div class="mk" id="mkt"><button data-m="au" class="on">🇦🇺 澳股</button><button data-m="cn">🇨🇳 A 股</button><button data-m="cx">₿ 加密</button><button data-m="cm">🛢 商品</button></div>
   <form id="sf" role="search"><input id="si" placeholder="搜代码：CND 或 600519" maxlength="6" autocomplete="off" aria-label="搜索股票代码"></form>
   <div class="idx num" id="idx"></div>
-  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="cnbb" style="color:#22E4F5;border-color:rgba(34,228,245,.55)" title="澳股小盘股最近 7 天的价格敏感公告，中文一句话写清楚">🀄 中文速读</button><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="sbb" style="color:#4FC3FF;border-color:rgba(79,195,255,.55)" title="宏观到微观：大盘、小盘、11 个行业，谁强谁弱，行业里最强的股票">🏭 行业</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
+  <div class="hb"><span class="mu" id="breadth"></span><button class="btn" id="aib" style="color:#C9A0FF;border-color:rgba(164,75,255,.6)">🤖 问 AI</button><button class="btn" id="cnbb" style="color:#22E4F5;border-color:rgba(34,228,245,.55)" title="澳股小盘股最近 7 天的价格敏感公告，中文一句话写清楚">🀄 中文速读</button><button class="btn" id="nwb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="经济、市场大事：发生了什么、为什么、对股市有什么影响">📰 新闻</button><button class="btn" id="sbb" style="color:#4FC3FF;border-color:rgba(79,195,255,.55)" title="宏观到微观：大盘、小盘、11 个行业，谁强谁弱，行业里最强的股票">🏭 行业</button><button class="btn" id="setb" style="color:#FFB86B;border-color:rgba(255,184,107,.55)" title="到价提醒、推送到手机、盈透连接状态">⚙ 设置</button><button class="btn" id="rcb" style="color:#19FF9C;border-color:rgba(25,255,156,.5)">🔬 研究中心</button><a class="btn" href="/report.html" target="_blank">完整报告</a><a class="btn" href="/classic.html">经典版</a><span class="mu" id="src" style="font-size:15px"></span></div>
 </header>
 <main>
   <aside>
@@ -134,13 +140,14 @@ td.w{white-space:normal;min-width:260px}
   <aside class="r" id="right">
     <div class="sec"><h3>概况</h3><div class="big num" id="rpx">—</div><div id="rname" class="mu"></div><div class="chips num" id="rchg"></div></div>
     <div class="sec"><h3>关键数据</h3><div class="kv num" id="rkv"></div></div>
-    <div class="sec" id="ribs"><h3>盈透 <span class="mu" style="font-size:15px" id="ribt"></span></h3><div class="kv num" id="rib"></div><div class="mu" id="ribn" style="font-size:15px;margin-top:6px;color:#C9D2F5"></div></div><div class="sec"><h3>我们的研究</h3><div id="rres"></div></div>
+    <div class="sec" id="ribs"><h3>盈透 <span class="mu" style="font-size:15px" id="ribt"></span></h3><div style="display:flex;gap:8px;margin:2px 0 8px"><button class="tf" id="bookb" style="white-space:nowrap" title="买卖各 5 档，每 3 秒刷新（盈透实时盘口）">📊 实时盘口</button><button class="tf" id="alb" style="white-space:nowrap" title="到价提醒：到价推送到手机">🔔 到价提醒</button></div><div id="book"></div><div class="kv num" id="rib"></div><div class="mu" id="ribn" style="font-size:15px;margin-top:6px;color:#C9D2F5"></div></div><div class="sec"><h3>我们的研究</h3><div id="rres"></div></div>
     <div class="sec"><h3>最新公告 <span class="mu" style="font-size:15px" id="annhint">· 点一下，中文直接弹出</span></h3><div id="rann"></div></div>
   </aside>
 </main>
 </div>
 <div id="ai" role="dialog" aria-label="问 AI"><div class="dh"><b>🤖 问 AI <span class="mu" id="aiw" style="font:400 15px var(--mono)"></span></b><button class="btn" id="aiideas" style="display:none">待审核想法</button><button class="btn" id="aix" aria-label="关闭">✕</button></div>
 <div id="aim"></div><form id="aif"><textarea id="aii" placeholder="输入你的想法或问题，比如：我觉得最近跌得多的电子股会反弹，可行吗？（Enter 发送，Shift+Enter 换行）"></textarea><button class="btn" style="align-self:flex-end;color:#fff;background:var(--v);border-color:var(--v)">发送</button></form></div>
+<div id="pop" class="pop" role="dialog"></div><div id="cmenu" class="cmenu"></div>
 <div id="rc" role="dialog" aria-label="研究中心"><div class="rch"><h2>🔬 研究中心</h2><div class="rcs num" id="rcs"></div><div class="tabs" id="rcf" style="border:0;white-space:nowrap"><button data-f="all" class="on">全部</button><button data-f="ASX">澳股</button><button data-f="A股">A 股</button><button data-f="加密">加密</button><button data-f="无效">测过无效</button></div><span style="flex:1"></span><button class="btn" id="wkb" style="color:#7CF5FF;border-color:rgba(124,245,255,.55)" title="每周六更新：板块涨跌排名、各板块最强股票、澳美宏观、下周波动率预测和上周命中率">📅 周报</button><button class="btn" id="lgb" style="color:#FFD23F;border-color:rgba(255,210,63,.55)" title="第 94 轮：所有过关的规则合在一个账户里，和只买 ETF 比">💼 组合总账</button><button class="btn" id="mgb" style="color:#FF9CF0;border-color:rgba(255,156,240,.55)" title="第 83 轮：现在所有在途的协议安排和收购要约，价差、预计完成日、年化、税后年化">🤝 并购套利</button><button class="btn" id="rcx">关闭 ✕</button></div><div id="rcn"></div><div id="rct"></div><div class="cards" id="rcc"></div></div>
 <div id="cp" role="dialog" aria-label="公司简介"><div class="rch"><h2 id="cph">🏢 公司简介</h2><span class="mu" style="font-size:16px;color:#C9D2F5">来源：ASX 公司资料 + 最新年报里的前 20 大股东表</span><span style="flex:1"></span><input id="cpi" placeholder="输入代码看简介，如 BHP，回车" autocomplete="off" style="width:280px;font-size:16px;padding:7px 12px;background:#0A0F24;color:#E6ECFF;border:1px solid #FF9EE0;border-radius:8px;margin-right:10px;text-transform:uppercase"><button class="btn" id="cpgo" style="margin-right:10px">查</button><button class="btn" id="cpopen" style="margin-right:10px" title="在 K 线图上打开这只股票">📈 看 K 线</button><button class="btn" id="cpx">关闭 ✕</button></div><div id="cpl"><div class="empty">读取中…</div></div></div><div id="sb" role="dialog" aria-label="行业"><div class="rch"><h2>🏭 行业 · 小盘</h2><span class="mu" style="font-size:16px;color:#C9D2F5">收盘数据，每 30 分钟更新；点指数看 K 线，点股票直接打开</span><span style="flex:1"></span><button class="btn" id="sbx">关闭 ✕</button></div><div id="sbl"><div class="empty">读取中…</div></div></div>
 <div id="nw" role="dialog" aria-label="新闻"><div class="rch"><h2>📰 新闻</h2><span class="mu" style="font-size:16px;color:#C9D2F5">经济、市场大事，每 2 小时自动更新（早 7 点到晚 11 点），最新的在最上面</span><div class="tabs" id="nwf" style="border:0;white-space:nowrap"></div><span style="flex:1"></span><button class="btn" id="nwx">关闭 ✕</button></div><div id="nwl"></div></div>
@@ -424,11 +431,12 @@ document.addEventListener('click',function(){$('submenu').classList.remove('on')
 
 /* ---------- right panel ---------- */
 
-function loadIB(c){var box=$('ribs');if(!box)return;if(st.m!=='au'){box.style.display='none';return;}box.style.display='';
+function loadIB(c){if(BOOK&&BOOK.code!==c)bookStop();var box=$('ribs');if(!box)return;if(st.m!=='au'){box.style.display='none';return;}box.style.display='';
  $('rib').innerHTML='';$('ribt').textContent='· 读取中…';$('ribn').textContent='';
  apim('ibq?code='+c).then(async function(q){if(st.sel!==c)return;for(var w=0;w<20&&!(BARS.length&&BARS[BARS.length-1].v);w++)await new Promise(function(r){setTimeout(r,500);});if(st.sel!==c)return;
   if(!q.connected||q.error&&!q.last){$('ribt').innerHTML='· <span class="dn">'+esc(q.error||'未连接')+'</span>';$('ribn').textContent='开电脑后打开桌面上的 IB Gateway，选 IB API → 登录，终端就能连上盈透。';return;}
   $('ribt').innerHTML='· '+(q.paper?'模拟账户':'真账户')+' · <span class="'+(q.type==='实时'?'up':'y')+'">'+esc(q.type||'')+'</span>';
+  IBQ={code:c,last:q.last,close:q.close};
   var lb=BARS.length?BARS[BARS.length-1]:null,ev=lb&&lb.v,vf=function(v){return v==null?'—':v>=1e6?(v/1e6).toFixed(2)+'M':v>=1e3?(v/1e3).toFixed(0)+'k':String(v);};
   var kv=[['现价',px(q.last)],['昨收',px(q.close)],['买一 / 卖一',(q.bid?px(q.bid):'—')+' / '+(q.ask?px(q.ask):'—')],['今日高 / 低',(q.high?px(q.high):'—')+' / '+(q.low?px(q.low):'—')],
    ['成交量（盈透，ASX）','<b class="y">'+vf(q.volume)+'</b>'],['成交量（EODHD，只算 ASX）',vf(ev)+(lb&&lb.time?' <span class="mu" style="font-size:13px">'+esc(typeof lb.time==='string'?lb.time:'')+'</span>':'')]];
@@ -757,6 +765,59 @@ async function boot(){document.body.classList.toggle('cn',st.m==='cn');mkCharts(
  setInterval(function(){if(!st.sel||document.hidden||DM)return;DAILY={};loadChart(true);},180000);
  var ver=null;setInterval(async function(){try{var v=(await api('version')).web;if(ver!==null&&v!==ver)location.reload();ver=v;}catch(e){}},20000);}
 if(LC)boot();else document.body.innerHTML='<p style="padding:40px">图表组件加载失败，请检查网络后刷新。</p>';
+
+/* ---------- 盈透：到价提醒 / 设置 / 实时盘口（ibkr_watch.py，只读，不下单） ---------- */
+var IBQ=null,BOOK=null;
+function popShow(h){$('pop').innerHTML=h;$('pop').classList.add('on');}
+function popHide(){$('pop').classList.remove('on');}
+async function ibPost(b){var r=await fetch('/api/ibwatch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});var j=await r.json();if(!j.ok)throw new Error(j.error||'出错');return j.data;}
+function pxr(p){return p==null?'':(p<1?(+p).toFixed(4):p<10?(+p).toFixed(3):(+p).toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');}
+function alDesc(a){var t=[];if(a.up)t.push('突破 '+a.up);if(a.down)t.push('跌破 '+a.down);if(a.pct)t.push('单日'+(a.pct>0?'涨':'跌')+'到 '+(a.pct>0?'+':'')+a.pct+'%');return t.join('，');}
+function alTable(L){if(!L.length)return '<p class="mu">还没有提醒。</p>';return '<table>'+L.map(function(a){return '<tr><td><b>'+esc(a.code)+'</b></td><td>'+esc(alDesc(a))+'</td><td class="mu">'+esc(a.created||'')+'</td><td class="x" data-del="'+esc(a.id)+'" title="删除这条提醒">删除 ✕</td></tr>';}).join('')+'</table>';}
+async function openAlert(code,price){code=code||st.sel;if(!code)return;
+ var w={alerts:[],ntfy_set:true};try{w=await api('ibwatch');}catch(e){}
+ var last=IBQ&&IBQ.code===code?IBQ.last:(BARS.length?BARS[BARS.length-1].close:null),up='',dn='';
+ if(price){if(last&&price<last)dn=pxr(price);else up=pxr(price);}
+ popShow('<h3>🔔 '+esc(code)+' 到价提醒</h3><div class="mu" style="color:#C9D2F5">现价 '+(last!=null?pxr(last):'—')+'。盘中用盈透实时价判断，到了就推到你手机；每个条件一天只推一次。三项填一项就行。</div>'
+  +'<label><span>向上突破价</span><input id="alup" inputmode="decimal" value="'+up+'"></label><label><span>向下跌破价</span><input id="aldn" inputmode="decimal" value="'+dn+'"></label>'
+  +'<label><span>单日涨跌幅 %</span><input id="alpct" inputmode="decimal" placeholder="涨填 8，跌填 -5"></label>'
+  +'<div class="row"><button class="btn on" id="alsave">保存提醒</button><button class="btn" id="popx">关闭</button><span id="almsg" class="y"></span></div>'
+  +(w.ntfy_set?'':'<p class="y">还没填手机推送频道：点右上角「⚙ 设置」填一次，否则提醒推不到手机。</p>')
+  +'<h3 style="margin-top:14px;font-size:16px">'+esc(code)+' 已有的提醒</h3><div id="allist">'+alTable(w.alerts.filter(function(a){return a.code===code;}))+'</div>');
+ $('alsave').onclick=async function(){try{await ibPost({action:'add',code:code,up:$('alup').value.trim(),down:$('aldn').value.trim(),pct:$('alpct').value.trim()});
+   var w2=await api('ibwatch');$('allist').innerHTML=alTable(w2.alerts.filter(function(a){return a.code===code;}));$('almsg').textContent='已保存 ✓';$('alup').value=$('aldn').value=$('alpct').value='';}
+  catch(e){$('almsg').textContent=e.message;}};}
+async function openSettings(){var w=null,err='';try{w=await api('ibwatch');}catch(e){err=e.message;}
+ var s=w&&w.status||{},ok=s.connected;
+ popShow('<h3>⚙ 设置</h3>'
+  +'<h3 style="font-size:16px">手机推送（ntfy）</h3><div style="color:#C9D2F5">填你手机 ntfy App 里订阅的那个频道名（和极光提醒用的同一个就行），只存在这台电脑上。'+(w&&w.ntfy_set?' <b class="up">已填写 ✓</b>':' <b class="y">还没填</b>')+'</div>'
+  +'<label><span>ntfy 频道名</span><input id="nttopic" placeholder="'+(w&&w.ntfy_set?'已填写，要换就重新填':'例如 frank-xxxx')+'" style="width:240px"></label>'
+  +'<div class="row"><button class="btn on" id="ntsave">保存</button><button class="btn" id="nttest">发一条测试推送</button><span id="ntmsg" class="y"></span></div>'
+  +'<h3 style="font-size:16px;margin-top:16px">盈透连接</h3><div style="color:#C9D2F5">'+(err?esc(err):(ok?'<b class="up">已连上</b> · 端口 '+esc(s.port||''):'<b class="dn">没连上</b>（IB Gateway 没开、没登录，或被手机登录踢掉了）')
+  +'<br>今天推送 '+(s.pushes||0)+' 次'+(s.last_push?'，最近：'+esc(s.last_push):'')+(w?'；今天已触发提醒 '+(w.fired_today||0)+' 条':'')
+  +'<br>盘口快照：'+esc(s.last_snapshot||'今天还没拍（10:30、13:00、15:55 自动拍）')+(w&&w.depth_slots?'；盈透同时最多开 '+w.depth_slots+' 个盘口':'')
+  +(s.last_error?'<br><span class="dn">最近出错：'+esc(s.last_error)+'</span>':''))+'</div>'
+  +'<h3 style="font-size:16px;margin-top:16px">全部到价提醒</h3><div id="allist">'+alTable(w?w.alerts:[])+'</div><div class="mu">加提醒：在 K 线图上点右键 →「到价提醒」，或右边盈透栏的「🔔 提醒」。</div>'
+  +'<div class="row"><button class="btn" id="popx">关闭</button></div>');
+ $('ntsave').onclick=async function(){try{await ibPost({action:'ntfy',topic:$('nttopic').value.trim()});$('ntmsg').textContent='已保存 ✓ 再点「发一条测试推送」试试';}catch(e){$('ntmsg').textContent=e.message;}};
+ $('nttest').onclick=async function(){try{var r=await ibPost({action:'test'});$('ntmsg').textContent=r.pushed?'已发出，看手机 ✓':'没发出去：先填频道名并保存';}catch(e){$('ntmsg').textContent=e.message;}};}
+$('pop').addEventListener('click',async function(e){if(e.target.id==='popx'){popHide();return;}var d=e.target.getAttribute('data-del');if(!d)return;
+ try{var L=await ibPost({action:'del',id:d});var code=(d.split('-')[0]||'');var box=$('allist');var only=box&&$('alsave');box.innerHTML=alTable(only?L.filter(function(a){return a.code===code;}):L);}catch(err){alert(err.message);}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){popHide();$('cmenu').style.display='none';}});
+$('setb').onclick=openSettings;$('alb').onclick=function(){openAlert(st.sel,null);};
+CH.addEventListener('contextmenu',function(e){if(st.m!=='au'||!cs||!st.sel)return;e.preventDefault();var xy=local(e),p=cs.coordinateToPrice(xy[1]);
+ var m=$('cmenu');m.innerHTML='<div id="cm1">🔔 到价提醒'+(p!=null?'（'+pxr(p)+'）':'')+'</div><div id="cm2">取消</div>';m.style.left=e.clientX+'px';m.style.top=e.clientY+'px';m.style.display='block';
+ $('cm1').onclick=function(){m.style.display='none';openAlert(st.sel,p);};$('cm2').onclick=function(){m.style.display='none';};});
+document.addEventListener('mousedown',function(e){var m=$('cmenu');if(m.style.display==='block'&&!m.contains(e.target))m.style.display='none';});
+function bookStop(){if(BOOK){clearTimeout(BOOK.t);BOOK=null;}$('book').innerHTML='';$('bookb').classList.remove('on');}
+async function bookPoll(first){var b=BOOK;if(!b)return;if(st.sel!==b.code||Date.now()-b.start>10*60*1000){bookStop();return;}
+ try{var d=await api('ibdepth?code='+b.code+(first?'&open=1':''));if(BOOK!==b)return;
+  if(d.error){$('book').innerHTML='<p class="y">'+esc(d.error==='309'?'盈透盘口订阅已满（正在拍快照），几秒后再试':d.error)+'</p>';}
+  else{var rows='';for(var i=0;i<5;i++){var x=d.bids[i]||[],y=d.asks[i]||[];rows+='<tr><td class="bq">'+(x[1]!=null?Math.round(x[1]).toLocaleString():'')+'</td><td class="bq">'+(x[0]!=null?pxr(x[0]):'')+'</td><td class="aq">'+(y[0]!=null?pxr(y[0]):'')+'</td><td class="aq">'+(y[1]!=null?Math.round(y[1]).toLocaleString():'')+'</td></tr>';}
+   $('book').innerHTML='<table class="num"><tr class="mu"><td>买量</td><td>买价</td><td>卖价</td><td>卖量</td></tr>'+rows+'</table><div class="mu" style="color:#C9D2F5">价差 '+(d.spread!=null?pxr(d.spread)+'（'+d.spread_pct.toFixed(2)+'%）':'—')+' · 买卖盘总量比 '+(d.ratio!=null?d.ratio.toFixed(2):'—')+' · '+new Date().toLocaleTimeString()+'</div>';}}
+ catch(e){if(BOOK===b)$('book').innerHTML='<p class="dn">'+esc(e.message)+'</p>';}
+ if(BOOK===b)b.t=setTimeout(function(){bookPoll(false);},3000);}
+$('bookb').onclick=function(){if(BOOK){bookStop();return;}if(!st.sel||st.m!=='au')return;BOOK={code:st.sel,start:Date.now()};$('bookb').classList.add('on');$('book').innerHTML='<p class="mu">读取盘口…</p>';bookPoll(true);};
 </script>
 </body>
 </html>

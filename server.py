@@ -245,6 +245,35 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self.send_json({"ok": False, "error": str(e)[:300]}, 200)
             return
+        if path == "/api/ibwatch":   # own-PC only: price alerts / ntfy setting / test push (ibkr_watch.py)
+            if self._users() or self.client_address[0] != "127.0.0.1":
+                self.send_error(404)
+                return
+            try:
+                import ibkr_watch as IW
+                n = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(min(n, 20000)) or b"{}")
+                act = body.get("action")
+                if act == "add":
+                    data = IW.add_alert(body.get("code"), body.get("up"), body.get("down"), body.get("pct"))
+                elif act == "del":
+                    data = IW.del_alert(str(body.get("id", "")))
+                elif act == "ntfy":
+                    topic = re.sub(r"[^\w-]", "", str(body.get("topic", "")))[:64]
+                    if not topic:
+                        raise ValueError("频道名只能是字母、数字、- 和 _")
+                    IW.save_settings(ntfy_topic=topic)
+                    data = {"saved": True}
+                elif act == "test":
+                    data = {"pushed": IW.ntfy("测试推送", "这是 Neon Terminal 的测试推送。收到就说明到价提醒能推到手机。", "default", "white_check_mark")}
+                else:
+                    raise ValueError("不认识的操作")
+                self.send_json({"ok": True, "data": data})
+            except ValueError as e:
+                self.send_json({"ok": False, "error": str(e)}, 400)
+            except Exception as e:
+                self.send_json({"ok": False, "error": f"{type(e).__name__}"}, 500)
+            return
         if path == "/api/seal":   # own-PC only: encrypt a findings file with the local key (the key never leaves this PC)
             if self._users() or self.client_address[0] != "127.0.0.1":
                 self.send_error(404)
@@ -749,6 +778,27 @@ class Handler(SimpleHTTPRequestHandler):
             if not CODE.match(c):
                 raise ValueError("股票代码不正确")
             return ibkr_link.quote(c)
+        if name in ("ibwatch", "ibdepth"):   # own-PC only: alert list + watcher status, or the live 5-level book
+            if self._users() or self.client_address[0] != "127.0.0.1":
+                raise ValueError("not available")
+            import ibkr_watch as IW
+            if name == "ibwatch":
+                w = IW.WATCHER
+                st = dict(w.status) if w else {"connected": False, "note": "后台没启动"}
+                return {"status": st, "alerts": IW.alerts(), "ntfy_set": bool(IW.settings().get("ntfy_topic")),
+                        "depth_slots": IW.settings().get("depth_slots"), "fired_today": len([k for k in (w.fired if w else {})
+                                                                                               if k.startswith(time.strftime("%Y-%m-%d"))])}
+            c = (q.get("code") or "").upper()
+            if not CODE.match(c):
+                raise ValueError("股票代码不正确")
+            if IW.WATCHER is None:
+                raise DataUnavailable("盈透后台没启动")
+            if q.get("open") == "1":
+                IW.log_usage(c, "实时盘口")
+            try:
+                return IW.WATCHER.request("depth", c, timeout=12)
+            except Exception as e:
+                raise DataUnavailable(str(e)[:120] or "没拿到盘口") from None
         if name == "ibprobe":   # what the IBKR account can download (bars, fundamentals)
             import ibkr_link
             return ibkr_link.probe()
@@ -800,7 +850,7 @@ class Handler(SimpleHTTPRequestHandler):
 
 
 CODE_FILES = ("server.py", "providers/binance.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
-              "providers/ibkr.py", "providers/__init__.py", "company.py", "ibkr_link.py")
+              "providers/ibkr.py", "providers/__init__.py", "company.py", "ibkr_link.py", "ibkr_watch.py", "depth_log.py")
 
 
 def _stamp():
@@ -951,6 +1001,12 @@ def free_port(port):
 
 def main():
     autostart()
+    if os.name == "nt" and not os.environ.get("SITE_USERS") and os.environ.get("IBKR_WATCH", "1") != "0":
+        try:   # Frank's PC only: price alerts, outage alarm, depth snapshots through IB Gateway (read-only)
+            import ibkr_watch
+            ibkr_watch.start()
+        except Exception as e:
+            print("ibkr watch not started:", type(e).__name__)
     threading.Thread(target=auto_update, daemon=True).start()
     port = int(os.environ.get("PORT", "8765"))
     host = os.environ.get("HOST", "127.0.0.1")  # the hosted copy listens behind Caddy on 127.0.0.1 too
