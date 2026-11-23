@@ -1,5 +1,49 @@
 [
  {
+  "id": "20261124-overnight",
+  "time": "2026-11-24 07:20",
+  "title": "隔夜市场：黄仁勋复职，纳指盘中+6.9%、标普+5%，ASX有望结束8连跌",
+  "what": "美股周一（美东中午约12:30盘中数，收盘在墨尔本8点）：纳指约+6.9%至24,178，标普约+5.0%至7,254，道指约+3.2%至49,685，罗素2000 +3.1%；VIX约27（-24%）。英伟达约+32%至$166，美光+19%，特斯拉+13%。黄金+4.2%至约$3,663，WTI -3.1%至约$80.8，美10年期约4.94%-4.96%，比特币约$6.2万。",
+  "why": "英伟达董事会宣布黄仁勋立即复任CEO；上周纳指周跌约10%后超跌、空头回补（野村称是机械性反弹，不保证持续）。",
+  "impact": "ASX昨收8,570.6（8连跌），今天大概率明显高开，科技和金矿领涨，能源股受油价拖累；A股半导体、AI硬件情绪改善。周三澳洲CPI、美国PCE，周四美股感恩节休市。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-23-dow-sp-500-nasdaq-nvidia-reinstates-jensen-huang-141511975.html"
+   },
+   {
+    "name": "Reuters/MarketScreener",
+    "url": "https://www.marketscreener.com/news/wall-st-roars-back-as-jensen-huang-returns-to-nvidia-as-ceo-ce7851dadd89f225"
+   }
+  ]
+ },
+ {
+  "id": "20261124-nvda-huang-reinstated",
+  "time": "2026-11-24 07:20",
+  "title": "英伟达请回黄仁勋任CEO，股价盘中+32%",
+  "what": "11月23日英伟达董事会宣布黄仁勋立即复任总裁、CEO和董事；董事会称听取了美国政府高层意见，确信不构成国家安全风险；对他与Megaspeed高管关系的内部独立调查继续，并成立国家安全与出口管制委员会。川普称这是绝对伟大的决定。英伟达盘中约+32%至$166。",
+  "why": "黄仁勋11月12日辞职后英伟达一周跌23%、拖累全球AI股；川普多次公开要求董事会让他回任。",
+  "impact": "AI股最大的不确定性之一先解除，全球芯片股反弹；但SEC对英伟达会计的调查和内部调查都没结束，后续仍可能有波动。",
+  "tags": [
+   "公司",
+   "美股",
+   "中美"
+  ],
+  "sources": [
+   {
+    "name": "AP/Boston Globe",
+    "url": "https://www.bostonglobe.com/2026/11/23/business/us-stocks-markets-nvidia/"
+   },
+   {
+    "name": "Fox Business",
+    "url": "https://www.foxbusiness.com/markets/stocks-november-23-2026"
+   }
+  ]
+ },
+ {
   "id": "20261123-us-futures-nvda-rebound",
   "time": "2026-11-23 21:20",
   "title": "美股期货反弹扩大：纳指期货+3.4%、标普+2.7%，英伟达盘前约+9%",
