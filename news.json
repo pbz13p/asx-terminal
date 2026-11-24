@@ -1,5 +1,33 @@
 [
  {
+  "id": "20261124-asia-chips-taiwan9-kospi7",
+  "time": "2026-11-24 13:20",
+  "title": "台股盘中+9%、韩股+7%，A股创业板高开3.9%：亚洲芯片股暴力反弹",
+  "what": "11月24日上午：台湾加权指数涨超9%（台积电近+10%），Kospi约+6.7%~7%（三星+10%、SK海力士+8%），日经+4%以上，MSCI亚太+2.1%（8连跌后三个月来最大涨幅）；A股开盘上证+0.82%、深成指+2.43%、创业板+3.88%，中际旭创、新易盛、天孚通信等光模块大幅高开；ASX 200约+1.7%。标普期货仅+0.3%。",
+  "why": "英伟达请回黄仁勋后周一涨约32%、费城半导体指数+14%；美国商务部周一把Megaspeed列入黑名单，黄仁勋12月初到国会作证。",
+  "impact": "上周跌得最狠的芯片/AI硬件反弹最猛；美股期货涨幅小，隔夜已涨足，追高要小心；A股高开后能否守住看午后，澳股科技、金矿领涨。周三澳洲CPI、美国PCE是下一关。",
+  "tags": [
+   "A股",
+   "澳股",
+   "美股",
+   "公司"
+  ],
+  "sources": [
+   {
+    "name": "Bloomberg/swissinfo",
+    "url": "https://www.swissinfo.ch/eng/asian-shares-rally-as-huangs-return-revives-ai:-markets-wrap/92426361"
+   },
+   {
+    "name": "Investing.com",
+    "url": "https://www.investing.com/news/stock-market-news/asia-chipmaking-stocks-soar-tracking-nvidia-rally-skorea-taiwan-lead-5046844"
+   },
+   {
+    "name": "新浪/国是直通车",
+    "url": "https://k.sina.cn/article_5953740931_162dee083067046hmt.html"
+   }
+  ]
+ },
+ {
   "id": "20261124-asia-rebound-nikkei-60k",
   "time": "2026-11-24 11:15",
   "title": "亚洲早盘跟涨：日经+2.9%重回6万点，软银涨超11%；ASX涨约1.3%，有望结束8连跌",
