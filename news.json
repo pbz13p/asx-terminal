@@ -1,5 +1,34 @@
 [
  {
+  "id": "20261124-asia-rebound-nikkei-60k",
+  "time": "2026-11-24 11:15",
+  "title": "亚洲早盘跟涨：日经+2.9%重回6万点，软银涨超11%；ASX涨约1.3%，有望结束8连跌",
+  "what": "11月24日上午，日经225涨约2.9%（+1,684点）至约60,460，软银涨超11%，芯片股领涨（日本周一休市）；ASX 200早盘涨约1.3%（昨收8,570.6）。美股周一正式收盘：纳指+6.92%、标普+5.03%、道指+3.21%，均为2025年4月来最大单日涨幅；英伟达+33%。金价+3.4%至约$3,635，布伦特-3.8%至约$89.9，澳元约0.663。",
+  "why": "英伟达董事会请回黄仁勋任CEO，上周AI股暴跌后空头集中回补。",
+  "impact": "澳股科技、金矿领涨，能源股受油价拖累；A股半导体、AI硬件情绪改善。美联储加息预期小幅上升、SEC对英伟达会计调查未结束，属超跌反弹，持续性看周三澳洲CPI和美国PCE。",
+  "tags": [
+   "澳股",
+   "美股",
+   "宏观",
+   "黄金",
+   "A股"
+  ],
+  "sources": [
+   {
+    "name": "TipRanks",
+    "url": "https://www.tipranks.com/news/nasdaq-closes-7-higher-after-jensen-huang-returns-as-nvidias-ceo"
+   },
+   {
+    "name": "IBTimes AU",
+    "url": "https://www.ibtimes.com.au/nikkei-225-rises-above-60000-softbank-chip-stocks-1878258"
+   },
+   {
+    "name": "ABC",
+    "url": "https://www.abc.net.au/news/2026-11-24/asx-markets-business-news-live-updates-nov-24-2026/107419524"
+   }
+  ]
+ },
+ {
   "id": "20261124-overnight",
   "time": "2026-11-24 07:20",
   "title": "隔夜市场：黄仁勋复职，纳指盘中+6.9%、标普+5%，ASX有望结束8连跌",
