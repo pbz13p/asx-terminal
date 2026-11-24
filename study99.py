@@ -102,6 +102,44 @@ def clean(c, raw, vol):
     return c, raw
 
 
+def ann_docs(code):
+    f = study.DATA / "ann" / f"{code}.json.gz"
+    if not f.exists():
+        return [], {}
+    try:
+        d = json.loads(gzip.decompress(f.read_bytes()))
+    except Exception:
+        return [], {}
+    return d.get("listed", []), d.get("docs", {})
+
+
+def reading_pack(eps):
+    """For reading by hand (Frank 2026-11-25 "你就去读吧"): every tradable 100x episode from 2012 on -- all headlines from
+    180 days before the low to 120 days after takeoff, and the opening text of the price-sensitive ones from 60 days
+    before the low to 60 days after takeoff (max 14 per episode, 1,400 characters each)."""
+    from datetime import date, timedelta
+    pack = []
+    for e in eps:
+        if e["low_day"] < "2012-01-01" or not e["tradable_peak"] or e["multiple"] >= 1e5:
+            continue
+        listed, docs = ann_docs(e["code"])
+        lo, tk = date.fromisoformat(e["low_day"]), date.fromisoformat(e["takeoff_day"])
+        w0, w1 = (lo - timedelta(days=180)).isoformat(), (tk + timedelta(days=120)).isoformat()
+        r0, r1 = (lo - timedelta(days=60)).isoformat(), (tk + timedelta(days=60)).isoformat()
+        heads = sorted((it.get("date", ""), it.get("headline", ""), bool(it.get("sensitive")), it.get("ids")) for it in listed
+                       if w0 <= it.get("date", "") <= w1)
+        texts = []
+        for dd, h, sens, ids in heads:
+            if sens and r0 <= dd <= r1 and len(texts) < 14:
+                t = (docs.get(ids) or {}).get("text", "")
+                texts.append([dd, h[:120], re.sub(r"\s+", " ", t)[:1400]])
+        pack.append({k: e[k] for k in ("code", "low_day", "low_raw", "low_med20", "takeoff_day", "peak_day", "multiple",
+                                       "years_to_100x", "now_vs_peak", "jumps3x", "sector", "off_high3y")} |
+                    {"headlines": [[a, b[:120], c] for a, b, c, _ in heads][:80], "texts": texts,
+                     "consolidation_flag": any(re.search(r"consolidat", h, re.I) for _, h, _, _ in heads)})
+    return pack
+
+
 def anns(code):
     f = study.DATA / "ann" / f"{code}.json.gz"
     if not f.exists():
@@ -301,6 +339,9 @@ def main():
            "seconds": round(time.time() - t0)}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, default=float), encoding="utf-8")
+    pack = reading_pack(eps)
+    (OUT.parent / "study99_reading.json").write_text(json.dumps(pack, ensure_ascii=False), encoding="utf-8")
+    print("[99] reading pack", len(pack), "episodes", flush=True)
     print("[99] done", out["seconds"], "s", flush=True)
 
 
