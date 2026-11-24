@@ -1,2 +1,2 @@
-rounds=99
-# 2026-11-25: round 99 v2 (glitch cleaning). Empty = only run ann_lists + cn_brief.
+rounds=
+# 2026-11-25: rounds 82, 99 done. Empty = only run ann_lists + cn_brief.
