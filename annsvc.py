@@ -53,13 +53,17 @@ def _pypdf():
     return PdfReader
 
 
-def text(code, ids):
+def text(code, ids, tail=False):
+    """tail=True also returns the last pages ("tail"): annual reports put the top-20 shareholder table at the very end,
+    past the 40 pages / 60,000 characters kept in "text" (Frank 2026-11-25, CND 2026 annual report)."""
     if not re.fullmatch(r"\d{4,12}", ids or ""):
         raise ValueError("公告编号不正确")
     CACHE.mkdir(parents=True, exist_ok=True)
     f = CACHE / f"{ids}.en.json"
     if f.exists():
-        return json.loads(f.read_text(encoding="utf-8"))
+        cached = json.loads(f.read_text(encoding="utf-8"))
+        if not tail or "tail" in cached:
+            return cached
     item = next((i for i in study67.listing(code, [date.today().year, date.today().year - 1]) if i["ids"] == ids), None)
     if not item:
         raise ValueError("找不到这条公告")
@@ -76,6 +80,9 @@ def text(code, ids):
     pages = [re.sub(r"[ \t]+", " ", p.extract_text() or "").strip() for p in reader.pages[:40]]
     out = {"ids": ids, "code": code, "date": item["date"], "headline": item["headline"], "pdf": final,
            "pages": len(reader.pages), "text": "\n\n".join(pages)[:60000]}
+    if tail:
+        last = [re.sub(r"[ \t]+", " ", p.extract_text() or "").strip() for p in reader.pages[max(0, len(reader.pages) - 12):]]
+        out["tail"] = "\n\n".join(last)[-40000:]
     f.write_text(json.dumps(out, ensure_ascii=False), encoding="utf-8")
     return out
 

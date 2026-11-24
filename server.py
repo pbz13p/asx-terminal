@@ -838,7 +838,7 @@ class Handler(SimpleHTTPRequestHandler):
             ids = q.get("ids", "")
             if name == "annbrief":
                 return annsvc.brief(code, ids)
-            return annsvc.text(code, ids) if name == "anntext" else annsvc.translate(code, ids)
+            return annsvc.text(code, ids, tail=q.get("tail") == "1") if name == "anntext" else annsvc.translate(code, ids)
         if name == "profile":
             return self.profile(code)
         if name == "company":   # 公司简介 (Frank 2026-11-21)
