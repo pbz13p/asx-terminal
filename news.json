@@ -1,5 +1,55 @@
 [
  {
+  "id": "20261124-drc-cobalt-export-halt",
+  "time": "2026-11-24 21:20",
+  "title": "刚果（金）11月30日起暂停全部钴出口",
+  "what": "11月23日刚果（金）战略矿产监管局ARECOMS宣布，11月30日起暂停全部钴出口直到另行通知，约4个月后复审，现行出口配额同时停用；刚果（金）约占全球钴开采量3/4。11月24日A股腾远钴业+14.23%。",
+  "why": "全球钴供过于求、库存堆积，钴价从2026年4月高点下跌近一半，政府想托价（2025年2月曾禁出口，10月改为配额）。",
+  "impact": "钴价大概率反弹；A股钴板块（腾远、华友、洛阳钼业）、澳股钴/镍相关小盘短线受益；电池厂成本上升。",
+  "tags": [
+   "公司",
+   "A股",
+   "澳股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "Reuters (X)",
+    "url": "https://x.com/ReutersAfrica/status/2124933605717663929"
+   },
+   {
+    "name": "MINING.COM",
+    "url": "https://www.mining.com/web/congo-halts-cobalt-exports-again-to-tackle-oversupply-support-prices-industry-regulator-says/"
+   },
+   {
+    "name": "BigGo Finance",
+    "url": "https://finance.biggo.com/news/11c4bd10-b579-4cb7-b166-cecd3581cac1"
+   }
+  ]
+ },
+ {
+  "id": "20261124-ashare-close-fade",
+  "time": "2026-11-24 21:20",
+  "title": "A股冲高全部回吐：创业板开盘+3.9%，收盘-0.05%",
+  "what": "11月24日收盘：上证+0.27%收3548.37，深成指-0.29%收10423.60，创业板-0.05%收2278.99（全天最低），科创50 +1.81%；成交1.66万亿（比昨天多约1,022亿）；约1,952涨/3,498跌，64只涨停，炸板率超50%。中际旭创、新易盛涨幅全吐；贵金属、工业金属、煤炭领跌。",
+  "why": "英伟达请回黄仁勋、美股大涨的利好开盘即兑现，午后获利盘离场，资金回到银行红利。",
+  "impact": "A股反弹远弱于台股（+9%）、韩股（+6.6%），追高光模块风险大；欧洲Stoxx 600小跌、纳指期货约-1%，今晚美股可能回吐部分涨幅；明天看澳洲CPI和美国PCE。",
+  "tags": [
+   "A股",
+   "美股"
+  ],
+  "sources": [
+   {
+    "name": "21财经",
+    "url": "https://m.21jingji.com/article/20261124/herald/073ed472778d2ebc9abfae072218d0df.html"
+   },
+   {
+    "name": "新浪",
+    "url": "https://k.sina.com.cn/article_7857201856_1d45362c001908w0bs.html"
+   }
+  ]
+ },
+ {
   "id": "20261124-asx-snaps-8day-streak",
   "time": "2026-11-24 17:20",
   "title": "澳股收涨1.8%至8,726，结束8连跌；科技+3%、金矿+2.5%",
