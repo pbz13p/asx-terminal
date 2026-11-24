@@ -169,6 +169,9 @@ jobs:
       - name: Restore AI reading cache and spend ledger
         uses: actions/cache/restore@v4
         with: {path: data/ai, key: ai-none, restore-keys: ai-}
+      - name: Restore round 100 shareholder tables
+        uses: actions/cache/restore@v4
+        with: {path: data/holders, key: holders-none, restore-keys: holders-}
       - name: Sizes
         run: du -sh data/* 2>/dev/null || true
       - name: Encrypted copy to the data-backup release (Sundays, or when run by hand)

@@ -41,6 +41,12 @@ Rules for stage 2 fixed 2026-11-25 BEFORE any return was looked at:
   Also reported for Frank's question "普不普遍": distributions (median and quartiles) of top20, top1, top2, nominee
   share, holders, and the share of companies where a director is top 1 / top 2 -- by size (20-day median $ traded).
   CND's own rows are listed for reference.
+  v2 (2026-11-25, after Frank found CND's 2026 report missing): many annual reports were stored with only their first
+    pages (archive saved before full-text storage), and the top-20 table sits at the END of the report. Before the
+    study, each such report (2015 on, no table in the stored text) is fetched again from ASX and only its last 15 pages
+    are read; the parsed table is kept in data/holders/<code>.json (cached between runs, never fetched twice). Releases
+    after END are now included in the "how common" numbers and the today list (they just have no outcome yet).
+    Rules for the tests are unchanged.
 """
 import gzip
 import json
@@ -111,6 +117,64 @@ def parse_top20(text):
         hm = sum(cnt[-5:]) if len(cnt) >= 5 else sum(cnt)
     return {"rows": rows, "top20": top20, "top1": pct[0], "top2": pct[1] if len(pct) > 1 else 0.0,
             "nominee": sum(p for n, _, p in rows if NOMINEE.search(n)), "holders": hm if hm and 20 <= hm <= 1e6 else None}
+
+
+HOLD = study.DATA / "holders"
+
+
+def refetch(budget_min=150):
+    """Fetch the tail of annual reports whose stored text has no top-20 table; keep only the parsed table."""
+    import study67
+    from concurrent.futures import ThreadPoolExecutor
+    from pypdf import PdfReader
+    import io
+    HOLD.mkdir(parents=True, exist_ok=True)
+    t0 = time.time()
+    done = tried = 0
+    for f in sorted((study.DATA / "ann").glob("*.json.gz")):
+        if time.time() - t0 > budget_min * 60 or study67.BRAKE["stop"]:
+            break
+        try:
+            d = json.loads(gzip.decompress(f.read_bytes()))
+        except Exception:
+            continue
+        code = d.get("code", f.name[:-8])
+        hf = HOLD / f"{code}.json"
+        have = json.loads(hf.read_text()) if hf.exists() else {}
+        docs = d.get("docs", {})
+        todo = [it for it in d.get("listed", []) if re.search(r"annual report", it.get("headline", ""), re.I)
+                and it.get("date", "") >= "2015-01-01" and it.get("ids") not in have
+                and not TOP.search((docs.get(it.get("ids")) or {}).get("text", ""))]
+        if not todo:
+            continue
+
+        def one(it):
+            try:
+                url = "https://www.asx.com.au" + it["href"] if it.get("href", "").startswith("/") else it.get("href", "")
+                body, final, ctype = study67.get(url)
+                if "pdf" not in ctype:
+                    page = body.decode("utf-8", "replace")
+                    m = re.search(r'name="pdfURL"\s+value="([^"]+)"', page) or re.search(r'(https?://[^"\']+\.pdf)', page) \
+                        or re.search(r'(/asxpdf/[^"\']+\.pdf)', page)
+                    if not m:
+                        return it["ids"], {"err": "nopdf"}
+                    u = m.group(1)
+                    body, final, ctype = study67.get(("https://announcements.asx.com.au" + u) if u.startswith("/") else u, 60)
+                r = PdfReader(io.BytesIO(body))
+                tail = "\n".join(re.sub(r"[ \t]+", " ", p.extract_text() or "") for p in r.pages[max(0, len(r.pages) - 15):])
+                s2 = parse_top20(tail)
+                return it["ids"], ({"date": it["date"], **{k: v for k, v in s2.items() if k != "rows"},
+                                    "names": [x[0][:80] for x in s2["rows"][:3]]} if s2 else {"date": it["date"], "none": True})
+            except Exception as e:
+                return it["ids"], {"err": type(e).__name__[:30]}
+        with ThreadPoolExecutor(max_workers=4) as ex:
+            for ids, rec in ex.map(one, todo):
+                have[ids] = rec
+                tried += 1
+                done += "top20" in rec
+        hf.write_text(json.dumps(have))
+    print(f"[100] refetch: {tried} reports fetched, {done} tables found, {time.time() - t0:.0f}s, brake={study67.BRAKE['stop']}", flush=True)
+    return tried, done
 
 
 def director_names(listed, docs):
@@ -184,6 +248,8 @@ def tdiff(a, b):
 
 def main():
     t0 = time.time()
+    if os.environ.get("S100_REFETCH", "1") == "1":
+        refetch(int(os.environ.get("S100_REFETCH_MIN", "150")))
     try:
         study.download(["AXSO.INDX"])
     except Exception:
@@ -214,15 +280,22 @@ def main():
         if not px.ok:
             continue
         dirs = director_names(listed, docs)
+        hf = HOLD / f"{code}.json"
+        extra = json.loads(hf.read_text()) if hf.exists() else {}
         own = []
         for it in sorted(listed, key=lambda x: x.get("date", "")):
             h, day = it.get("headline", ""), it.get("date", "")
-            if day < "2015-01-01" or day > END:
+            if day < "2015-01-01":
                 continue
             if re.search(r"annual report", h, re.I):
                 n_ar += 1
                 t = (docs.get(it.get("ids")) or {}).get("text", "")
                 s = parse_top20(t)
+                if not s:
+                    x = extra.get(it.get("ids")) or {}
+                    if "top20" in x:
+                        s = {"top20": x["top20"], "top1": x["top1"], "top2": x["top2"], "nominee": x["nominee"],
+                             "holders": x.get("holders"), "rows": [(n, 0, 0) for n in x.get("names", [])]}
                 if not s:
                     continue
                 n_parsed += 1
@@ -250,7 +323,7 @@ def main():
                     rec.update(out)
                     rec["ex250"] = out["r250"] - ax_ret(out["entry"], out["d1_250"])
                 reports.append(rec)
-            else:
+            elif day <= END:
                 ev = None
                 if re.search(r"becoming a substantial", h, re.I):
                     ev = "E1"
@@ -362,8 +435,12 @@ def main():
     for e, res in ev_res.items():
         verdict[e] = _verdict(res["2015_2020"].get("t60"), res["2021_on"].get("t60"), res["2015_2020"]["n"], res["2021_on"]["n"])
     cnd = [{k: r.get(k) for k in ("date", "top20", "top1", "top2", "nominee", "holders", "dir_top12", "d_top20")} for r in reports if r["code"] == "CND"]
+    latest = {}
+    for r in reports:
+        if r["date"] >= "2025-07-01" and (r["code"] not in latest or r["date"] > latest[r["code"]]["date"]):
+            latest[r["code"]] = {k: r.get(k) for k in ("code", "date", "top20", "top1", "top2", "nominee", "dir_top12", "d_top20")}
     out = {"round": 100, "stage": "study", "built": time.strftime("%Y-%m-%d"), "rules": __doc__.split("Rules for stage 2")[1][:5500],
-           "how_common": common, "tests": tests, "events": ev_res, "verdict": verdict, "cnd": cnd, "seconds": round(time.time() - t0)}
+           "how_common": common, "tests": tests, "events": ev_res, "verdict": verdict, "cnd": cnd, "latest": sorted(latest.values(), key=lambda x: x["top20"]), "seconds": round(time.time() - t0)}
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, default=float), encoding="utf-8")
     print("[100] done", out["seconds"], "s", flush=True)

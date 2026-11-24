@@ -1,2 +1,2 @@
-rounds=
-# 2026-11-25: rounds 82, 99, 100 done. Empty = only run ann_lists + cn_brief.
+rounds=100
+# 2026-11-25: round 100 v2 (re-read annual-report tails for the top-20 table, then rerun).
