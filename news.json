@@ -1,625 +1,647 @@
 [
-  {
-    "id": "20261124-crwd-buys-zscaler",
-    "time": "2026-11-24 15:20",
-    "title": "CrowdStrike 约439亿美元全换股收购 Zscaler",
-    "what": "11月23日 CrowdStrike 随 Q3 财报宣布与 Zscaler 签订最终协议：每股 Zscaler 换 1.135 股 CrowdStrike，作价约 439 亿美元，全部用股票支付；需监管批准，交割时间未披露。",
-    "why": "终端安全与云安全平台合并，网络安全行业整合（公告未详细说明溢价）。",
-    "impact": "网络安全板块史上最大并购之一，可能带动同类标的估值重估；收购方换股摊薄，短线或承压。对澳股、A股直接影响小。",
-    "tags": [
-      "公司",
-      "美股"
-    ],
-    "sources": [
-      {
-        "name": "SEC 8-K (CrowdStrike)",
-        "url": "https://www.sec.gov/Archives/edgar/data/0001535527/000153552726000035/crwd-20261123xex991.htm"
-      }
-    ]
-  },
-  {
-    "id": "20261124-ashare-midday-fade",
-    "time": "2026-11-24 15:20",
-    "title": "A股午盘冲高回落：创业板从开盘+3.9%收窄到+1.9%",
-    "what": "11月24日午盘：上证+0.47%，深成指+0.92%，创业板+1.90%，北证50 +1.83%；半日成交约1.12万亿（比昨天多约2,046亿）；3,123涨/2,273跌，67只涨停。物理AI、人形机器人、CPO、半导体领涨；贵金属大跌，券商、煤炭、油气走弱。",
-    "why": "英伟达请回黄仁勋后芯片/AI硬件高开，但隔夜美股已大涨，开盘后获利盘涌出、追高资金不足。",
-    "impact": "A股反弹力度明显弱于台股（+9%）、韩股（+7%）；下午看创业板能否守住涨幅。周三澳洲CPI、美国PCE是下一关。",
-    "tags": [
-      "A股"
-    ],
-    "sources": [
-      {
-        "name": "澎湃",
-        "url": "https://www.thepaper.cn/newsDetail_forward_34545487"
-      },
-      {
-        "name": "界面",
-        "url": "https://www.jiemian.com/article/15366901.html"
-      }
-    ]
-  },
-  {
-    "id": "20261124-asia-chips-taiwan9-kospi7",
-    "time": "2026-11-24 13:20",
-    "title": "台股盘中+9%、韩股+7%，A股创业板高开3.9%：亚洲芯片股暴力反弹",
-    "what": "11月24日上午：台湾加权指数涨超9%（台积电近+10%），Kospi约+6.7%~7%（三星+10%、SK海力士+8%），日经+4%以上，MSCI亚太+2.1%（8连跌后三个月来最大涨幅）；A股开盘上证+0.82%、深成指+2.43%、创业板+3.88%，中际旭创、新易盛、天孚通信等光模块大幅高开；ASX 200约+1.7%。标普期货仅+0.3%。",
-    "why": "英伟达请回黄仁勋后周一涨约32%、费城半导体指数+14%；美国商务部周一把Megaspeed列入黑名单，黄仁勋12月初到国会作证。",
-    "impact": "上周跌得最狠的芯片/AI硬件反弹最猛；美股期货涨幅小，隔夜已涨足，追高要小心；A股高开后能否守住看午后，澳股科技、金矿领涨。周三澳洲CPI、美国PCE是下一关。",
-    "tags": [
-      "A股",
-      "澳股",
-      "美股",
-      "公司"
-    ],
-    "sources": [
-      {
-        "name": "Bloomberg/swissinfo",
-        "url": "https://www.swissinfo.ch/eng/asian-shares-rally-as-huangs-return-revives-ai:-markets-wrap/92426361"
-      },
-      {
-        "name": "Investing.com",
-        "url": "https://www.investing.com/news/stock-market-news/asia-chipmaking-stocks-soar-tracking-nvidia-rally-skorea-taiwan-lead-5046844"
-      },
-      {
-        "name": "新浪/国是直通车",
-        "url": "https://k.sina.cn/article_5953740931_162dee083067046hmt.html"
-      }
-    ]
-  },
-  {
-    "id": "20261124-asia-rebound-nikkei-60k",
-    "time": "2026-11-24 11:15",
-    "title": "亚洲早盘跟涨：日经+2.9%重回6万点，软银涨超11%；ASX涨约1.3%，有望结束8连跌",
-    "what": "11月24日上午，日经225涨约2.9%（+1,684点）至约60,460，软银涨超11%，芯片股领涨（日本周一休市）；ASX 200早盘涨约1.3%（昨收8,570.6）。美股周一正式收盘：纳指+6.92%、标普+5.03%、道指+3.21%，均为2025年4月来最大单日涨幅；英伟达+33%。金价+3.4%至约$3,635，布伦特-3.8%至约$89.9，澳元约0.663。",
-    "why": "英伟达董事会请回黄仁勋任CEO，上周AI股暴跌后空头集中回补。",
-    "impact": "澳股科技、金矿领涨，能源股受油价拖累；A股半导体、AI硬件情绪改善。美联储加息预期小幅上升、SEC对英伟达会计调查未结束，属超跌反弹，持续性看周三澳洲CPI和美国PCE。",
-    "tags": [
-      "澳股",
-      "美股",
-      "宏观",
-      "黄金",
-      "A股"
-    ],
-    "sources": [
-      {
-        "name": "TipRanks",
-        "url": "https://www.tipranks.com/news/nasdaq-closes-7-higher-after-jensen-huang-returns-as-nvidias-ceo"
-      },
-      {
-        "name": "IBTimes AU",
-        "url": "https://www.ibtimes.com.au/nikkei-225-rises-above-60000-softbank-chip-stocks-1878258"
-      },
-      {
-        "name": "ABC",
-        "url": "https://www.abc.net.au/news/2026-11-24/asx-markets-business-news-live-updates-nov-24-2026/107419524"
-      }
-    ]
-  },
-  {
-    "id": "20261124-overnight",
-    "time": "2026-11-24 07:20",
-    "title": "隔夜市场：黄仁勋复职，纳指盘中+6.9%、标普+5%，ASX有望结束8连跌",
-    "what": "美股周一（美东中午约12:30盘中数，收盘在墨尔本8点）：纳指约+6.9%至24,178，标普约+5.0%至7,254，道指约+3.2%至49,685，罗素2000 +3.1%；VIX约27（-24%）。英伟达约+32%至$166，美光+19%，特斯拉+13%。黄金+4.2%至约$3,663，WTI -3.1%至约$80.8，美10年期约4.94%-4.96%，比特币约$6.2万。",
-    "why": "英伟达董事会宣布黄仁勋立即复任CEO；上周纳指周跌约10%后超跌、空头回补（野村称是机械性反弹，不保证持续）。",
-    "impact": "ASX昨收8,570.6（8连跌），今天大概率明显高开，科技和金矿领涨，能源股受油价拖累；A股半导体、AI硬件情绪改善。周三澳洲CPI、美国PCE，周四美股感恩节休市。",
-    "tags": [
-      "隔夜市场"
-    ],
-    "sources": [
-      {
-        "name": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-23-dow-sp-500-nasdaq-nvidia-reinstates-jensen-huang-141511975.html"
-      },
-      {
-        "name": "Reuters/MarketScreener",
-        "url": "https://www.marketscreener.com/news/wall-st-roars-back-as-jensen-huang-returns-to-nvidia-as-ceo-ce7851dadd89f225"
-      }
-    ]
-  },
-  {
-    "id": "20261124-nvda-huang-reinstated",
-    "time": "2026-11-24 07:20",
-    "title": "英伟达请回黄仁勋任CEO，股价盘中+32%",
-    "what": "11月23日英伟达董事会宣布黄仁勋立即复任总裁、CEO和董事；董事会称听取了美国政府高层意见，确信不构成国家安全风险；对他与Megaspeed高管关系的内部独立调查继续，并成立国家安全与出口管制委员会。川普称这是绝对伟大的决定。英伟达盘中约+32%至$166。",
-    "why": "黄仁勋11月12日辞职后英伟达一周跌23%、拖累全球AI股；川普多次公开要求董事会让他回任。",
-    "impact": "AI股最大的不确定性之一先解除，全球芯片股反弹；但SEC对英伟达会计的调查和内部调查都没结束，后续仍可能有波动。",
-    "tags": [
-      "公司",
-      "美股",
-      "中美"
-    ],
-    "sources": [
-      {
-        "name": "AP/Boston Globe",
-        "url": "https://www.bostonglobe.com/2026/11/23/business/us-stocks-markets-nvidia/"
-      },
-      {
-        "name": "Fox Business",
-        "url": "https://www.foxbusiness.com/markets/stocks-november-23-2026"
-      }
-    ]
-  },
-  {
-    "id": "20261123-us-futures-nvda-rebound",
-    "time": "2026-11-23 21:20",
-    "title": "美股期货反弹扩大：纳指期货+3.4%、标普+2.7%，英伟达盘前约+9%",
-    "what": "11月23日约09:10 UTC：标普期货7,122（+2.7%），纳指100期货25,982（+3.4%），道指期货+1.9%，罗素2000期货+2.3%；美10年期约4.91%；黄金反弹约2.7%至约$3,612，WTI约$82.6（-1%）。英伟达盘前约+9%。",
-    "why": "上周纳指周跌约10%后超跌反弹；川普再次喊话英伟达董事会让黄仁勋回任CEO（据报董事会拒绝，盘前涨幅约4成在发帖前）；亚洲各地托底；贝森特周日称美联储有加息过头风险。",
-    "impact": "若今晚美股收涨2%以上，澳股科技、金矿小盘有望结束8连跌，A股半导体情绪改善；期货反弹不等于收盘，周三有美国PCE、澳洲CPI。",
-    "tags": [
-      "美股",
-      "公司",
-      "澳股",
-      "A股",
-      "黄金"
-    ],
-    "sources": [
-      {
-        "name": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-23-dow-sp-500-nasdaq-091118583.html"
-      },
-      {
-        "name": "Fox Business",
-        "url": "https://www.foxbusiness.com/politics/trump-doubles-down-call-nvidia-rehire-jensen-huang-amid-alleged-chinese-spy-scandal"
-      },
-      {
-        "name": "Saxo",
-        "url": "https://www.home.saxo/en-sg/content/articles/macro/asia-market-quick-take--23-november-2026-23112026"
-      }
-    ]
-  },
-  {
-    "id": "20261123-ashare-reversal-chinext-3pct",
-    "time": "2026-11-23 19:20",
-    "title": "A股午后大反转：创业板+3.08%、超4600股上涨、151股涨停；澳股8连跌但跌幅小",
-    "what": "11月23日收盘：上证+0.15%收3538.95（午间曾-0.96%跌破3500），深成指+1.93%，创业板+3.08%收2280.2；成交1.55万亿（比上周五多约1300亿）；4655涨/783跌，151股涨停。人形机器人、AI应用（传媒、AI漫剧）、PCB/CPO、机械设备领涨；石油石化（中国石油-5%）、银行（建行工行中行-2%以上）、白酒领跌。ASX 200 -0.26%收8,570.6，8连跌，矿业反弹、银行拖累。",
-    "why": "周末两融保证金降到80%、交易所降费、创业板拟引入做市商等稳市措施；美股期货反弹约2%；抄底资金进小微盘和AI应用，从上周抱团的银行红利、石油撤出。",
-    "impact": "A股风格从防守切回成长：券商、两融活跃的科技成长股短线占优，银行红利可能继续回吐；能否持续要看成交继续放大和今晚美股兑现反弹。澳股矿业有抄底资金，科技小盘仍弱。",
-    "tags": [
-      "A股",
-      "澳股",
-      "宏观"
-    ],
-    "sources": [
-      {
-        "name": "21财经",
-        "url": "https://www.21jingji.com/article/20261123/herald/4ac7b7b5b46179735a451c2cc267cfa1.html"
-      },
-      {
-        "name": "财联社",
-        "url": "https://m.cls.cn/detail/2541599"
-      },
-      {
-        "name": "JournalArta",
-        "url": "https://journalarta.com/en/2026/11/23/asx-200-today-australian-shares-slip-0-26-as-financials-drag-ahead-of-cpi/"
-      }
-    ]
-  },
-  {
-    "id": "20261123-kospi-5pct-ashare-midday",
-    "time": "2026-11-23 15:20",
-    "title": "韩股盘中跌超5%，A股科创50半日-2.65%；美股期货反弹约2%",
-    "what": "11月23日：Kospi盘中最多跌5.8%（开盘只跌2.8%），恒生收跌约1.9%；A股半日上证-0.96%收3499.91（跌破3500），科创50 -2.65%，创业板+1.22%，3557跌/1575涨，成交0.92万亿。ASX 200午间约-0.2%，跌幅不大。标普期货约+1.9%、纳指100期货约+2.3%；现货金反弹1.5%至约$3,592，WTI约$83。",
-    "why": "外资继续抛售亚洲AI/芯片股（三星、SK海力士领跌）；各地托底：韩国放宽企业回购限额3个月、准备动用稳市基金（上次是2008年），台湾扩大做空限制并入市买股，A股两融保证金比例降到80%。",
-    "impact": "亚洲科技股抛售还没停，A股半导体（科创50）最弱，创业板和传媒、贵金属有资金；ASX比预期稳，金价反弹利好金矿。今晚美股能否兑现期货反弹是关键，本周看周三PCE。",
-    "tags": [
-      "A股",
-      "澳股",
-      "美股",
-      "宏观",
-      "黄金"
-    ],
-    "sources": [
-      {
-        "name": "Bloomberg/swissinfo",
-        "url": "https://www.swissinfo.ch/eng/us-stock-futures-bounce-after-rout,-havens-decline:-markets-wrap/92421262"
-      },
-      {
-        "name": "Al Jazeera",
-        "url": "https://www.aljazeera.com/news/2026/11/23/south-koreas-stock-market-tumbles-as-ai-bubble-fears-mount"
-      },
-      {
-        "name": "21财经",
-        "url": "https://www.21jingji.com/article/20261123/herald/32483cb785c03d812d9f318a439dd69c.html"
-      }
-    ]
-  },
-  {
-    "id": "20261123-asia-open-kospi-futures-rebound",
-    "time": "2026-11-23 11:20",
-    "title": "亚洲周一开盘：韩股低开2.8%（期货曾-7%），韩国准备动用稳市基金；美股期货反弹1–2%",
-    "what": "11月23日Kospi开盘4,734.90（-2.77%），Kosdaq -1.66%，三星、SK海力士盘前跌超5%；上周五Kospi已-5.21%，夜盘期货一度约-7%。日本休市。美股期货早盘反弹：纳指100期货约+2%、标普约+1%。ASX 200期货开盘前约-0.6%（8,556）。",
-    "why": "上周AI抛售（纳指周跌约10%、台股周跌17%）；周末各地托底：韩国财政部称可立即动用稳市基金（若启用为18年来首次），台湾收紧做空规则，A股两融保证金比例降至80%。",
-    "impact": "美股期货反弹+政策托底，亚洲跌幅小于担心，超跌反弹可能；但外资仍在卖科技股，ASX科技、锂矿、金矿小盘仍最弱；A股券商有政策利好。本周看周三美国PCE。",
-    "tags": [
-      "澳股",
-      "A股",
-      "美股",
-      "宏观"
-    ],
-    "sources": [
-      {
-        "name": "fnnews",
-        "url": "https://www.fnnews.com/news/202611230851363654"
-      },
-      {
-        "name": "Reuters/Investing",
-        "url": "https://www.investing.com/news/economy-news/us-futures-bounce-while-asia-markets-brace-for-ai-wipeout-5044181"
-      },
-      {
-        "name": "ABC",
-        "url": "https://www.abc.net.au/news/2026-11-23/asx-markets-business-live-news-november-23/107414602"
-      }
-    ]
-  },
-  {
-    "id": "20261123-overnight",
-    "time": "2026-11-23 07:20",
-    "title": "隔夜市场：周五纳指-5.3%、标普-3.7%，ASX今天恐明显低开；本周看PCE",
-    "what": "周末美股休市。周五收盘：纳指-5.28%收22,618，标普-3.70%收6,910（7连跌），道指-1.93%收48,147，罗素2000 -2.76%；VIX 35.9。WTI约$83.4，黄金$3,515（-4.6%，14个月新低），美10年期4.91%，美元指数103.8，澳元约0.666。NYT周六报道：SEC对英伟达会计的调查还在初期，可能不起诉，查的是它和新加坡Megaspeed的交易、以及按地区报销售时去掉新加坡；英伟达收$125.53，离高点跌超35%。",
-    "why": "AI投资回报担忧加上英伟达风波；美联储12月加息几乎已定。",
-    "impact": "ASX周五收8,593后美股又跌3.7%，今天大概率明显低开，科技、锂矿、金矿小盘最弱；A股有两融保证金下调到80%的利好，券商和科技成长股可能高开，能否守住看外围。本周：周三美国PCE、GDP二次估算，周四感恩节休市，周五半天。",
-    "tags": [
-      "隔夜市场"
-    ],
-    "sources": [
-      {
-        "name": "Journalarta",
-        "url": "https://journalarta.com/en/2026/11/22/stocks-to-watch-this-week-nvidia-workday-deere-and-thanksgiving-pce-data/"
-      },
-      {
-        "name": "AFP/Yahoo",
-        "url": "https://finance.yahoo.com/technology/ai/articles/nvidia-faces-us-accounting-probe-215354861.html"
-      }
-    ]
-  },
-  {
-    "id": "20261122-cn-margin-ratio-80",
-    "time": "2026-11-22 23:20",
-    "title": "A股稳股市组合拳：融资保证金比例从100%降到80%，11月30日起施行",
-    "what": "11月22日晚，沪深北交易所经证监会批准，融资买入最低保证金比例由100%降至80%（杠杆1倍→1.25倍），11月30日起施行；深交所就创业板引入做市商制度征求意见；沪深交易所免收交易单元使用费等并延长已有降费两年至2028年，中国结算续免绿色、科创、民企公司债相关费用至2028年底。业内估计带来约4000亿元增量资金。",
-    "why": "证监会11月2日称融资余额和交易活跃度明显下降；本周A股随全球AI抛售大跌（11月20日创业板-3.54%），属逆周期调节。今年1月刚从80%上调到100%，这次退回80%（2023年8月也曾同样下调）。",
-    "impact": "周一A股（券商、两融活跃的科技成长股）情绪大概率改善、可能高开；但外围仍弱（周五纳指-5.3%），高开能否守住看美股。2023年下调后融资规模和成交是稳步上升而非暴涨。对澳股影响有限。",
-    "tags": [
-      "A股",
-      "宏观"
-    ],
-    "sources": [
-      {
-        "name": "澎湃/央视",
-        "url": "https://www.thepaper.cn/newsDetail_forward_34535221"
-      },
-      {
-        "name": "21财经/中证报",
-        "url": "https://m.21jingji.com/article/20261122/herald/ef39872d71aa970b9e15ff7b91e60fc0.html"
-      },
-      {
-        "name": "Bloomberg",
-        "url": "https://www.bloomberg.com/news/articles/2026-11-22/china-lowers-margin-requirement-to-80-to-boost-stock-liquidity"
-      }
-    ]
-  },
-  {
-    "id": "20261122-weekend-wrap",
-    "time": "2026-11-22 07:20",
-    "title": "周末市场：周五纳指-5.3%、标普-3.7%，英伟达周跌23%，周一澳股恐明显低开",
-    "what": "美股周五最终收盘（Yahoo行情）：纳指-5.28%收22,618，标普-3.70%收6,910（7连跌），道指-1.93%收48,147；VIX 35.9，美10年期约4.91%；三大指数周跌8%~10%，2025年4月来最差一周。英伟达-14%收$125.53，周跌23%（2008年来最差一周）。黄金约$3,515（-4.6%，14个月新低）；比特币周末跌到约5.6万美元；油价连续第三周下跌。",
-    "why": "AI投资回报担忧+路透独家称SEC执法部门审查英伟达会计（具体问题和立案时间未知，英伟达暂未回应）；美联储12月加息几乎已定。",
-    "impact": "ASX周五收8,594之后美股又跌3.7%，周一澳股大概率明显低开，科技、锂矿、金矿小盘最弱；A股半导体、光通信承压，银行红利相对抗跌；超跌后技术反弹也有可能。",
-    "tags": [
-      "隔夜市场"
-    ],
-    "sources": [
-      {
-        "name": "Reuters/Investing",
-        "url": "https://www.investing.com/news/economy-news/exclusiveus-secs-nvidia-probe-is-examining-potential-accounting-issues-sources-say-5042460"
-      },
-      {
-        "name": "Motley Fool",
-        "url": "https://www.fool.com/investing/2026/11/21/after-its-worst-week-in-18-years-nvidia-now-faces-an-sec-investigation-what-it-means-for-investors/"
-      },
-      {
-        "name": "Yahoo Finance",
-        "url": "https://finance.yahoo.com/markets/stocks/articles/nvda-stock-clocks-worst-week-233812270.html"
-      }
-    ]
-  },
-  {
-    "id": "20261121-us-close-nasdaq-5pct",
-    "time": "2026-11-21 09:20",
-    "title": "美股周五正式收盘：纳指-5.1%、标普-3.6%，半导体指数-10.7%，英伟达约-14%",
-    "what": "11月20日纳指-5.13%收22,654，标普-3.59%收6,918（7连跌，2020年2月来最长），道指-1.85%收48,188；三大指数周跌8%~10%；费城半导体指数-10.7%；英伟达约-14%、美光-13.9%、AMD约-13%，Anthropic跌回发行价$83附近。VIX超30，比特币跌破6万美元。",
-    "why": "担心AI投资回报；据路透转述SEC在审查英伟达可能的会计问题；12月加息概率约95%；川普威胁对在海外建数据中心的美企征重税。",
-    "impact": "下周一ASX科技、锂矿、金矿小盘大概率继续低开；A股半导体、光通信承压，银行红利相对抗跌；超卖后短线技术性反弹也有可能。",
-    "tags": [
-      "美股",
-      "公司",
-      "澳股",
-      "A股"
-    ],
-    "sources": [
-      {
-        "name": "MarketScreener/Reuters",
-        "url": "https://www.marketscreener.com/news/wall-st-ends-sharply-lower-on-ai-selloff-s-p-500-dow-in-correction-ce785ed3dd80f527"
-      },
-      {
-        "name": "Fortune",
-        "url": "https://fortune.com/2026/11/20/sp-500-correction-panic-selling-ai-selloff-nasdaq-2026-gains-bnp-paribas"
-      }
-    ]
-  },
-  {
-    "id": "20261121-overnight",
-    "time": "2026-11-21 07:15",
-    "title": "隔夜市场：纳指约-3.6%，标普道指进入调整，纳指年内涨幅抹平",
-    "what": "美股周五盘中：纳指约-3.6%，标普约-2.2%（7连跌），道指约-0.7%；标普、道指距纪录高点均跌超10%进入调整。美光-13%、AMD-11%、博通-12%、英伟达-7%，Anthropic跌至约$84.7。VIX约31，美10年期约4.99%；黄金约$3,515（52周新低）；澳元约0.666。",
-    "why": "AI投入回报担忧，亚洲先崩后芯片股抛售；12月加息几乎已定；密歇根消费者信心51.5。",
-    "impact": "下周一ASX（已7连跌、周跌5.4%）大概率继续低开，科技、金矿、锂矿小盘最弱；A股半导体承压，银行红利相对抗跌。",
-    "tags": [
-      "隔夜市场"
-    ],
-    "sources": [
-      {
-        "name": "StockTitan",
-        "url": "https://www.stocktitan.net/articles/stock-market-today-live-november-20-2026"
-      }
-    ]
-  },
-  {
-    "id": "20261120-ai-selloff-europe-taiwan",
-    "time": "2026-11-20 21:20",
-    "title": "AI抛售蔓延欧洲：台股收跌约6.2%、日韩约-5%，纳指期货-1.2%~-1.6%",
-    "what": "11月20日：台股约-6.2%（本周跌超17%），日经超-5%，Kospi约-5.2%。欧洲Stoxx 600约-1.2%，ASML、Infineon跌4%~5%以上。纳指期货-1.2%~-1.6%；VIX约29.5；比特币跌破6.2万美元；黄金约$3,575，WTI约$81。",
-    "why": "Anthropic上市没能提振AI股，资金平仓拥挤的AI仓位；美元在19个月高位。",
-    "impact": "纳指若收跌超1.5%，下周一澳股科技/锂矿/金矿小盘、A股半导体继续承压，银行红利相对抗跌。",
-    "tags": [
-      "美股",
-      "宏观",
-      "澳股",
-      "A股",
-      "黄金"
-    ],
-    "sources": [
-      {
-        "name": "Reuters/Yahoo",
-        "url": "https://finance.yahoo.com/markets/world-indices/articles/european-shares-head-steepest-weekly-082527441.html"
-      }
-    ]
-  },
-  {
-    "id": "20261120-ashare-close-chinext-3.5",
-    "time": "2026-11-20 19:20",
-    "title": "A股收盘：创业板-3.54%、科创50-3.12%，近4,900只下跌，银行红利股逆势创新高",
-    "what": "11月20日收盘：上证-1.22%收3533.79，深成指-3.09%，创业板-3.54%，科创50-3.12%；成交1.42万亿；297涨/4,897跌，68跌停。建行、工行、长江电力创历史新高，中国石油+4%。",
-    "why": "隔夜美股跌2%、AI股遭抛售，资金撤出科技/半导体，转向银行红利防守；LPR连续18个月不变。",
-    "impact": "科技成长股情绪很差，红利/银行是避风港；今晚美股决定下周一开局。",
-    "tags": [
-      "A股",
-      "宏观"
-    ],
-    "sources": [
-      {
-        "name": "21财经",
-        "url": "https://www.21jingji.com/article/20261120/herald/0f5fee2959f08063eccd39d6bd9ef30f.html"
-      }
-    ]
-  },
-  {
-    "id": "20261120-asx-worst-week-gold-slump",
-    "time": "2026-11-20 17:20",
-    "title": "澳股周跌5.4%，2022年来最差一周；金价跌3.7%、白银-8%",
-    "what": "11月20日ASX 200跌约1.56%收约8,594（7连跌，11个板块全跌），本周约-5.4%；科技-5%（Megaport-12%、Xero-7%、WiseTech-6%），材料约-2%，金矿指数约-4%。现货金-3.7%至约$3,530（14个月新低），白银约-7.9%；澳元约0.666。",
-    "why": "美股周四跌2%、AI股遭抛售；美联储12月加息几乎已定；投资者卖金属补保证金。",
-    "impact": "若今晚美股再弱，下周一澳股金矿、锂矿、科技小盘继续承压。",
-    "tags": [
-      "澳股",
-      "黄金",
-      "A股",
-      "宏观"
-    ],
-    "sources": [
-      {
-        "name": "IBTimes AU",
-        "url": "https://www.ibtimes.com.au/asx-200-falls-ai-selloff-seven-session-losing-streak-1878977"
-      }
-    ]
-  },
-  {
-    "id": "20261120-asia-selloff",
-    "time": "2026-11-20 13:20",
-    "title": "亚洲股市集体大跌：日经-4%、Kospi-4.8%，A股创业板跌超3%，澳股7连跌",
-    "what": "11月20日上午：日经约-4%；Kospi -4.8%；A股半日上证-1.71%、创业板跌超3%，超5,300只下跌；ASX 200午间-1.17%至8,625，连跌7天，本周跌近5%。",
-    "why": "隔夜美股跌2%，市场担心AI投入回报；美联储12月加息几乎已定、美元强；金价约$3,600，14个月新低。",
-    "impact": "澳股科技、矿业、金矿小盘压力最大；今晚美股周五表现决定下周开局。",
-    "tags": [
-      "澳股",
-      "A股",
-      "美股",
-      "宏观"
-    ],
-    "sources": [
-      {
-        "name": "AAP/Michael West",
-        "url": "https://michaelwest.com.au/aussie-share-market-on-track-for-worst-week-in-years"
-      }
-    ]
-  },
-  {
-    "id": "20261120-shenzhen-summit-ends",
-    "time": "2026-11-20 09:20",
-    "title": "深圳三方会谈结束：没有贸易突破",
-    "what": "11月19日川普、习近平、普京在深圳闭门会谈约70分钟，只有核风险/军控、联合国改革、扩大化石能源生产等泛泛承诺；川习单独会谈中川普要求中国多买美国农产品，双方都表示要保证霍尔木兹海峡石油畅通；没有提关税、芯片管制。",
-    "why": "首次三方峰会，各方只求稳定关系，没有达成具体协议。",
-    "impact": "中美没有新利好也没有新冲突，A股缺少政策催化；油价不受影响。",
-    "tags": [
-      "中美",
-      "宏观",
-      "A股"
-    ],
-    "sources": [
-      {
-        "name": "National Herald",
-        "url": "https://www.nationalheraldindia.com/international/trump-xi-putin-summit-shenzhen-nuclear-arms-talks"
-      }
-    ]
-  },
-  {
-    "id": "20261120-us-close-confirmed",
-    "time": "2026-11-20 09:20",
-    "title": "美股正式收盘：三大指数跌超2%，标普6连跌，金价-3%",
-    "what": "11月19日道指-2.19%收49,097；标普-2.02%收7,176，连跌6天，距上月高点-8.2%；纳指-2.25%收23,879。黄金-3%至约$3,628，白银-4.9%，VIX 28.5。AMD-7.7%，英伟达-3.3%，Anthropic收$97.17(较发行价+17%)。",
-    "why": "Anthropic首日冲高回落，没能带动AI股；12月加息概率约96%。",
-    "impact": "ASX大概率7连跌，金矿最弱；A股科技股情绪受拖累。",
-    "tags": [
-      "美股",
-      "黄金",
-      "澳股"
-    ],
-    "sources": [
-      {
-        "name": "Reuters/Investing",
-        "url": "https://www.investing.com/news/stock-market-news/wall-street-ends-sharply-lower-asanthropics-debut-fails-to-revive-ai-fervor-5040108"
-      }
-    ]
-  },
-  {
-    "id": "20261120-overnight",
-    "time": "2026-11-20 07:20",
-    "title": "隔夜市场：美股跌约2%，Anthropic首日冲高回落，澳股恐7连跌",
-    "what": "美股周四：道指约-2%，标普约-1.8%，纳指约-2%，VIX约28；WTI约$83，布伦特约$92；黄金约$3,670；美10年期5.06%。",
-    "why": "Anthropic首日开$111.5(+34%)后回落至约$96；AMD遭做空跌约9%；美联储纪要偏鹰，12月加息25bp概率约94%。",
-    "impact": "ASX 200已6连跌(收8,730)，今天大概率继续低开，金矿和科技小盘压力最大；A股科技股情绪可能受拖累。",
-    "tags": [
-      "隔夜市场"
-    ],
-    "sources": [
-      {
-        "name": "Reuters/Investing",
-        "url": "https://www.investing.com/news/stock-market-news/wall-street-slides-as-anthropics-debut-fails-to-revive-ai-enthusiasm-5039839"
-      }
-    ]
-  },
-  {
-    "id": "20261119-taiwan-asia-selloff",
-    "time": "2026-11-19 19:20",
-    "title": "台股暴跌4.4%，亚股7个月新低；澳股6连跌",
-    "what": "11月19日收盘：台湾加权指数-4.4%收38,427，本周累计跌超10%，台积电-3.45%；恒生科技-2.6%；ASX 200 -1.04%收8,730（连跌6天），金矿指数-6%、BHP-4%；上证-0.28%，科创50 +1.83%。",
-    "why": "美联储偏鹰、美元走强，外资撤出亚洲科技股；英伟达换帅风波后AI股信心不足；隔夜铜、金大跌。",
-    "impact": "美股科技股看Anthropic首日表现能否稳住情绪；澳股矿业、金矿、锂矿小盘继续承压；A股相对抗跌，半导体是亮点。川习深圳会谈暂无具体成果。",
-    "tags": [
-      "澳股",
-      "A股",
-      "美股",
-      "宏观"
-    ],
-    "sources": [
-      {
-        "name": "Finimize",
-        "url": "https://finimize.com/content/australian-stocks-fell-again-as-jobless-rate-jumped"
-      },
-      {
-        "name": "Bloomberg/swissinfo",
-        "url": "https://www.swissinfo.ch/eng/us-stock-futures-rise-on-anthropic,-aussie-drops:-markets-wrap/92404209"
-      }
-    ]
-  },
-  {
-    "id": "20261119-au-jobs-4.9",
-    "time": "2026-11-19 13:30",
-    "title": "澳洲失业率升至4.9%，5年最高，澳元跌破0.67",
-    "what": "11月19日11:30 ABS公布10月就业：失业率4.9%（预期4.7%，前值4.7%），就业减少4.35万（预期+2.5万），9月修正为-3.93万；参与率66.6%(-0.2)；兼职-4.06万、全职-0.29万。",
-    "why": "澳储行已加息至4.85%，紧缩开始压就业。",
-    "impact": "12月、2月加息基本被排除，短端收益率下行、澳元走弱；利率敏感的小盘/科技/地产估值压力减轻，但经济转弱拖累银行和消费股；澳元走弱对出口矿企有利。",
-    "tags": [
-      "宏观",
-      "央行",
-      "澳股",
-      "汇率"
-    ],
-    "sources": [
-      {
-        "name": "ABS",
-        "url": "https://www.abs.gov.au/media-centre/media-releases/unemployment-rate-rises-49"
-      }
-    ]
-  },
-  {
-    "id": "20261119-overnight",
-    "time": "2026-11-19 09:20",
-    "title": "隔夜市场：道指跌1.1%，油金铜齐跌，澳股恐弱开",
-    "what": "美股周三：道指-1.11%至50,198，标普-0.23%至7,324，纳指+0.42%至24,430；WTI约$82(-3%~-5%)，布伦特约$91，黄金约$3,730-3,750(-3%)，铜-5%；澳元约0.672，美元指数连涨7天，美10年期5.07%。",
-    "why": "联合健康-8%拖累道指；英伟达财报超预期但股价-2.9%；美联储纪要偏鹰；美国原油库存大增。",
-    "impact": "ASX 200已连跌5天(昨收8,822)，商品下跌下矿业能源股可能低开，大盘偏弱；A股贵金属可能继续弱。",
-    "tags": [
-      "隔夜市场"
-    ],
-    "sources": [
-      {
-        "name": "Reuters/FMT",
-        "url": "https://www.freemalaysiatoday.com/category/business/2026/11/19/wall-street-ends-mixed-after-nvidia-earnings-fed-minutes"
-      },
-      {
-        "name": "ABC",
-        "url": "https://www.abc.net.au/news/2026-11-18/asx-markets-business-live-news-nvidia/107396692"
-      }
-    ]
-  },
-  {
-    "id": "20261119-fed-minutes-hawkish",
-    "time": "2026-11-19 09:20",
-    "title": "美联储纪要偏鹰：12月加息基本已定",
-    "what": "10月FOMC纪要：多数委员认为需继续加息，几位提出通胀不利时加50个基点；CME显示市场几乎完全押注12月加25个基点；Waller称加息后应预告1月再加。",
-    "why": "会后公布的CPI、PPI均高于预期。",
-    "impact": "美元、美债收益率偏高，压制金价和成长股；澳元承压，澳股小盘融资环境更紧。",
-    "tags": [
-      "央行",
-      "宏观",
-      "美股",
-      "汇率"
-    ],
-    "sources": [
-      {
-        "name": "Reuters/FMT",
-        "url": "https://www.freemalaysiatoday.com/category/business/2026/11/19/wall-street-ends-mixed-after-nvidia-earnings-fed-minutes"
-      }
-    ]
-  },
-  {
-    "id": "20261119-commodities-slump",
-    "time": "2026-11-19 09:20",
-    "title": "大宗商品集体大跌：油-3%~-5%、金-3%、铜-5%",
-    "what": "11月18日WTI跌至约$81.6-82，布伦特约$91；黄金跌约3%至$3,730-3,750（2025年9月来最低）；白银-4.8%；铜-5.3%，2025年7月来最大单日跌幅。",
-    "why": "美国原油库存超预期增加；美元走强、加息预期升温。",
-    "impact": "澳股金矿、铜矿、锂矿和能源股承压；A股贵金属板块昨天已领跌，可能续弱。",
-    "tags": [
-      "油价",
-      "黄金",
-      "澳股",
-      "A股"
-    ],
-    "sources": [
-      {
-        "name": "Benzinga",
-        "url": "https://www.tradingview.com/news/benzinga:cf58745d6094b:0-dow-drops-as-nvidia-slips-after-earnings-dollar-hits-19-month-high-stock-market-today/"
-      }
-    ]
-  },
-  {
-    "id": "20261119-anthropic-ipo",
-    "time": "2026-11-19 09:20",
-    "title": "Anthropic IPO定价$83高于区间，周四纳斯达克上市",
-    "what": "据Bloomberg，Anthropic IPO定价每股$83，高于$70-78区间，发行规模上调；周四在纳斯达克上市，代码ANT；按原区间估值约1.3-1.45万亿美元。",
-    "why": "认购需求强劲。",
-    "impact": "纳指周三逆势收涨；AI板块情绪跟着首日表现走，大额认购可能从其他科技股抽走资金。",
-    "tags": [
-      "公司",
-      "美股"
-    ],
-    "sources": [
-      {
-        "name": "Yahoo Finance (Bloomberg)",
-        "url": "https://finance.yahoo.com/markets/live/stock-market-today-wednesday-november-18-dow-sp-500-nasdaq-nvidia-earnings-anthropic-ipo-143530588.html"
-      }
-    ]
-  }
+ {
+  "id": "20261124-asx-snaps-8day-streak",
+  "time": "2026-11-24 17:20",
+  "title": "澳股收涨1.8%至8,726，结束8连跌；科技+3%、金矿+2.5%",
+  "what": "11月24日ASX 200收8,726.4（+1.8%），8个交易日来首次上涨，11个板块10个涨；科技+3%，可选消费+2.4%，金矿+2.5%，矿业+1.7%，金融+1.8%（结束5连跌）；能源-0.2%；Small Ords +2.4%。Reliance Worldwide +12%（AustralianSuper支持Brookfield收购），GQG +12.6%，Lovisa +9%。澳元约0.663。",
+  "why": "英伟达请回黄仁勋，周一纳指+6.9%，全球AI股空头回补；油价下跌拖累能源股。",
+  "impact": "澳股小盘、科技、金矿反弹最强，但属超跌反弹，离8月高点9,296.7还差约6%；周三澳洲CPI、美国PCE决定能否续涨。",
+  "tags": [
+   "澳股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/Business Recorder",
+    "url": "https://www.brecorder.com/news/40450488/australia-shares-join-global-relief-rally-after-huang-returns-to-nvidia"
+   },
+   {
+    "name": "IBTimes AU",
+    "url": "https://www.ibtimes.com.au/asx-200-rally-nvidia-rebound-eight-day-losing-streak-1879268"
+   }
+  ]
+ },
+ {
+  "id": "20261124-crwd-buys-zscaler",
+  "time": "2026-11-24 15:20",
+  "title": "CrowdStrike 约439亿美元全换股收购 Zscaler",
+  "what": "11月23日 CrowdStrike 随 Q3 财报宣布与 Zscaler 签订最终协议：每股 Zscaler 换 1.135 股 CrowdStrike，作价约 439 亿美元，全部用股票支付；需监管批准，交割时间未披露。",
+  "why": "终端安全与云安全平台合并，网络安全行业整合（公告未详细说明溢价）。",
+  "impact": "网络安全板块史上最大并购之一，可能带动同类标的估值重估；收购方换股摊薄，短线或承压。对澳股、A股直接影响小。",
+  "tags": [
+   "公司",
+   "美股"
+  ],
+  "sources": [
+   {
+    "name": "SEC 8-K (CrowdStrike)",
+    "url": "https://www.sec.gov/Archives/edgar/data/0001535527/000153552726000035/crwd-20261123xex991.htm"
+   }
+  ]
+ },
+ {
+  "id": "20261124-ashare-midday-fade",
+  "time": "2026-11-24 15:20",
+  "title": "A股午盘冲高回落：创业板从开盘+3.9%收窄到+1.9%",
+  "what": "11月24日午盘：上证+0.47%，深成指+0.92%，创业板+1.90%，北证50 +1.83%；半日成交约1.12万亿（比昨天多约2,046亿）；3,123涨/2,273跌，67只涨停。物理AI、人形机器人、CPO、半导体领涨；贵金属大跌，券商、煤炭、油气走弱。",
+  "why": "英伟达请回黄仁勋后芯片/AI硬件高开，但隔夜美股已大涨，开盘后获利盘涌出、追高资金不足。",
+  "impact": "A股反弹力度明显弱于台股（+9%）、韩股（+7%）；下午看创业板能否守住涨幅。周三澳洲CPI、美国PCE是下一关。",
+  "tags": [
+   "A股"
+  ],
+  "sources": [
+   {
+    "name": "澎湃",
+    "url": "https://www.thepaper.cn/newsDetail_forward_34545487"
+   },
+   {
+    "name": "界面",
+    "url": "https://www.jiemian.com/article/15366901.html"
+   }
+  ]
+ },
+ {
+  "id": "20261124-asia-chips-taiwan9-kospi7",
+  "time": "2026-11-24 13:20",
+  "title": "台股盘中+9%、韩股+7%，A股创业板高开3.9%：亚洲芯片股暴力反弹",
+  "what": "11月24日上午：台湾加权指数涨超9%（台积电近+10%），Kospi约+6.7%~7%（三星+10%、SK海力士+8%），日经+4%以上，MSCI亚太+2.1%（8连跌后三个月来最大涨幅）；A股开盘上证+0.82%、深成指+2.43%、创业板+3.88%，中际旭创、新易盛、天孚通信等光模块大幅高开；ASX 200约+1.7%。标普期货仅+0.3%。",
+  "why": "英伟达请回黄仁勋后周一涨约32%、费城半导体指数+14%；美国商务部周一把Megaspeed列入黑名单，黄仁勋12月初到国会作证。",
+  "impact": "上周跌得最狠的芯片/AI硬件反弹最猛；美股期货涨幅小，隔夜已涨足，追高要小心；A股高开后能否守住看午后，澳股科技、金矿领涨。周三澳洲CPI、美国PCE是下一关。",
+  "tags": [
+   "A股",
+   "澳股",
+   "美股",
+   "公司"
+  ],
+  "sources": [
+   {
+    "name": "Bloomberg/swissinfo",
+    "url": "https://www.swissinfo.ch/eng/asian-shares-rally-as-huangs-return-revives-ai:-markets-wrap/92426361"
+   },
+   {
+    "name": "Investing.com",
+    "url": "https://www.investing.com/news/stock-market-news/asia-chipmaking-stocks-soar-tracking-nvidia-rally-skorea-taiwan-lead-5046844"
+   },
+   {
+    "name": "新浪/国是直通车",
+    "url": "https://k.sina.cn/article_5953740931_162dee083067046hmt.html"
+   }
+  ]
+ },
+ {
+  "id": "20261124-asia-rebound-nikkei-60k",
+  "time": "2026-11-24 11:15",
+  "title": "亚洲早盘跟涨：日经+2.9%重回6万点，软银涨超11%；ASX涨约1.3%，有望结束8连跌",
+  "what": "11月24日上午，日经225涨约2.9%（+1,684点）至约60,460，软银涨超11%，芯片股领涨（日本周一休市）；ASX 200早盘涨约1.3%（昨收8,570.6）。美股周一正式收盘：纳指+6.92%、标普+5.03%、道指+3.21%，均为2025年4月来最大单日涨幅；英伟达+33%。金价+3.4%至约$3,635，布伦特-3.8%至约$89.9，澳元约0.663。",
+  "why": "英伟达董事会请回黄仁勋任CEO，上周AI股暴跌后空头集中回补。",
+  "impact": "澳股科技、金矿领涨，能源股受油价拖累；A股半导体、AI硬件情绪改善。美联储加息预期小幅上升、SEC对英伟达会计调查未结束，属超跌反弹，持续性看周三澳洲CPI和美国PCE。",
+  "tags": [
+   "澳股",
+   "美股",
+   "宏观",
+   "黄金",
+   "A股"
+  ],
+  "sources": [
+   {
+    "name": "TipRanks",
+    "url": "https://www.tipranks.com/news/nasdaq-closes-7-higher-after-jensen-huang-returns-as-nvidias-ceo"
+   },
+   {
+    "name": "IBTimes AU",
+    "url": "https://www.ibtimes.com.au/nikkei-225-rises-above-60000-softbank-chip-stocks-1878258"
+   },
+   {
+    "name": "ABC",
+    "url": "https://www.abc.net.au/news/2026-11-24/asx-markets-business-news-live-updates-nov-24-2026/107419524"
+   }
+  ]
+ },
+ {
+  "id": "20261124-overnight",
+  "time": "2026-11-24 07:20",
+  "title": "隔夜市场：黄仁勋复职，纳指盘中+6.9%、标普+5%，ASX有望结束8连跌",
+  "what": "美股周一（美东中午约12:30盘中数，收盘在墨尔本8点）：纳指约+6.9%至24,178，标普约+5.0%至7,254，道指约+3.2%至49,685，罗素2000 +3.1%；VIX约27（-24%）。英伟达约+32%至$166，美光+19%，特斯拉+13%。黄金+4.2%至约$3,663，WTI -3.1%至约$80.8，美10年期约4.94%-4.96%，比特币约$6.2万。",
+  "why": "英伟达董事会宣布黄仁勋立即复任CEO；上周纳指周跌约10%后超跌、空头回补（野村称是机械性反弹，不保证持续）。",
+  "impact": "ASX昨收8,570.6（8连跌），今天大概率明显高开，科技和金矿领涨，能源股受油价拖累；A股半导体、AI硬件情绪改善。周三澳洲CPI、美国PCE，周四美股感恩节休市。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-23-dow-sp-500-nasdaq-nvidia-reinstates-jensen-huang-141511975.html"
+   },
+   {
+    "name": "Reuters/MarketScreener",
+    "url": "https://www.marketscreener.com/news/wall-st-roars-back-as-jensen-huang-returns-to-nvidia-as-ceo-ce7851dadd89f225"
+   }
+  ]
+ },
+ {
+  "id": "20261124-nvda-huang-reinstated",
+  "time": "2026-11-24 07:20",
+  "title": "英伟达请回黄仁勋任CEO，股价盘中+32%",
+  "what": "11月23日英伟达董事会宣布黄仁勋立即复任总裁、CEO和董事；董事会称听取了美国政府高层意见，确信不构成国家安全风险；对他与Megaspeed高管关系的内部独立调查继续，并成立国家安全与出口管制委员会。川普称这是绝对伟大的决定。英伟达盘中约+32%至$166。",
+  "why": "黄仁勋11月12日辞职后英伟达一周跌23%、拖累全球AI股；川普多次公开要求董事会让他回任。",
+  "impact": "AI股最大的不确定性之一先解除，全球芯片股反弹；但SEC对英伟达会计的调查和内部调查都没结束，后续仍可能有波动。",
+  "tags": [
+   "公司",
+   "美股",
+   "中美"
+  ],
+  "sources": [
+   {
+    "name": "AP/Boston Globe",
+    "url": "https://www.bostonglobe.com/2026/11/23/business/us-stocks-markets-nvidia/"
+   },
+   {
+    "name": "Fox Business",
+    "url": "https://www.foxbusiness.com/markets/stocks-november-23-2026"
+   }
+  ]
+ },
+ {
+  "id": "20261123-us-futures-nvda-rebound",
+  "time": "2026-11-23 21:20",
+  "title": "美股期货反弹扩大：纳指期货+3.4%、标普+2.7%，英伟达盘前约+9%",
+  "what": "11月23日约09:10 UTC：标普期货7,122（+2.7%），纳指100期货25,982（+3.4%），道指期货+1.9%，罗素2000期货+2.3%；美10年期约4.91%；黄金反弹约2.7%至约$3,612，WTI约$82.6（-1%）。英伟达盘前约+9%。",
+  "why": "上周纳指周跌约10%后超跌反弹；川普再次喊话英伟达董事会让黄仁勋回任CEO（据报董事会拒绝，盘前涨幅约4成在发帖前）；亚洲各地托底；贝森特周日称美联储有加息过头风险。",
+  "impact": "若今晚美股收涨2%以上，澳股科技、金矿小盘有望结束8连跌，A股半导体情绪改善；期货反弹不等于收盘，周三有美国PCE、澳洲CPI。",
+  "tags": [
+   "美股",
+   "公司",
+   "澳股",
+   "A股",
+   "黄金"
+  ],
+  "sources": [
+   {
+    "name": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/markets/live/stock-market-today-monday-november-23-dow-sp-500-nasdaq-091118583.html"
+   },
+   {
+    "name": "Fox Business",
+    "url": "https://www.foxbusiness.com/politics/trump-doubles-down-call-nvidia-rehire-jensen-huang-amid-alleged-chinese-spy-scandal"
+   },
+   {
+    "name": "Saxo",
+    "url": "https://www.home.saxo/en-sg/content/articles/macro/asia-market-quick-take--23-november-2026-23112026"
+   }
+  ]
+ },
+ {
+  "id": "20261123-ashare-reversal-chinext-3pct",
+  "time": "2026-11-23 19:20",
+  "title": "A股午后大反转：创业板+3.08%、超4600股上涨、151股涨停；澳股8连跌但跌幅小",
+  "what": "11月23日收盘：上证+0.15%收3538.95（午间曾-0.96%跌破3500），深成指+1.93%，创业板+3.08%收2280.2；成交1.55万亿（比上周五多约1300亿）；4655涨/783跌，151股涨停。人形机器人、AI应用（传媒、AI漫剧）、PCB/CPO、机械设备领涨；石油石化（中国石油-5%）、银行（建行工行中行-2%以上）、白酒领跌。ASX 200 -0.26%收8,570.6，8连跌，矿业反弹、银行拖累。",
+  "why": "周末两融保证金降到80%、交易所降费、创业板拟引入做市商等稳市措施；美股期货反弹约2%；抄底资金进小微盘和AI应用，从上周抱团的银行红利、石油撤出。",
+  "impact": "A股风格从防守切回成长：券商、两融活跃的科技成长股短线占优，银行红利可能继续回吐；能否持续要看成交继续放大和今晚美股兑现反弹。澳股矿业有抄底资金，科技小盘仍弱。",
+  "tags": [
+   "A股",
+   "澳股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "21财经",
+    "url": "https://www.21jingji.com/article/20261123/herald/4ac7b7b5b46179735a451c2cc267cfa1.html"
+   },
+   {
+    "name": "财联社",
+    "url": "https://m.cls.cn/detail/2541599"
+   },
+   {
+    "name": "JournalArta",
+    "url": "https://journalarta.com/en/2026/11/23/asx-200-today-australian-shares-slip-0-26-as-financials-drag-ahead-of-cpi/"
+   }
+  ]
+ },
+ {
+  "id": "20261123-kospi-5pct-ashare-midday",
+  "time": "2026-11-23 15:20",
+  "title": "韩股盘中跌超5%，A股科创50半日-2.65%；美股期货反弹约2%",
+  "what": "11月23日：Kospi盘中最多跌5.8%（开盘只跌2.8%），恒生收跌约1.9%；A股半日上证-0.96%收3499.91（跌破3500），科创50 -2.65%，创业板+1.22%，3557跌/1575涨，成交0.92万亿。ASX 200午间约-0.2%，跌幅不大。标普期货约+1.9%、纳指100期货约+2.3%；现货金反弹1.5%至约$3,592，WTI约$83。",
+  "why": "外资继续抛售亚洲AI/芯片股（三星、SK海力士领跌）；各地托底：韩国放宽企业回购限额3个月、准备动用稳市基金（上次是2008年），台湾扩大做空限制并入市买股，A股两融保证金比例降到80%。",
+  "impact": "亚洲科技股抛售还没停，A股半导体（科创50）最弱，创业板和传媒、贵金属有资金；ASX比预期稳，金价反弹利好金矿。今晚美股能否兑现期货反弹是关键，本周看周三PCE。",
+  "tags": [
+   "A股",
+   "澳股",
+   "美股",
+   "宏观",
+   "黄金"
+  ],
+  "sources": [
+   {
+    "name": "Bloomberg/swissinfo",
+    "url": "https://www.swissinfo.ch/eng/us-stock-futures-bounce-after-rout,-havens-decline:-markets-wrap/92421262"
+   },
+   {
+    "name": "Al Jazeera",
+    "url": "https://www.aljazeera.com/news/2026/11/23/south-koreas-stock-market-tumbles-as-ai-bubble-fears-mount"
+   },
+   {
+    "name": "21财经",
+    "url": "https://www.21jingji.com/article/20261123/herald/32483cb785c03d812d9f318a439dd69c.html"
+   }
+  ]
+ },
+ {
+  "id": "20261123-asia-open-kospi-futures-rebound",
+  "time": "2026-11-23 11:20",
+  "title": "亚洲周一开盘：韩股低开2.8%（期货曾-7%），韩国准备动用稳市基金；美股期货反弹1–2%",
+  "what": "11月23日Kospi开盘4,734.90（-2.77%），Kosdaq -1.66%，三星、SK海力士盘前跌超5%；上周五Kospi已-5.21%，夜盘期货一度约-7%。日本休市。美股期货早盘反弹：纳指100期货约+2%、标普约+1%。ASX 200期货开盘前约-0.6%（8,556）。",
+  "why": "上周AI抛售（纳指周跌约10%、台股周跌17%）；周末各地托底：韩国财政部称可立即动用稳市基金（若启用为18年来首次），台湾收紧做空规则，A股两融保证金比例降至80%。",
+  "impact": "美股期货反弹+政策托底，亚洲跌幅小于担心，超跌反弹可能；但外资仍在卖科技股，ASX科技、锂矿、金矿小盘仍最弱；A股券商有政策利好。本周看周三美国PCE。",
+  "tags": [
+   "澳股",
+   "A股",
+   "美股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "fnnews",
+    "url": "https://www.fnnews.com/news/202611230851363654"
+   },
+   {
+    "name": "Reuters/Investing",
+    "url": "https://www.investing.com/news/economy-news/us-futures-bounce-while-asia-markets-brace-for-ai-wipeout-5044181"
+   },
+   {
+    "name": "ABC",
+    "url": "https://www.abc.net.au/news/2026-11-23/asx-markets-business-live-news-november-23/107414602"
+   }
+  ]
+ },
+ {
+  "id": "20261123-overnight",
+  "time": "2026-11-23 07:20",
+  "title": "隔夜市场：周五纳指-5.3%、标普-3.7%，ASX今天恐明显低开；本周看PCE",
+  "what": "周末美股休市。周五收盘：纳指-5.28%收22,618，标普-3.70%收6,910（7连跌），道指-1.93%收48,147，罗素2000 -2.76%；VIX 35.9。WTI约$83.4，黄金$3,515（-4.6%，14个月新低），美10年期4.91%，美元指数103.8，澳元约0.666。NYT周六报道：SEC对英伟达会计的调查还在初期，可能不起诉，查的是它和新加坡Megaspeed的交易、以及按地区报销售时去掉新加坡；英伟达收$125.53，离高点跌超35%。",
+  "why": "AI投资回报担忧加上英伟达风波；美联储12月加息几乎已定。",
+  "impact": "ASX周五收8,593后美股又跌3.7%，今天大概率明显低开，科技、锂矿、金矿小盘最弱；A股有两融保证金下调到80%的利好，券商和科技成长股可能高开，能否守住看外围。本周：周三美国PCE、GDP二次估算，周四感恩节休市，周五半天。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Journalarta",
+    "url": "https://journalarta.com/en/2026/11/22/stocks-to-watch-this-week-nvidia-workday-deere-and-thanksgiving-pce-data/"
+   },
+   {
+    "name": "AFP/Yahoo",
+    "url": "https://finance.yahoo.com/technology/ai/articles/nvidia-faces-us-accounting-probe-215354861.html"
+   }
+  ]
+ },
+ {
+  "id": "20261122-cn-margin-ratio-80",
+  "time": "2026-11-22 23:20",
+  "title": "A股稳股市组合拳：融资保证金比例从100%降到80%，11月30日起施行",
+  "what": "11月22日晚，沪深北交易所经证监会批准，融资买入最低保证金比例由100%降至80%（杠杆1倍→1.25倍），11月30日起施行；深交所就创业板引入做市商制度征求意见；沪深交易所免收交易单元使用费等并延长已有降费两年至2028年，中国结算续免绿色、科创、民企公司债相关费用至2028年底。业内估计带来约4000亿元增量资金。",
+  "why": "证监会11月2日称融资余额和交易活跃度明显下降；本周A股随全球AI抛售大跌（11月20日创业板-3.54%），属逆周期调节。今年1月刚从80%上调到100%，这次退回80%（2023年8月也曾同样下调）。",
+  "impact": "周一A股（券商、两融活跃的科技成长股）情绪大概率改善、可能高开；但外围仍弱（周五纳指-5.3%），高开能否守住看美股。2023年下调后融资规模和成交是稳步上升而非暴涨。对澳股影响有限。",
+  "tags": [
+   "A股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "澎湃/央视",
+    "url": "https://www.thepaper.cn/newsDetail_forward_34535221"
+   },
+   {
+    "name": "21财经/中证报",
+    "url": "https://m.21jingji.com/article/20261122/herald/ef39872d71aa970b9e15ff7b91e60fc0.html"
+   },
+   {
+    "name": "Bloomberg",
+    "url": "https://www.bloomberg.com/news/articles/2026-11-22/china-lowers-margin-requirement-to-80-to-boost-stock-liquidity"
+   }
+  ]
+ },
+ {
+  "id": "20261122-weekend-wrap",
+  "time": "2026-11-22 07:20",
+  "title": "周末市场：周五纳指-5.3%、标普-3.7%，英伟达周跌23%，周一澳股恐明显低开",
+  "what": "美股周五最终收盘（Yahoo行情）：纳指-5.28%收22,618，标普-3.70%收6,910（7连跌），道指-1.93%收48,147；VIX 35.9，美10年期约4.91%；三大指数周跌8%~10%，2025年4月来最差一周。英伟达-14%收$125.53，周跌23%（2008年来最差一周）。黄金约$3,515（-4.6%，14个月新低）；比特币周末跌到约5.6万美元；油价连续第三周下跌。",
+  "why": "AI投资回报担忧+路透独家称SEC执法部门审查英伟达会计（具体问题和立案时间未知，英伟达暂未回应）；美联储12月加息几乎已定。",
+  "impact": "ASX周五收8,594之后美股又跌3.7%，周一澳股大概率明显低开，科技、锂矿、金矿小盘最弱；A股半导体、光通信承压，银行红利相对抗跌；超跌后技术反弹也有可能。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/Investing",
+    "url": "https://www.investing.com/news/economy-news/exclusiveus-secs-nvidia-probe-is-examining-potential-accounting-issues-sources-say-5042460"
+   },
+   {
+    "name": "Motley Fool",
+    "url": "https://www.fool.com/investing/2026/11/21/after-its-worst-week-in-18-years-nvidia-now-faces-an-sec-investigation-what-it-means-for-investors/"
+   },
+   {
+    "name": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/markets/stocks/articles/nvda-stock-clocks-worst-week-233812270.html"
+   }
+  ]
+ },
+ {
+  "id": "20261121-us-close-nasdaq-5pct",
+  "time": "2026-11-21 09:20",
+  "title": "美股周五正式收盘：纳指-5.1%、标普-3.6%，半导体指数-10.7%，英伟达约-14%",
+  "what": "11月20日纳指-5.13%收22,654，标普-3.59%收6,918（7连跌，2020年2月来最长），道指-1.85%收48,188；三大指数周跌8%~10%；费城半导体指数-10.7%；英伟达约-14%、美光-13.9%、AMD约-13%，Anthropic跌回发行价$83附近。VIX超30，比特币跌破6万美元。",
+  "why": "担心AI投资回报；据路透转述SEC在审查英伟达可能的会计问题；12月加息概率约95%；川普威胁对在海外建数据中心的美企征重税。",
+  "impact": "下周一ASX科技、锂矿、金矿小盘大概率继续低开；A股半导体、光通信承压，银行红利相对抗跌；超卖后短线技术性反弹也有可能。",
+  "tags": [
+   "美股",
+   "公司",
+   "澳股",
+   "A股"
+  ],
+  "sources": [
+   {
+    "name": "MarketScreener/Reuters",
+    "url": "https://www.marketscreener.com/news/wall-st-ends-sharply-lower-on-ai-selloff-s-p-500-dow-in-correction-ce785ed3dd80f527"
+   },
+   {
+    "name": "Fortune",
+    "url": "https://fortune.com/2026/11/20/sp-500-correction-panic-selling-ai-selloff-nasdaq-2026-gains-bnp-paribas"
+   }
+  ]
+ },
+ {
+  "id": "20261121-overnight",
+  "time": "2026-11-21 07:15",
+  "title": "隔夜市场：纳指约-3.6%，标普道指进入调整，纳指年内涨幅抹平",
+  "what": "美股周五盘中：纳指约-3.6%，标普约-2.2%（7连跌），道指约-0.7%；标普、道指距纪录高点均跌超10%进入调整。美光-13%、AMD-11%、博通-12%、英伟达-7%，Anthropic跌至约$84.7。VIX约31，美10年期约4.99%；黄金约$3,515（52周新低）；澳元约0.666。",
+  "why": "AI投入回报担忧，亚洲先崩后芯片股抛售；12月加息几乎已定；密歇根消费者信心51.5。",
+  "impact": "下周一ASX（已7连跌、周跌5.4%）大概率继续低开，科技、金矿、锂矿小盘最弱；A股半导体承压，银行红利相对抗跌。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "StockTitan",
+    "url": "https://www.stocktitan.net/articles/stock-market-today-live-november-20-2026"
+   }
+  ]
+ },
+ {
+  "id": "20261120-ai-selloff-europe-taiwan",
+  "time": "2026-11-20 21:20",
+  "title": "AI抛售蔓延欧洲：台股收跌约6.2%、日韩约-5%，纳指期货-1.2%~-1.6%",
+  "what": "11月20日：台股约-6.2%（本周跌超17%），日经超-5%，Kospi约-5.2%。欧洲Stoxx 600约-1.2%，ASML、Infineon跌4%~5%以上。纳指期货-1.2%~-1.6%；VIX约29.5；比特币跌破6.2万美元；黄金约$3,575，WTI约$81。",
+  "why": "Anthropic上市没能提振AI股，资金平仓拥挤的AI仓位；美元在19个月高位。",
+  "impact": "纳指若收跌超1.5%，下周一澳股科技/锂矿/金矿小盘、A股半导体继续承压，银行红利相对抗跌。",
+  "tags": [
+   "美股",
+   "宏观",
+   "澳股",
+   "A股",
+   "黄金"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/Yahoo",
+    "url": "https://finance.yahoo.com/markets/world-indices/articles/european-shares-head-steepest-weekly-082527441.html"
+   }
+  ]
+ },
+ {
+  "id": "20261120-ashare-close-chinext-3.5",
+  "time": "2026-11-20 19:20",
+  "title": "A股收盘：创业板-3.54%、科创50-3.12%，近4,900只下跌，银行红利股逆势创新高",
+  "what": "11月20日收盘：上证-1.22%收3533.79，深成指-3.09%，创业板-3.54%，科创50-3.12%；成交1.42万亿；297涨/4,897跌，68跌停。建行、工行、长江电力创历史新高，中国石油+4%。",
+  "why": "隔夜美股跌2%、AI股遭抛售，资金撤出科技/半导体，转向银行红利防守；LPR连续18个月不变。",
+  "impact": "科技成长股情绪很差，红利/银行是避风港；今晚美股决定下周一开局。",
+  "tags": [
+   "A股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "21财经",
+    "url": "https://www.21jingji.com/article/20261120/herald/0f5fee2959f08063eccd39d6bd9ef30f.html"
+   }
+  ]
+ },
+ {
+  "id": "20261120-asx-worst-week-gold-slump",
+  "time": "2026-11-20 17:20",
+  "title": "澳股周跌5.4%，2022年来最差一周；金价跌3.7%、白银-8%",
+  "what": "11月20日ASX 200跌约1.56%收约8,594（7连跌，11个板块全跌），本周约-5.4%；科技-5%（Megaport-12%、Xero-7%、WiseTech-6%），材料约-2%，金矿指数约-4%。现货金-3.7%至约$3,530（14个月新低），白银约-7.9%；澳元约0.666。",
+  "why": "美股周四跌2%、AI股遭抛售；美联储12月加息几乎已定；投资者卖金属补保证金。",
+  "impact": "若今晚美股再弱，下周一澳股金矿、锂矿、科技小盘继续承压。",
+  "tags": [
+   "澳股",
+   "黄金",
+   "A股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "IBTimes AU",
+    "url": "https://www.ibtimes.com.au/asx-200-falls-ai-selloff-seven-session-losing-streak-1878977"
+   }
+  ]
+ },
+ {
+  "id": "20261120-asia-selloff",
+  "time": "2026-11-20 13:20",
+  "title": "亚洲股市集体大跌：日经-4%、Kospi-4.8%，A股创业板跌超3%，澳股7连跌",
+  "what": "11月20日上午：日经约-4%；Kospi -4.8%；A股半日上证-1.71%、创业板跌超3%，超5,300只下跌；ASX 200午间-1.17%至8,625，连跌7天，本周跌近5%。",
+  "why": "隔夜美股跌2%，市场担心AI投入回报；美联储12月加息几乎已定、美元强；金价约$3,600，14个月新低。",
+  "impact": "澳股科技、矿业、金矿小盘压力最大；今晚美股周五表现决定下周开局。",
+  "tags": [
+   "澳股",
+   "A股",
+   "美股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "AAP/Michael West",
+    "url": "https://michaelwest.com.au/aussie-share-market-on-track-for-worst-week-in-years"
+   }
+  ]
+ },
+ {
+  "id": "20261120-shenzhen-summit-ends",
+  "time": "2026-11-20 09:20",
+  "title": "深圳三方会谈结束：没有贸易突破",
+  "what": "11月19日川普、习近平、普京在深圳闭门会谈约70分钟，只有核风险/军控、联合国改革、扩大化石能源生产等泛泛承诺；川习单独会谈中川普要求中国多买美国农产品，双方都表示要保证霍尔木兹海峡石油畅通；没有提关税、芯片管制。",
+  "why": "首次三方峰会，各方只求稳定关系，没有达成具体协议。",
+  "impact": "中美没有新利好也没有新冲突，A股缺少政策催化；油价不受影响。",
+  "tags": [
+   "中美",
+   "宏观",
+   "A股"
+  ],
+  "sources": [
+   {
+    "name": "National Herald",
+    "url": "https://www.nationalheraldindia.com/international/trump-xi-putin-summit-shenzhen-nuclear-arms-talks"
+   }
+  ]
+ },
+ {
+  "id": "20261120-us-close-confirmed",
+  "time": "2026-11-20 09:20",
+  "title": "美股正式收盘：三大指数跌超2%，标普6连跌，金价-3%",
+  "what": "11月19日道指-2.19%收49,097；标普-2.02%收7,176，连跌6天，距上月高点-8.2%；纳指-2.25%收23,879。黄金-3%至约$3,628，白银-4.9%，VIX 28.5。AMD-7.7%，英伟达-3.3%，Anthropic收$97.17(较发行价+17%)。",
+  "why": "Anthropic首日冲高回落，没能带动AI股；12月加息概率约96%。",
+  "impact": "ASX大概率7连跌，金矿最弱；A股科技股情绪受拖累。",
+  "tags": [
+   "美股",
+   "黄金",
+   "澳股"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/Investing",
+    "url": "https://www.investing.com/news/stock-market-news/wall-street-ends-sharply-lower-asanthropics-debut-fails-to-revive-ai-fervor-5040108"
+   }
+  ]
+ },
+ {
+  "id": "20261120-overnight",
+  "time": "2026-11-20 07:20",
+  "title": "隔夜市场：美股跌约2%，Anthropic首日冲高回落，澳股恐7连跌",
+  "what": "美股周四：道指约-2%，标普约-1.8%，纳指约-2%，VIX约28；WTI约$83，布伦特约$92；黄金约$3,670；美10年期5.06%。",
+  "why": "Anthropic首日开$111.5(+34%)后回落至约$96；AMD遭做空跌约9%；美联储纪要偏鹰，12月加息25bp概率约94%。",
+  "impact": "ASX 200已6连跌(收8,730)，今天大概率继续低开，金矿和科技小盘压力最大；A股科技股情绪可能受拖累。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/Investing",
+    "url": "https://www.investing.com/news/stock-market-news/wall-street-slides-as-anthropics-debut-fails-to-revive-ai-enthusiasm-5039839"
+   }
+  ]
+ },
+ {
+  "id": "20261119-taiwan-asia-selloff",
+  "time": "2026-11-19 19:20",
+  "title": "台股暴跌4.4%，亚股7个月新低；澳股6连跌",
+  "what": "11月19日收盘：台湾加权指数-4.4%收38,427，本周累计跌超10%，台积电-3.45%；恒生科技-2.6%；ASX 200 -1.04%收8,730（连跌6天），金矿指数-6%、BHP-4%；上证-0.28%，科创50 +1.83%。",
+  "why": "美联储偏鹰、美元走强，外资撤出亚洲科技股；英伟达换帅风波后AI股信心不足；隔夜铜、金大跌。",
+  "impact": "美股科技股看Anthropic首日表现能否稳住情绪；澳股矿业、金矿、锂矿小盘继续承压；A股相对抗跌，半导体是亮点。川习深圳会谈暂无具体成果。",
+  "tags": [
+   "澳股",
+   "A股",
+   "美股",
+   "宏观"
+  ],
+  "sources": [
+   {
+    "name": "Finimize",
+    "url": "https://finimize.com/content/australian-stocks-fell-again-as-jobless-rate-jumped"
+   },
+   {
+    "name": "Bloomberg/swissinfo",
+    "url": "https://www.swissinfo.ch/eng/us-stock-futures-rise-on-anthropic,-aussie-drops:-markets-wrap/92404209"
+   }
+  ]
+ },
+ {
+  "id": "20261119-au-jobs-4.9",
+  "time": "2026-11-19 13:30",
+  "title": "澳洲失业率升至4.9%，5年最高，澳元跌破0.67",
+  "what": "11月19日11:30 ABS公布10月就业：失业率4.9%（预期4.7%，前值4.7%），就业减少4.35万（预期+2.5万），9月修正为-3.93万；参与率66.6%(-0.2)；兼职-4.06万、全职-0.29万。",
+  "why": "澳储行已加息至4.85%，紧缩开始压就业。",
+  "impact": "12月、2月加息基本被排除，短端收益率下行、澳元走弱；利率敏感的小盘/科技/地产估值压力减轻，但经济转弱拖累银行和消费股；澳元走弱对出口矿企有利。",
+  "tags": [
+   "宏观",
+   "央行",
+   "澳股",
+   "汇率"
+  ],
+  "sources": [
+   {
+    "name": "ABS",
+    "url": "https://www.abs.gov.au/media-centre/media-releases/unemployment-rate-rises-49"
+   }
+  ]
+ },
+ {
+  "id": "20261119-overnight",
+  "time": "2026-11-19 09:20",
+  "title": "隔夜市场：道指跌1.1%，油金铜齐跌，澳股恐弱开",
+  "what": "美股周三：道指-1.11%至50,198，标普-0.23%至7,324，纳指+0.42%至24,430；WTI约$82(-3%~-5%)，布伦特约$91，黄金约$3,730-3,750(-3%)，铜-5%；澳元约0.672，美元指数连涨7天，美10年期5.07%。",
+  "why": "联合健康-8%拖累道指；英伟达财报超预期但股价-2.9%；美联储纪要偏鹰；美国原油库存大增。",
+  "impact": "ASX 200已连跌5天(昨收8,822)，商品下跌下矿业能源股可能低开，大盘偏弱；A股贵金属可能继续弱。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/FMT",
+    "url": "https://www.freemalaysiatoday.com/category/business/2026/11/19/wall-street-ends-mixed-after-nvidia-earnings-fed-minutes"
+   },
+   {
+    "name": "ABC",
+    "url": "https://www.abc.net.au/news/2026-11-18/asx-markets-business-live-news-nvidia/107396692"
+   }
+  ]
+ },
+ {
+  "id": "20261119-fed-minutes-hawkish",
+  "time": "2026-11-19 09:20",
+  "title": "美联储纪要偏鹰：12月加息基本已定",
+  "what": "10月FOMC纪要：多数委员认为需继续加息，几位提出通胀不利时加50个基点；CME显示市场几乎完全押注12月加25个基点；Waller称加息后应预告1月再加。",
+  "why": "会后公布的CPI、PPI均高于预期。",
+  "impact": "美元、美债收益率偏高，压制金价和成长股；澳元承压，澳股小盘融资环境更紧。",
+  "tags": [
+   "央行",
+   "宏观",
+   "美股",
+   "汇率"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/FMT",
+    "url": "https://www.freemalaysiatoday.com/category/business/2026/11/19/wall-street-ends-mixed-after-nvidia-earnings-fed-minutes"
+   }
+  ]
+ },
+ {
+  "id": "20261119-commodities-slump",
+  "time": "2026-11-19 09:20",
+  "title": "大宗商品集体大跌：油-3%~-5%、金-3%、铜-5%",
+  "what": "11月18日WTI跌至约$81.6-82，布伦特约$91；黄金跌约3%至$3,730-3,750（2025年9月来最低）；白银-4.8%；铜-5.3%，2025年7月来最大单日跌幅。",
+  "why": "美国原油库存超预期增加；美元走强、加息预期升温。",
+  "impact": "澳股金矿、铜矿、锂矿和能源股承压；A股贵金属板块昨天已领跌，可能续弱。",
+  "tags": [
+   "油价",
+   "黄金",
+   "澳股",
+   "A股"
+  ],
+  "sources": [
+   {
+    "name": "Benzinga",
+    "url": "https://www.tradingview.com/news/benzinga:cf58745d6094b:0-dow-drops-as-nvidia-slips-after-earnings-dollar-hits-19-month-high-stock-market-today/"
+   }
+  ]
+ },
+ {
+  "id": "20261119-anthropic-ipo",
+  "time": "2026-11-19 09:20",
+  "title": "Anthropic IPO定价$83高于区间，周四纳斯达克上市",
+  "what": "据Bloomberg，Anthropic IPO定价每股$83，高于$70-78区间，发行规模上调；周四在纳斯达克上市，代码ANT；按原区间估值约1.3-1.45万亿美元。",
+  "why": "认购需求强劲。",
+  "impact": "纳指周三逆势收涨；AI板块情绪跟着首日表现走，大额认购可能从其他科技股抽走资金。",
+  "tags": [
+   "公司",
+   "美股"
+  ],
+  "sources": [
+   {
+    "name": "Yahoo Finance (Bloomberg)",
+    "url": "https://finance.yahoo.com/markets/live/stock-market-today-wednesday-november-18-dow-sp-500-nasdaq-nvidia-earnings-anthropic-ipo-143530588.html"
+   }
+  ]
+ }
 ]
