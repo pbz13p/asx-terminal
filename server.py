@@ -651,7 +651,7 @@ class Handler(SimpleHTTPRequestHandler):
             if q.get("save") == "1" and f in ("yc_notes.json", "study87_results.json", "ann_inventory.json", "study92_results.json", "study94_results.json", "study97_results.json", "study99_reading.json", "study99_results.json"):   # keep a plain copy on this PC for Claude to pick up
                 (ROOT / "sealed").mkdir(exist_ok=True)
                 (ROOT / "sealed" / f).write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-                return {"saved": str(ROOT / "sealed" / f), "read": data.get("read")}
+                return {"saved": str(ROOT / "sealed" / f), "read": data.get("read") if isinstance(data, dict) else len(data)}
             return data
         if name == "annlists":   # round 96 lists (encrypted on the quick-results branch, refreshed after the daily AI read)
             hit = getattr(self.server, "_annlists", None)
