@@ -1,5 +1,54 @@
 [
  {
+  "id": "20261125-overnight",
+  "time": "2026-11-25 07:20",
+  "title": "隔夜市场：英伟达回吐约7%，纳指约-2%、芯片股-7%，道指小涨；ASX恐低开",
+  "what": "美股周二（美东约15:00盘中数，收盘在墨尔本8点）：纳指约-1.9%~-2.1%（约23,630），标普约-0.8%~-0.9%（约7,180），道指约+0.5%（约49,870）；芯片ETF SMH约-7%，英伟达约-7%（周一+33%收$165.05），AMD约-9%，美光-10%以上，Anthropic跌破$83发行价。VIX约27，美10年期约4.91%，黄金约-2.5%至$3,558，比特币约$5.96万。",
+  "why": "周一AI股暴力反弹后，市场再次怀疑AI数据中心投资回报（HPE下调AI业务利润率指引，盘前-13%）；WSJ称美国准备对中国等多国加征关税；12月加息25bp概率回到约95%。",
+  "impact": "ASX昨天+1.8%收8,726，今天科技、金矿小盘可能回吐（金价跌）；A股半导体、光模块继续承压，银行红利相对抗跌。今天11:30澳洲10月CPI，今晚美国PCE和GDP，周四美股感恩节休市。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/markets/live/stock-market-today-tuesday-november-24-dow-sp-500-nasdaq-chip-stocks-nvidia-140629923.html"
+   },
+   {
+    "name": "SellTheNews",
+    "url": "https://sellthenews.org/catalyx/market/2026-11-24"
+   },
+   {
+    "name": "StockTitan",
+    "url": "https://www.stocktitan.net/articles/stock-market-today-live-november-24-2026"
+   }
+  ]
+ },
+ {
+  "id": "20261125-us-tariffs-china-subsidies-wsj",
+  "time": "2026-11-25 07:20",
+  "title": "WSJ：美国准备以产业补贴为由对中国、欧盟等多国加关税",
+  "what": "11月24日（美东早上）华尔街日报援引知情人士称，美国政府准备对中国和其他多个经济体加征关税，理由是外国产业补贴；中国税率预计最高，已和美国签贸易协议的伙伴税率上限约15%。具体名单（澳洲在不在）、税率、生效时间都还没公布，政府未正式确认。",
+  "why": "美国持续针对外国产业补贴的贸易行动（报道称）。",
+  "impact": "中美贸易摩擦可能再升级，A股出口链、新能源、钢铁等被认为有补贴的行业承压；人民币、澳元可能偏弱；对美股是又一个风险（周二午后抛售原因之一）。等正式公告和中方回应。",
+  "tags": [
+   "中美",
+   "宏观",
+   "A股",
+   "汇率"
+  ],
+  "sources": [
+   {
+    "name": "Seeking Alpha (WSJ)",
+    "url": "https://seekingalpha.com/news/4676107-us-prepares-to-raise-tariffs-on-china-eu-other-nations-wsj"
+   },
+   {
+    "name": "BusinessToday",
+    "url": "https://www.businesstoday.in/markets/stocks/story/nasdaq-falls-as-nvidia-slides-over-7-ai-stocks-retreat-after-mondays-sharp-wall-street-rally-569261-2026-11-24"
+   }
+  ]
+ },
+ {
   "id": "20261124-drc-cobalt-export-halt",
   "time": "2026-11-24 21:20",
   "title": "刚果（金）11月30日起暂停全部钴出口",
