@@ -1,2 +1,2 @@
-rounds=82
-# 2026-11-25: round 82 (one-year 10x/100x plays). Empty = only run ann_lists + cn_brief.
+rounds=
+# 2026-11-25: round 82 done. Empty = only run ann_lists + cn_brief. Put the next round number back here.
