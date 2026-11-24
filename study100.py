@@ -68,7 +68,10 @@ END = "2025-11-20"
 
 
 def num(s):
-    return float(s.replace(",", ""))
+    try:
+        return float(s.replace(",", "").replace(" ", ""))
+    except ValueError:
+        return 0.0
 
 
 def parse_top20(text):
