@@ -10,7 +10,13 @@ Rules fixed 2026-11-25 before any result was seen:
     all count). One episode per run: the qualifying days are grouped, the low is the lowest close of the group, the peak
     the highest close within 2,520 sessions after the low; reported by how long it took (<=1, <=2, <=5, <=10 years).
     Also kept for context: 30-100x episodes ("近百倍").
-  Sanity: an episode whose rise contains a one-day jump >= 3x is flagged 待核 (possible unadjusted consolidation);
+  Data cleaning (v2, 2026-11-25, after the first run showed 611 of 701 "episodes" were data glitches: prices of
+    0.0001 -- below the ASX minimum of 0.1c -- and one-day spikes that undo themselves): before anything else,
+    (a) a raw price below A$0.001 is an error -> previous close; (b) a one-day move of >= 3x up or down that is mostly
+    undone within 5 sessions (back within 1.5x of the day before) is a spike -> previous close; (c) a >= 3x up-move that
+    holds but comes on volume below the 20-day median is an unadjusted consolidation -> earlier prices rescaled (round 80).
+    A >= 3x day that holds on heavy volume is real news and stays. The same cleaned prices are used for the base rates.
+  Sanity: an episode whose rise still contains a one-day jump >= 3x is marked (real news jump, kept);
     "tradable at the peak" = median $ traded >= A$10k/day in the 21 sessions around the peak (round 80 rule).
   Per episode: low day / raw price / 20-day median $ traded / share of no-trade days in the year before / distance from
     the 3-year high; takeoff = first close >= 3x the low (days after the low); peak day, multiple, years to peak;
@@ -75,6 +81,27 @@ def med(a):
     return float(np.median(a)) if len(a) else 0.0
 
 
+def clean(c, raw, vol):
+    """v2 cleaning (see header). Works on adjusted closes c and raw closes; returns new arrays."""
+    c = c.copy(); raw = raw.copy()
+    n = len(c)
+    for i in range(1, n):
+        if raw[i] < 0.001 or not c[i] > 0:
+            c[i], raw[i] = c[i - 1], raw[i - 1]
+    for i in range(1, n):
+        r = c[i] / c[i - 1] if c[i - 1] > 0 else 1
+        if r >= 3 or r <= 1 / 3:
+            nxt = c[i + 1:i + 6]
+            if len(nxt) and ((r >= 3 and nxt.min() <= 1.5 * c[i - 1]) or (r <= 1 / 3 and nxt.max() >= c[i - 1] / 1.5)):
+                c[i], raw[i] = c[i - 1], raw[i - 1]
+                continue
+            if r >= 3:
+                mv = np.median(vol[max(0, i - 20):i]) if i > 0 else 0
+                if vol[i] < mv:
+                    c[:i] *= r
+    return c, raw
+
+
 def anns(code):
     f = study.DATA / "ann" / f"{code}.json.gz"
     if not f.exists():
@@ -119,6 +146,7 @@ def main():
         val = np.array([r[7] for r in rows], float); vol = np.array([r[5] for r in rows], float)
         if not (c > 0).all():
             c = np.maximum(c, 1e-9)
+        c, raw = clean(c, raw, vol)
         ratio = fwd_max(c, H5) / c
         ratio10 = fwd_max(c, H10) / c
         # ---- episodes (100x) and near (30-100x)
@@ -246,11 +274,11 @@ def main():
     for k in screen:
         screen[k].sort(key=lambda t: -t["bucket_x100_per_10k"])
     # summary of episodes
-    good = [e for e in eps if e["tradable_peak"] and e["jumps3x"] == 0]
+    good = [e for e in eps if e["tradable_peak"]]
     def share(lst, f):
         return round(100 * sum(1 for e in lst if f(e)) / max(len(lst), 1), 1)
     cov = [e for e in good if e.get("ann_coverage")]
-    summ = {"episodes_100x": len(eps), "clean_tradable": len(good), "flagged_jump": sum(1 for e in eps if e["jumps3x"]),
+    summ = {"episodes_100x": len(eps), "clean_tradable": len(good), "with_real_3x_day": sum(1 for e in good if e["jumps3x"]),
             "distinct_stocks": len({e["code"] for e in good}), "near_30_100x": len(near),
             "by_low_year": dict(sorted(Counter(e["low_day"][:4] for e in good).items())),
             "years_to_peak_median": round(med([e["years_to_peak"] for e in good]), 2),
