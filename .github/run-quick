@@ -1,2 +1,2 @@
-rounds=100
-# 2026-11-25: round 100 stage 2 rerun (number parsing fix).
+rounds=
+# 2026-11-25: rounds 82, 99, 100 done. Empty = only run ann_lists + cn_brief.
