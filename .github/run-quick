@@ -1,2 +1,2 @@
-rounds=
-# 2026-11-21: empty = only run ann_lists + cn_brief (中文公告速读 v3: Haiku first). Put the next round number back here.
+rounds=82
+# 2026-11-25: round 82 (one-year 10x/100x plays). Empty = only run ann_lists + cn_brief.
