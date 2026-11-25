@@ -575,7 +575,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not CX_CODE.match(code):
             raise ValueError("合约代码不正确，例如 BTC")
         if name == "candles":
-            if q.get("tf") not in TF:
+            if q.get("tf") not in TF and q.get("tf") not in ("1m", "5m", "15m", "1h", "4h"):
                 raise ValueError("周期不正确")
             return _cxp.candles(code, q["tf"])
         if name == "ann":

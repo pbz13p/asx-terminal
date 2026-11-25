@@ -74,9 +74,19 @@ class BinanceProvider:
         return {"main": [{"code": c, "label": c + " 永续", "last": m[c]["last"], "prev": m[c]["prev"]} for c in TOP if c in m],
                 "sectors": []}
 
+    INTRA = ("1m", "5m", "15m", "1h", "4h")
+
     def candles(self, code, tf):
         if tf in ("1D", "5D"):
-            raise DataUnavailable("加密货币先只有日线（盯盘请用 Binance）")
+            tf = "5m" if tf == "1D" else "15m"
+        if tf in self.INTRA:   # Frank 2026-11-25: minute / hour bars like Binance; last 1,500 bars, times in UTC
+            def load_i():
+                rows = self._get("/fapi/v1/klines", symbol=code + "USDT", interval=tf, limit=1500)
+                if not rows:
+                    raise DataUnavailable("没有这个合约")
+                return [{"t": datetime.fromtimestamp(r[0] / 1000, timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                         "o": float(r[1]), "h": float(r[2]), "l": float(r[3]), "c": float(r[4]), "v": float(r[5])} for r in rows]
+            return self._cached(f"c:{code}:{tf}", 5, load_i)
 
         def load():
             out, start = [], 1500000000000

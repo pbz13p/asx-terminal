@@ -221,6 +221,19 @@ function maApplyEdit(){var k=+$('maed').dataset.k,m=MACFG[k];var n=Math.round(+$
 /* price-move colours: ASX green up / red down; A-shares the other way round (red up, green down), as Chinese traders expect */
 function UPC(a){var cn=st.m==='cn';return a==null?(cn?'#FF2E74':'#19FF9C'):(cn?'rgba(255,46,116,'+a+')':'rgba(25,255,156,'+a+')');}
 function DNC(a){var cn=st.m==='cn';return a==null?(cn?'#19FF9C':'#FF2E74'):(cn?'rgba(25,255,156,'+a+')':'rgba(255,46,116,'+a+')');}
+// 加密实时（Frank 2026-11-25）：浏览器直连币安合约 K 线推送，最新一根和价格每秒跳；只在加密市场用
+var CXWS=null,CXK=null,CXT=0;
+function cxLive(){var want=st.m==='cx'&&st.sel?(st.sel+'|'+(CXI[st.tf]?st.tf:'1d')):null;if(want===CXK)return;CXK=want;if(CXWS){try{CXWS.onclose=null;CXWS.close();}catch(e){}CXWS=null;}if(!want)return;
+ var iv=want.split('|')[1],code=st.sel;try{CXWS=new WebSocket('wss://fstream.binance.com/ws/'+code.toLowerCase()+'usdt@kline_'+iv);}catch(e){return;}
+ CXWS.onclose=function(){if(CXK===want){CXK=null;setTimeout(cxLive,3000);}};
+ CXWS.onmessage=function(ev){if(st.m!=='cx'||st.sel!==code||!BARS.length)return;var k=JSON.parse(ev.data).k;if(!k)return;var now=Date.now();if(now-CXT<400&&!k.x)return;CXT=now;
+  var o=+k.o,h=+k.h,l=+k.l,c=+k.c,v=+k.v,intra=!!CXI[st.tf],per=st.per||'d',last=BARS[BARS.length-1];
+  if(intra||per==='d'){var t=intra?Math.floor(k.t/1000)+11*3600:new Date(k.t).toISOString().slice(0,10);
+   if(last.time===t){last.open=o;last.high=h;last.low=l;last.close=c;last.v=v;}else if(t>last.time){BARS.push({time:t,open:o,high:h,low:l,close:c,v:v,nt:0});}else return;}
+  else{last.high=Math.max(last.high,h);last.low=Math.min(last.low,l);last.close=c;}
+  var b=BARS[BARS.length-1],pb=BARS.length>1?BARS[BARS.length-2]:null,up=b.close>b.open?true:b.close<b.open?false:pb?b.close>=pb.close:true,col=up?UPC():DNC();
+  try{cs.update({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close,color:col,wickColor:col,borderColor:col});vs.update({time:b.time,value:b.v,color:up?UPC(.28):DNC(.28)});}catch(e){}
+  if(Q[code])Q[code].last=c;else Q[code]={code:code,last:c};head();};}
 // K-line colour like TradingView: close>open up, close<open down; close==open -> vs previous close; unchanged -> same as previous bar
 function barUps(b){var r=[],last=true;for(var i=0;i<b.length;i++){var x=b[i],pc=i?b[i-1].close:x.open,u=x.close>x.open?true:x.close<x.open?false:x.close>pc?true:x.close<pc?false:last;r.push(u);last=u;}return r;}
 function draw(){
@@ -383,16 +396,17 @@ var DAILY={code:null,bars:[]};
 function aggBars(b,per){if(per==='d')return b;var out=[],cur=null,key=function(t){var d=new Date(t+'T00:00:00Z');if(per==='m')return t.slice(0,7);var w=new Date(d);w.setUTCDate(d.getUTCDate()-((d.getUTCDay()+6)%7));return w.toISOString().slice(0,10);};
  b.forEach(function(x){var k=key(x.time);if(!cur||cur.k!==k){if(cur)out.push(cur);cur={k:k,time:x.time,open:x.open,high:x.high,low:x.low,close:x.close,v:x.v,nt:x.nt};}else{if(cur.nt&&!x.nt){cur.open=x.open;cur.high=x.high;cur.low=x.low;cur.nt=0;}else if(!x.nt){cur.high=Math.max(cur.high,x.high);cur.low=Math.min(cur.low,x.low);}cur.close=x.close;cur.v+=x.v;cur.time=x.time;}});
  if(cur)out.push(cur);return out.map(function(x){return {time:x.time,open:x.open,high:x.high,low:x.low,close:x.close,v:x.v,nt:x.nt};});}
-function showRange(){var n=BARS.length;if(!n)return;var days={'1M':22,'6M':126,'1Y':250,'5Y':1250}[st.tf];
+function showRange(){var n=BARS.length;if(!n)return;if(CXI[st.tf]){chart.timeScale().setVisibleLogicalRange({from:n-150,to:n+3});return;}var days={'1M':22,'6M':126,'1Y':250,'5Y':1250}[st.tf];
  if(!days){chart.timeScale().fitContent();return;}var per=st.per||'d',k=per==='w'?5:per==='m'?21:1,show=Math.max(20,Math.round(days/k));
  chart.timeScale().setVisibleLogicalRange({from:n-show,to:n+2});}
-async function loadChart(keep){var intraday=st.tf==='1D'||st.tf==='5D',my=st.sel+st.tf+(st.per||'d');$('note').style.display='none';var kr=keep&&chart?chart.timeScale().getVisibleLogicalRange():null,n0=BARS.length;
+var CXI={'1m':'1分','5m':'5分','15m':'15分','1h':'1小时','4h':'4小时'};function isIntra(t){return t==='1D'||t==='5D'||!!CXI[t];}
+async function loadChart(keep){var intraday=isIntra(st.tf),my=st.sel+st.tf+(st.per||'d');$('note').style.display='none';var kr=keep&&chart?chart.timeScale().getVisibleLogicalRange():null,n0=BARS.length;
  try{var raw;
   if(!intraday&&DAILY.code===st.m+':'+st.sel){raw=DAILY.bars;}
   else{var d=await apim('candles?code='+st.sel+'&tf='+(intraday?st.tf:'ALL'));if(my!==st.sel+st.tf+(st.per||'d'))return;
    var seen={};raw=d.map(function(x){return {time:tkey(x.t),open:x.o,high:x.h,low:x.l,close:x.c,v:x.v,nt:x.nt?1:0};}).filter(function(x){if(seen[x.time])return false;seen[x.time]=1;return x.close!=null;});
    raw.sort(function(a,b){return a.time<b.time?-1:1;});if(!intraday)DAILY={code:st.m+':'+st.sel,bars:raw};}
-  BARS=intraday?raw:aggBars(raw,st.per||'d');draw();if(kr){var dn=BARS.length-n0;chart.timeScale().setVisibleLogicalRange({from:kr.from+dn,to:kr.to+dn});}else showRange();}
+  BARS=intraday?raw:aggBars(raw,st.per||'d');draw();cxLive();if(kr){var dn=BARS.length-n0;chart.timeScale().setVisibleLogicalRange({from:kr.from+dn,to:kr.to+dn});}else showRange();}
  catch(e){BARS=[];draw();$('note').style.display='flex';$('note').textContent=st.tf+' 数据暂不可用：'+e.message;}}
 
 /* ---------- left lists ---------- */
@@ -413,7 +427,7 @@ $('sf').addEventListener('submit',function(e){e.preventDefault();var v=$('si').v
 
 /* ---------- toolbar ---------- */
 var TFS=['1D','5D','1M','6M','1Y','5Y','ALL'];
-$('pers').addEventListener('click',function(e){var p=e.target.getAttribute('data-per');if(!p)return;st.per=p;[].forEach.call($('pers').querySelectorAll('.tf'),function(b){b.classList.toggle('on',b===e.target);});if(st.tf==='1D'||st.tf==='5D'){st.tf='1Y';setTfs();}loadChart();});
+$('pers').addEventListener('click',function(e){var p=e.target.getAttribute('data-per');if(!p)return;st.per=p;[].forEach.call($('pers').querySelectorAll('.tf'),function(b){b.classList.toggle('on',b===e.target);});if(isIntra(st.tf)){st.tf='1Y';setTfs();}loadChart();});
 $('tfs').addEventListener('click',function(e){var t=e.target.getAttribute('data-tf');if(!t)return;st.tf=t;[].forEach.call($('tfs').querySelectorAll('.tf'),function(b){b.classList.toggle('on',b===e.target);});loadChart();});
 $('mabtns').onclick=function(e){var b=e.target.closest('[data-mak]');if(!b)return;var m=MACFG[+b.dataset.mak];m.on=m.on?0:1;saveMa();draw();};
 $('legend').onclick=function(e){e.stopPropagation();var l=e.target.closest('.mal'),r=$('chart').getBoundingClientRect(),t=e.target.getBoundingClientRect();
@@ -742,8 +756,8 @@ async function loadIdx(){var my=st.m;try{var d=await apim('indices');if(my!==st.
 async function loadMarket(){var my=st.m;try{var d=await apim('market');if(my!==st.m)return;MKT=d.stocks;MKT.forEach(function(s){NAMES[s.code]=NAMES[s.code]||s.name;});renderList();head();if((st.m==='cx'||st.m==='cm')&&st.bt!=='find')renderBottom();}catch(e){}}
 async function loadCN(){try{CNP=await api('cnpicks');}catch(e){CNP=null;}if(st.m==='cn'){renderBottom();if(st.lt==='sig')renderList();}}
 async function loadScan(){try{SCAN=await api('scan');$('breadth').innerHTML=(SCAN.breadth!=null?'站上 200 日线 <b>'+SCAN.breadth+'%</b> · ':'')+'扫描 '+esc(SCAN.last_day||'');}catch(e){SCAN={};}renderBottom();if(st.lt==='sig')renderList();}
-function setTfs(){var allow=st.m!=='au'?['1M','6M','1Y','5Y','ALL']:TFS;if(allow.indexOf(st.tf)<0)st.tf='6M';
- $('tfs').innerHTML=allow.map(function(t){return '<button class="tf'+(t===st.tf?' on':'')+'" data-tf="'+t+'">'+({'1D':'1天','5D':'5天','1M':'1月','6M':'6月','1Y':'1年','5Y':'5年','ALL':'全部'}[t])+'</button>';}).join(' ');}
+function setTfs(){var allow=st.m==='cx'?['1m','5m','15m','1h','4h','1M','6M','1Y','5Y','ALL']:st.m!=='au'?['1M','6M','1Y','5Y','ALL']:TFS;if(allow.indexOf(st.tf)<0)st.tf='6M';
+ $('tfs').innerHTML=allow.map(function(t){return '<button class="tf'+(t===st.tf?' on':'')+'" data-tf="'+t+'">'+(CXI[t]||{'1D':'1天','5D':'5天','1M':'1月','6M':'6月','1Y':'1年','5Y':'5年','ALL':'全部'}[t])+'</button>';}).join(' ');}
 function setMarket(m,code){if(m===st.m&&!code)return;st.m=m;$('breadth').style.display=m==='au'?'':'none';if($('cpb'))$('cpb').style.display=m==='au'?'':'none';if($('cpb'))$('cpb').style.display=m==='au'?'':'none';$('si').placeholder=m==='cx'?'搜合约，如 BTC、ETH、SOL':m==='cn'?'搜 A 股代码，如 600519':$('si').getAttribute('data-ph')||$('si').placeholder;document.body.classList.toggle('cn',m==='cn');lss('nt_m',m);loadW();Q={};MKT=[];RC=null;rcf=null;[].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===m);});
  $('si').placeholder=m==='cn'?'搜 A 股代码，如 600519':m==='cx'?'搜合约，如 BTC、ETH、SOL':m==='cm'?'搜品种，如 GOLD、BRENT、IRONORE':'搜代码，如 CND（A 股输 6 位数字）';$('addi').placeholder=m==='cn'?'加自选，如 600036':m==='cx'?'加自选，如 SOL':m==='cm'?'加自选，如 COPPER':'加自选，如 BHP';$('breadth').style.display=m==='au'?'':'none';
  setTfs();renderBTabs();renderBottom();$('idx').innerHTML='';loadIdx();loadMarket();select(code||lsg('nt_sel_'+m,st.watch[0]));loadQuotes();}
@@ -759,7 +773,7 @@ function setFs(on){document.body.classList.toggle('fs',on);$('fsb').classList.to
 $('fsb').onclick=function(){setFs(!document.body.classList.contains('fs'));};
 document.addEventListener('fullscreenchange',function(){if(!document.fullscreenElement&&document.body.classList.contains('fs'))setFs(false);});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('fs'))setFs(false);});
-function select(c){st.sel=c;ANNS=[];SIGS=[];DM=null;if(typeof markTool==='function')markTool();loadDraws();lss('nt_sel_'+st.m,c);$('annhint').textContent=st.m==='cn'?'· 点一下打开原文 PDF（巨潮资讯）':'· 点一下，中文直接弹出';head();renderList();loadChart();loadRight(c);if(!Q[c])loadQuotes();}
+function select(c){st.sel=c;if($('name'))$('name').textContent=NAMES[c]||'';ANNS=[];SIGS=[];DM=null;if(typeof markTool==='function')markTool();loadDraws();lss('nt_sel_'+st.m,c);$('annhint').textContent=st.m==='cn'?'· 点一下打开原文 PDF（巨潮资讯）':'· 点一下，中文直接弹出';head();renderList();loadChart();loadRight(c);if(!Q[c])loadQuotes();}
 async function checkNews(){try{var r=await api('research');var k=r.news&&r.news[0]?r.news[0].date+r.news[0].text.slice(0,20):'';if(k&&k!==lsg('nt_seen_news',''))$('rcb').innerHTML='🔬 研究中心<span class="newdot"></span>';}catch(e){}}
 async function boot(){document.body.classList.toggle('cn',st.m==='cn');mkCharts();checkNews();checkNW();try{var s=await api('status');$('src').textContent=s.provider.toUpperCase()+' · '+s.latency;}catch(e){$('src').textContent='本地服务未连接';}
  [].forEach.call($('mkt').children,function(b){b.classList.toggle('on',b.getAttribute('data-m')===st.m);});setTfs();renderBTabs();$('si').setAttribute('data-ph',$('si').placeholder);if(st.m!=='au'){$('breadth').style.display='none';$('si').placeholder=st.m==='cx'?'搜合约，如 BTC、ETH、SOL':st.m==='cm'?'搜品种，如 GOLD、BRENT、IRONORE':'搜 A 股代码，如 600519';$('addi').placeholder=st.m==='cx'?'加自选，如 SOL':st.m==='cm'?'加自选，如 COPPER':'加自选，如 600036';}
