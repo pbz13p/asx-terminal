@@ -75,8 +75,36 @@ class BinanceProvider:
                 "sectors": []}
 
     INTRA = ("1m", "5m", "15m", "1h", "4h")
+    SECS = {"5s": 5, "15s": 15, "30s": 30}
+
+    def _sec_bars(self, code, sec, minutes=20):
+        """Seconds bars (Frank 2026-11-25, Binance's futures API has no bars under 1 minute): built from the last
+        `minutes` of aggregated trades, paged 1,000 at a time; the page then keeps them going from the live trade stream."""
+        end = int(time.time() * 1000)
+        start, bars = end - minutes * 60000, {}
+        for _ in range(60):
+            rows = self._get("/fapi/v1/aggTrades", symbol=code + "USDT", startTime=start, endTime=end, limit=1000)
+            if not rows:
+                break
+            for r in rows:
+                t = r["T"] // 1000 // sec * sec
+                p, q = float(r["p"]), float(r["q"])
+                b = bars.get(t)
+                if b is None:
+                    bars[t] = [p, p, p, p, q]
+                else:
+                    b[1] = max(b[1], p); b[2] = min(b[2], p); b[3] = p; b[4] += q
+            if len(rows) < 1000:
+                break
+            start = rows[-1]["T"] + 1
+        if not bars:
+            raise DataUnavailable("最近没有成交")
+        return [{"t": datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%d %H:%M:%S"), "o": b[0], "h": b[1], "l": b[2],
+                 "c": b[3], "v": round(b[4], 6)} for t, b in sorted(bars.items())]
 
     def candles(self, code, tf):
+        if tf in self.SECS:
+            return self._cached(f"c:{code}:{tf}", 3, lambda: self._sec_bars(code, self.SECS[tf]))
         if tf in ("1D", "5D"):
             tf = "5m" if tf == "1D" else "15m"
         if tf in self.INTRA:   # Frank 2026-11-25: minute / hour bars like Binance; last 1,500 bars, times in UTC
