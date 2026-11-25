@@ -1,5 +1,74 @@
 [
  {
+  "id": "20261126-overnight",
+  "time": "2026-11-26 07:30",
+  "title": "隔夜市场：纳指盘中一度-4%后收窄到约-0.9%，道指反涨约0.4%；美股今晚感恩节休市",
+  "what": "美股周三（美东15:08盘中数，收盘在墨尔本8点）：纳指约-0.86%（约23,530，早盘一度-4.2%），标普约-0.2%–-0.4%（约7,174），道指约+0.4%（约50,223），罗素2000约+0.8%；英伟达约-4.9%（$147.7，早盘曾-8%），费城半导体指数盘中跌超6%。VIX约27.8，美10年期约4.82%–4.85%（回落），黄金约$3,575（-0.5%），WTI约$83.8（+2%）。澳元待核。",
+  "why": "早盘美国贸易代表办公室公布对14个经济体加关税方案、核心PCE高于预期，叠加AI投资回报担忧，芯片股再遭抛售；午后假期前成交清淡，抄底资金进场，资金转向材料、能源、地产。",
+  "impact": "ASX昨收8,692（-0.4%），美股跌幅大幅收窄，今天澳股可能小幅低开或平开，科技小盘仍偏弱，能源受油价支撑；A股昨天创业板-4.2%，今天半导体、出口链仍受关税消息压制。美股周四休市、周五半天。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/markets/live/stock-market-today-wednesday-november-25-dow-sp-500-nasdaq-pce-inflation-data-091428237.html"
+   },
+   {
+    "name": "StockTitan",
+    "url": "https://www.stocktitan.net/articles/stock-market-today-live-november-25-2026"
+   }
+  ]
+ },
+ {
+  "id": "20261126-ustr-tariffs-14",
+  "time": "2026-11-26 07:30",
+  "title": "美国正式公布对14个经济体加关税方案：越南最高35%、印度25%、中国20%",
+  "what": "11月25日美国贸易代表办公室（USTR）公布“产业产能过剩”301调查结果：16个被调查经济体中认定14个，拟议税率（StockTitan转述USTR）：越南最高35%，印度最高25%，中国、新加坡最高20%，孟加拉、柬埔寨、印尼、马来西亚、泰国最高18%，欧盟15%，日本、韩国、瑞士、台湾最高15%；墨西哥、挪威暂未决定。目前只是方案，1月5日前征求意见，1月25日起听证，最早明年1月生效。是否叠加现有关税各媒体说法不一（待核）。澳洲不在名单里。",
+  "why": "今年3月启动的301调查，部分替代2月被最高法院判无效的关税。",
+  "impact": "A股出口链、东南亚产业链受压，人民币可能偏弱；距生效还有约两个月，有谈判空间；中美贸易休战据报1月10日到期（待核）。澳洲未被点名，直接影响小，但通过中国需求间接影响铁矿等。",
+  "tags": [
+   "中美",
+   "宏观",
+   "A股",
+   "汇率"
+  ],
+  "sources": [
+   {
+    "name": "StockTitan",
+    "url": "https://www.stocktitan.net/articles/stock-market-today-live-november-25-2026"
+   },
+   {
+    "name": "FinanceFeeds (Reuters)",
+    "url": "https://financefeeds.com/nasdaq-falls-4-as-tariff-proposals-meet-hotter-core-pce/"
+   }
+  ]
+ },
+ {
+  "id": "20261126-us-pce-gdp-hot",
+  "time": "2026-11-26 07:30",
+  "title": "美国核心PCE 3.3%高于预期、三季度GDP上修到4.3%：12月加息概率约97%",
+  "what": "11月25日：10月PCE同比3.8%（符合预期），环比+0.3%；核心PCE同比3.3%（预期3.2%），环比+0.3%；三季度GDP二次估算年化4.3%（初值3.4%，预期约3.5%）；初请失业金18.9万。CME FedWatch：12月8–9日加息25bp概率约97%–98%，1月再加约63%（Fox）。",
+  "why": "经济过热、通胀从商品扩散到更多领域。",
+  "impact": "美联储12月加息几乎已定、1月可能再加，压制成长股和高估值AI股；美元偏强，澳元、金价承压；澳股小盘融资环境更紧。",
+  "tags": [
+   "宏观",
+   "央行",
+   "美股",
+   "汇率"
+  ],
+  "sources": [
+   {
+    "name": "FinanceFeeds",
+    "url": "https://financefeeds.com/nasdaq-falls-4-as-tariff-proposals-meet-hotter-core-pce/"
+   },
+   {
+    "name": "Fox Business",
+    "url": "https://www.foxbusiness.com/markets/stocks-11-25-2026"
+   }
+  ]
+ },
+ {
   "id": "20261125-nq-futures-tariffs-16",
   "time": "2026-11-25 23:20",
   "title": "纳指期货-2.5%：路透称美国将对16个贸易伙伴加关税，英伟达盘前-5%；今晚PCE",
