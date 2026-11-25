@@ -1,5 +1,34 @@
 [
  {
+  "id": "20261125-asia-ai-selloff-relapse",
+  "time": "2026-11-25 15:20",
+  "title": "亚洲芯片股再崩：韩股约-6%、台股盘中-7.9%、软银-16%，A股科创50半日-2.6%",
+  "what": "11月25日：Kospi跌近6%（三星-9%、SK海力士约-9%~-10%），台湾加权指数盘中最多-7.9%（台积电跌超8%~9%），日经约-3.5%（软银-16.1%创52周新低，Advantest-14.5%、东京电子-13.5%），恒生逆势约+1%。A股半日：上证-1.01%收3512.66，深成指-1.19%，创业板-1.72%，科创50 -2.58%，成交0.76万亿；半导体、电子化学品、电池领跌，酒店餐饮、旅游、医药商业领涨。纳指100期货约-1%，金价约$3,560，布伦特约$88，澳元约0.662。",
+  "why": "周二美股英伟达回吐约6%、芯片ETF约-7%，市场再次怀疑举债扩张的AI投资回报；周一黄仁勋复职带来的反弹获利了结；美国可能加征新关税；外资净卖出，日本散户融资亏损接近强平线。",
+  "impact": "周一的“黄仁勋反弹”在亚洲基本回吐，AI/芯片股走势仍不稳；A股半导体、光模块承压，消费、医药相对抗跌；ASX叠加CPI超预期，科技、矿业小盘偏弱。今晚美国PCE、GDP是下一个关键，周四美股感恩节休市。",
+  "tags": [
+   "A股",
+   "澳股",
+   "美股",
+   "宏观",
+   "公司"
+  ],
+  "sources": [
+   {
+    "name": "Al Jazeera",
+    "url": "https://www.aljazeera.com/news/2026/11/25/asias-stock-markets-dive-as-doubts-to-swirl-over-ai-boom"
+   },
+   {
+    "name": "investingLive",
+    "url": "https://investinglive.com/stock-market-update/asian-stocks-slide-as-ai-doubts-return-kospi-down-nearly-6-and-nikkei-more-than-3/"
+   },
+   {
+    "name": "21财经",
+    "url": "https://21jingji.com/article/20261125/herald/dc0717cbc47bb9dd999a967b30eb6bdc.html"
+   }
+  ]
+ },
+ {
   "id": "20261125-au-cpi-4.9",
   "time": "2026-11-25 13:20",
   "title": "澳洲10月CPI超预期：通胀4.9%，核心3.8%，澳储行加息风险回来",
