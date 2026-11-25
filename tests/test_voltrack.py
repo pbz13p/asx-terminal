@@ -43,13 +43,15 @@ def main():
     assert s20["hit"] == 0.0 and s20["beat_naive"] == 100.0 and s20["direction"] == 100.0, s20
     s = voltrack.summarise(T)
     assert s["weeks_scored"] == 1 and s["last"]["hit"] == 100.0 and not s["stalled_4_weeks"]
+    assert s["history"][0]["h20"]["hit"] == 0.0 and s["change"] is None
     # scored weeks are frozen: a re-record does not overwrite them
     voltrack.record(T, [{"code": "AAA", "date": "2026-11-13", "vol5": 99, "naive_vol5": 30}])
     assert T["weeks"]["2026-11-13"]["items"][0]["vol5"] == 17
     # stall rule: 8 weeks, last 4 each no better than 4 weeks earlier
     T2 = {"weeks": {f"2026-0{1 + i // 4}-{10 + i % 4:02d}": {"score": {"5": {"n": 10, "hit": h}}}
                     for i, h in enumerate([50, 55, 60, 52, 50, 55, 60, 52])}}
-    assert voltrack.summarise(T2)["stalled_4_weeks"] is True
+    s2 = voltrack.summarise(T2)
+    assert s2["stalled_4_weeks"] is True and s2["change"] == -8 and s2["history"][0]["h20"] is None
     voltrack.save(T)
     assert voltrack.load()["weeks"]
     print("voltrack ok")

@@ -121,7 +121,7 @@ def score(T, cache=None):
 
 def summarise(T):
     weeks = sorted(d for d, W in T["weeks"].items() if (W.get("score") or {}).get("5"))
-    hist = [{"date": d, **T["weeks"][d]["score"]["5"]} for d in weeks]
+    hist = [{"date": d, **T["weeks"][d]["score"]["5"], "h20": T["weeks"][d]["score"].get("20")} for d in weeks]
     last4 = hist[-4:]
     # 降级规则: hit rate not better than 4 weeks earlier, four weeks in a row
     stalled = len(hist) >= 8 and all(hist[-i]["hit"] <= hist[-i - 4]["hit"] for i in range(1, 5))
@@ -129,6 +129,7 @@ def summarise(T):
     T["summary"] = {"asof": date.today().isoformat(), "band": f"±{int(HIT_BAND * 100)}%",
                     "weeks_scored": len(hist), "history": hist,
                     "last": hist[-1] if hist else None,
+                    "change": round(hist[-1]["hit"] - hist[-2]["hit"], 1) if len(hist) >= 2 else None,
                     "avg4_hit": round(sum(x["hit"] for x in last4) / len(last4), 1) if last4 else None,
                     "pending": pending, "stalled_4_weeks": stalled}
     return T["summary"]
