@@ -140,7 +140,7 @@ td.w{white-space:normal;min-width:260px}
   <aside class="r" id="right">
     <div class="sec"><h3>概况</h3><div class="big num" id="rpx">—</div><div id="rname" class="mu"></div><div class="chips num" id="rchg"></div></div>
     <div class="sec"><h3>关键数据</h3><div class="kv num" id="rkv"></div></div>
-    <div class="sec" id="ribs"><h3>盈透 <span class="mu" style="font-size:15px" id="ribt"></span></h3><div style="display:flex;gap:8px;margin:2px 0 8px"><button class="tf" id="bookb" style="white-space:nowrap" title="买卖各 5 档，每 3 秒刷新（盈透实时盘口）">📊 实时盘口</button><button class="tf" id="alb" style="white-space:nowrap" title="到价提醒：到价推送到手机">🔔 到价提醒</button></div><div id="book"></div><div class="kv num" id="rib"></div><div class="mu" id="ribn" style="font-size:15px;margin-top:6px;color:#C9D2F5"></div></div><div class="sec"><h3>我们的研究</h3><div id="rres"></div></div>
+    <div class="sec" id="ribs"><h3>盈透 <span class="mu" style="font-size:15px" id="ribt"></span></h3><div style="display:flex;gap:8px;margin:2px 0 8px"><button class="tf" id="bookb" style="white-space:nowrap" title="买卖各 5 档，每 3 秒刷新（盈透实时盘口）">📊 实时盘口</button><button class="tf" id="alb" style="white-space:nowrap" title="到价提醒：到价推送到手机">🔔 到价提醒</button><button class="tf" id="tkb" style="white-space:nowrap;color:#FFD23F;border-color:rgba(255,210,63,.6)" title="通过你的盈透 TWS 下限价单（先预览、再确认）">💰 下单</button></div><div id="book"></div><div class="kv num" id="rib"></div><div class="mu" id="ribn" style="font-size:15px;margin-top:6px;color:#C9D2F5"></div></div><div class="sec"><h3>我们的研究</h3><div id="rres"></div></div>
     <div class="sec"><h3>最新公告 <span class="mu" style="font-size:15px" id="annhint">· 点一下，中文直接弹出</span></h3><div id="rann"></div></div>
   </aside>
 </main>
@@ -805,6 +805,45 @@ async function openAlert(code,price){code=code||st.sel;if(!code)return;
  $('alsave').onclick=async function(){try{await ibPost({action:'add',code:code,up:$('alup').value.trim(),down:$('aldn').value.trim(),pct:$('alpct').value.trim()});
    var w2=await api('ibwatch');$('allist').innerHTML=alTable(w2.alerts.filter(function(a){return a.code===code;}));$('almsg').textContent='已保存 ✓';$('alup').value=$('aldn').value=$('alpct').value='';}
   catch(e){$('almsg').textContent=e.message;}};}
+// 💰 下单（Frank 2026-11-25）：通过他自己的 TWS 下限价单；规则在 ibkr_trade.py 文件头
+async function odPost(b){var r=await fetch('/api/order',{method:'POST',headers:{'Content-Type':'application/json','X-Neon':'1'},body:JSON.stringify(b)});var j=await r.json();if(!j.ok)throw new Error(j.error||'出错');return j.data;}
+function tickOf(p,m){return m==='us'?(p<1?0.0001:0.01):(p<0.1?0.001:p<2?0.005:0.01);}
+function snapPx(p,m){var t=tickOf(p,m);return +(Math.round(p/t)*t).toFixed(t<0.001?4:3);}
+async function openTicket(side,price){var code=st.sel,m=st.m;if(!code||(m!=='au'&&m!=='us'))return;side=side||'BUY';
+ var last=IBQ&&IBQ.code===code&&IBQ.last?IBQ.last:(BARS.length?BARS[BARS.length-1].close:null),ccy=m==='us'?'美元':'澳元';
+ popShow('<h3>💰 下单 · '+esc(code)+' <span class="mu" style="font-size:15px">'+(m==='us'?'美股':'澳股')+' · 限价单 · 当天有效</span></h3>'
+  +'<div class="row"><button class="btn'+(side==='BUY'?' on':'')+'" id="tkbuy">买入</button><button class="btn'+(side==='SELL'?' on':'')+'" id="tksell">卖出</button><span class="mu">现价 '+(last!=null?pxr(last):'—')+'</span></div>'
+  +'<label><span>数量（股）</span><input id="tkq" inputmode="numeric" style="width:160px"></label>'
+  +'<label><span>限价（'+ccy+'）</span><input id="tkp" inputmode="decimal" style="width:160px" value="'+(price?pxr(snapPx(price,m)):(last!=null?pxr(last):''))+'"></label>'
+  +'<div id="tkv" class="y" style="margin:4px 0 8px"></div>'
+  +'<div class="row"><button class="btn on" id="tkpv">预览</button><button class="btn" id="popx">关闭</button><span id="tkmsg" class="dn"></span></div>'
+  +'<div id="tkprev"></div><h3 style="font-size:16px;margin-top:14px">账户 · 持仓 · 挂单 <button class="btn" id="tkref" style="font-size:14px">刷新</button></h3><div id="tkacc" class="mu">读取中…</div>');
+ var S={side:side};var upd=function(){var q=+$('tkq').value,pp=+$('tkp').value;$('tkv').textContent=q>0&&pp>0?('金额约 '+(q*pp).toLocaleString(undefined,{maximumFractionDigits:2})+' '+ccy):'';};
+ $('tkq').oninput=$('tkp').oninput=upd;
+ $('tkbuy').onclick=function(){S.side='BUY';$('tkbuy').classList.add('on');$('tksell').classList.remove('on');$('tkprev').innerHTML='';};
+ $('tksell').onclick=function(){S.side='SELL';$('tksell').classList.add('on');$('tkbuy').classList.remove('on');$('tkprev').innerHTML='';};
+ $('tkref').onclick=function(){tkAcc(m);};
+ $('tkpv').onclick=async function(){$('tkmsg').textContent='';$('tkprev').innerHTML='<p class="mu">向盈透预览中…</p>';
+  var o={mkt:m,code:code,side:S.side,qty:$('tkq').value.trim(),price:$('tkp').value.trim()};
+  try{var r=await odPost({action:'preview',order:o});
+   $('tkprev').innerHTML='<div style="border:1px solid '+(r.side==='BUY'?'var(--up)':'var(--dn)')+';border-radius:8px;padding:10px;margin-top:8px">'
+    +'<b style="font-size:18px">'+(r.paper?'【模拟账户】':'<span class="dn">【真账户】</span>')+(r.side==='BUY'?'买入':'卖出')+' '+esc(r.code)+' '+r.qty.toLocaleString()+' 股 @ '+pxr(r.price)+'</b>'
+    +'<div>金额 '+r.value.toLocaleString(undefined,{maximumFractionDigits:2})+' '+esc(r.ccy)+'　佣金 '+(r.commission!=null?r.commission.toFixed(2)+' '+esc(r.commission_ccy||''):'—')+'</div>'
+    +'<div>买一 '+(r.bid!=null?pxr(r.bid):'—')+' · 卖一 '+(r.ask!=null?pxr(r.ask):'—')+' · 最新 '+(r.last!=null?pxr(r.last):'—')+'</div>'
+    +(r.warnings.length?'<div class="y">⚠ '+r.warnings.map(esc).join('<br>⚠ ')+'</div>':'')
+    +'<div class="row" style="margin-top:8px"><button class="btn on" id="tkgo" style="font-weight:700">确认下单</button><span class="mu">2 分钟内有效，改了数量或价格要重新预览</span></div></div>';
+   $('tkgo').onclick=async function(){$('tkgo').disabled=true;try{var x=await odPost({action:'place',order:o,token:r.token});
+     $('tkprev').innerHTML='<p class="up">已发出 ✓ 订单号 '+esc(x.order_id)+' · 状态 '+esc(x.status)+(x.errors&&x.errors.length?'<br><span class="y">'+x.errors.map(esc).join('<br>')+'</span>':'')+'</p>';tkAcc(m);}
+    catch(e){$('tkprev').innerHTML='<p class="dn">'+esc(e.message)+'</p>';}};}
+  catch(e){$('tkprev').innerHTML='';$('tkmsg').textContent=e.message;}};
+ upd();tkAcc(m);}
+async function tkAcc(m){var box=$('tkacc');if(!box)return;box.textContent='读取中…';
+ try{var a=await odPost({action:'overview'}),sm=a.summary||{},cash=function(t){var k=Object.keys(sm).filter(function(x){return x.indexOf(t+':')===0&&!/BASE$/.test(x);});return k.map(function(x){return (+sm[x]).toLocaleString(undefined,{maximumFractionDigits:2})+' '+x.split(':')[1];}).join(' / ')||'—';};
+  var h='<div style="color:#C9D2F5">'+(a.paper?'模拟账户':'<b class="dn">真账户</b>')+' · 现金 '+cash('TotalCashValue')+' · 可用 '+cash('AvailableFunds')+' · 单笔上限 '+a.max_order_value.toLocaleString()+(a.live_on?'':' · <span class="y">真账户下单未打开（⚙ 设置）</span>')+'</div>';
+  h+='<table class="num" style="margin-top:6px"><tr><th>持仓</th><th>股数</th><th>成本</th></tr>'+((a.positions||[]).map(function(x){return '<tr><td>'+esc(x.code)+' <span class="mu">'+esc(x.ccy)+'</span></td><td>'+x.qty.toLocaleString()+'</td><td>'+pxr(x.avg)+'</td></tr>';}).join('')||'<tr><td colspan="3" class="mu">没有持仓</td></tr>')+'</table>';
+  h+='<table class="num" style="margin-top:6px"><tr><th>挂单</th><th>方向</th><th>数量</th><th>限价</th><th>状态</th><th></th></tr>'+((a.orders||[]).map(function(x){return '<tr><td>'+esc(x.code)+'</td><td>'+(x.side==='BUY'?'<span class="up">买</span>':'<span class="dn">卖</span>')+'</td><td>'+x.qty+(x.filled?' (成交 '+x.filled+')':'')+'</td><td>'+pxr(x.price)+'</td><td>'+esc(x.status)+'</td><td><button class="btn" data-cx="'+esc(x.id)+'" style="font-size:14px">撤单</button></td></tr>';}).join('')||'<tr><td colspan="6" class="mu">没有挂单</td></tr>')+'</table>';
+  box.innerHTML=h;[].forEach.call(box.querySelectorAll('[data-cx]'),function(b){b.onclick=async function(){b.disabled=true;try{await odPost({action:'cancel',id:b.getAttribute('data-cx')});tkAcc(m);}catch(e){b.textContent=e.message.slice(0,30);}};});}
+ catch(e){box.innerHTML='<span class="dn">'+esc(e.message)+'</span>';}}
 async function openSettings(){var w=null,err='';try{w=await api('ibwatch');}catch(e){err=e.message;}
  var s=w&&w.status||{},ok=s.connected;
  popShow('<h3>⚙ 设置</h3>'
@@ -815,17 +854,23 @@ async function openSettings(){var w=null,err='';try{w=await api('ibwatch');}catc
   +'<br>今天推送 '+(s.pushes||0)+' 次'+(s.last_push?'，最近：'+esc(s.last_push):'')+(w?'；今天已触发提醒 '+(w.fired_today||0)+' 条':'')
   +'<br>盘口快照：'+esc(s.last_snapshot||'今天还没拍（10:30、13:00、15:55 自动拍）')+(w&&w.depth_slots?'；盈透同时最多开 '+w.depth_slots+' 个盘口':'')
   +(s.last_error?'<br><span class="dn">最近出错：'+esc(s.last_error)+'</span>':''))+'</div>'
+  +'<h3 style="font-size:16px;margin-top:16px">下单</h3><div style="color:#C9D2F5">只下限价单；每笔先预览再确认。真账户下单默认关着，打开前请先在模拟账户试过，并在 TWS 去掉 Read-Only API 的勾。</div>'
+  +'<label><span>单笔上限（金额）</span><input id="odcap" inputmode="numeric" style="width:140px" placeholder="默认 1000"></label><label><span>每天最多下几笔</span><input id="odmax" inputmode="numeric" style="width:140px" placeholder="默认 20"></label>'
+  +'<label><span>真账户下单</span><input id="odlive" style="width:240px" placeholder="要打开就输入：我确认用真账户下单"></label>'
+  +'<div class="row"><button class="btn on" id="odsave">保存下单设置</button><button class="btn" id="odoff">关闭真账户下单</button><span id="odmsg" class="y"></span></div>'
   +'<h3 style="font-size:16px;margin-top:16px">全部到价提醒</h3><div id="allist">'+alTable(w?w.alerts:[])+'</div><div class="mu">加提醒：在 K 线图上点右键 →「到价提醒」，或右边盈透栏的「🔔 提醒」。</div>'
   +'<div class="row"><button class="btn" id="popx">关闭</button></div>');
+ $('odsave').onclick=async function(){var b={action:'settings'};if($('odcap').value.trim())b.max_order_value=+$('odcap').value;if($('odmax').value.trim())b.max_orders_day=+$('odmax').value;if($('odlive').value.trim()){b.trade_live=true;b.confirm=$('odlive').value.trim();}try{var r=await odPost(b);$('odmsg').textContent='已保存 ✓ 单笔上限 '+(r.max_order_value||1000)+'，每天 '+(r.max_orders_day||20)+' 笔，真账户下单'+(r.trade_live?'已打开':'关着');}catch(e){$('odmsg').textContent=e.message;}};
+ $('odoff').onclick=async function(){try{await odPost({action:'settings',trade_live:false});$('odmsg').textContent='真账户下单已关闭';}catch(e){$('odmsg').textContent=e.message;}};
  $('ntsave').onclick=async function(){try{await ibPost({action:'ntfy',topic:$('nttopic').value.trim()});$('ntmsg').textContent='已保存 ✓ 再点「发一条测试推送」试试';}catch(e){$('ntmsg').textContent=e.message;}};
  $('nttest').onclick=async function(){try{var r=await ibPost({action:'test'});$('ntmsg').textContent=r.pushed?'已发出，看手机 ✓':'没发出去：先填频道名并保存';}catch(e){$('ntmsg').textContent=e.message;}};}
 $('pop').addEventListener('click',async function(e){if(e.target.id==='popx'){popHide();return;}var d=e.target.getAttribute('data-del');if(!d)return;
  try{var L=await ibPost({action:'del',id:d});var code=(d.split('-')[0]||'');var box=$('allist');var only=box&&$('alsave');box.innerHTML=alTable(only?L.filter(function(a){return a.code===code;}):L);}catch(err){alert(err.message);}});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'){popHide();$('cmenu').style.display='none';}});
 $('setb').onclick=openSettings;$('alb').onclick=function(){openAlert(st.sel,null);};
-CH.addEventListener('contextmenu',function(e){if(st.m!=='au'||!cs||!st.sel)return;e.preventDefault();var xy=local(e),p=cs.coordinateToPrice(xy[1]);
- var m=$('cmenu');m.innerHTML='<div id="cm1">🔔 到价提醒'+(p!=null?'（'+pxr(p)+'）':'')+'</div><div id="cm2">取消</div>';m.style.left=e.clientX+'px';m.style.top=e.clientY+'px';m.style.display='block';
- $('cm1').onclick=function(){m.style.display='none';openAlert(st.sel,p);};$('cm2').onclick=function(){m.style.display='none';};});
+CH.addEventListener('contextmenu',function(e){if((st.m!=='au'&&st.m!=='us')||!cs||!st.sel)return;e.preventDefault();var xy=local(e),p=cs.coordinateToPrice(xy[1]);
+ var m=$('cmenu');m.innerHTML='<div id="cm1">🔔 到价提醒'+(p!=null?'（'+pxr(p)+'）':'')+'</div><div id="cm3">💰 在这个价买入</div><div id="cm4">💰 在这个价卖出</div><div id="cm2">取消</div>';m.style.left=e.clientX+'px';m.style.top=e.clientY+'px';m.style.display='block';
+ $('cm1').onclick=function(){m.style.display='none';openAlert(st.sel,p);};$('cm3').onclick=function(){m.style.display='none';openTicket('BUY',p);};$('cm4').onclick=function(){m.style.display='none';openTicket('SELL',p);};$('cm2').onclick=function(){m.style.display='none';};});
 document.addEventListener('mousedown',function(e){var m=$('cmenu');if(m.style.display==='block'&&!m.contains(e.target))m.style.display='none';});
 function bookStop(){if(BOOK){clearTimeout(BOOK.t);BOOK=null;}$('book').innerHTML='';$('bookb').classList.remove('on');}
 async function bookPoll(first){var b=BOOK;if(!b)return;if(st.sel!==b.code||Date.now()-b.start>10*60*1000){bookStop();return;}
@@ -835,6 +880,7 @@ async function bookPoll(first){var b=BOOK;if(!b)return;if(st.sel!==b.code||Date.
    $('book').innerHTML='<table class="num"><tr class="mu"><td>买量</td><td>买价</td><td>卖价</td><td>卖量</td></tr>'+rows+'</table><div class="mu" style="color:#C9D2F5">价差 '+(d.spread!=null?pxr(d.spread)+'（'+d.spread_pct.toFixed(2)+'%）':'—')+' · 买卖盘总量比 '+(d.ratio!=null?d.ratio.toFixed(2):'—')+' · '+new Date().toLocaleTimeString()+'</div>';}}
  catch(e){if(BOOK===b)$('book').innerHTML='<p class="dn">'+esc(e.message)+'</p>';}
  if(BOOK===b)b.t=setTimeout(function(){bookPoll(false);},3000);}
+$('tkb').onclick=function(){openTicket('BUY');};
 $('bookb').onclick=function(){if(BOOK){bookStop();return;}if(!st.sel||st.m!=='au')return;BOOK={code:st.sel,start:Date.now()};$('bookb').classList.add('on');$('book').innerHTML='<p class="mu">读取盘口…</p>';bookPoll(true);};
 </script>
 </body>

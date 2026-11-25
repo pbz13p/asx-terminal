@@ -247,6 +247,43 @@ class Handler(SimpleHTTPRequestHandler):
             except Exception as e:
                 self.send_json({"ok": False, "error": str(e)[:300]}, 200)
             return
+        if path == "/api/order":   # own-PC only: order ticket through Frank's TWS (ibkr_trade.py has the safety rules)
+            if self._users() or self.client_address[0] != "127.0.0.1" or self.headers.get("X-Neon") != "1" \
+                    or (self.headers.get("Origin") or "http://127.0.0.1:8765").split("//")[-1].split(":")[0] not in ("127.0.0.1", "localhost"):
+                self.send_error(404)
+                return
+            try:
+                import ibkr_trade as T
+                n = int(self.headers.get("Content-Length") or 0)
+                body = json.loads(self.rfile.read(min(n, 20000)) or b"{}")
+                act = body.get("action")
+                if act == "preview":
+                    data = T.preview(body.get("order") or {})
+                elif act == "place":
+                    data = T.place(body.get("order") or {}, body.get("token"))
+                elif act == "cancel":
+                    data = T.cancel(body.get("id"))
+                elif act == "overview":
+                    data = T.overview()
+                elif act == "settings":
+                    kw = {}
+                    if "max_order_value" in body:
+                        kw["max_order_value"] = max(10.0, min(1e6, float(body["max_order_value"])))
+                    if "max_orders_day" in body:
+                        kw["max_orders_day"] = max(1, min(200, int(body["max_orders_day"])))
+                    if "trade_live" in body:
+                        if body["trade_live"] and body.get("confirm") != "我确认用真账户下单":
+                            raise ValueError("要打开真账户下单，请输入：我确认用真账户下单")
+                        kw["trade_live"] = bool(body["trade_live"])
+                    T.save_settings(**kw)
+                    T.log({"action": "settings", **kw})
+                    data = {k: T.settings().get(k) for k in ("max_order_value", "max_orders_day", "trade_live")}
+                else:
+                    raise ValueError("不认识的操作")
+                self.send_json({"ok": True, "data": data})
+            except Exception as e:
+                self.send_json({"ok": False, "error": str(e)[:300]}, 200)
+            return
         if path == "/api/ibwatch":   # own-PC only: price alerts / ntfy setting / test push (ibkr_watch.py)
             if self._users() or self.client_address[0] != "127.0.0.1":
                 self.send_error(404)
@@ -884,7 +921,7 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "providers/binance.py", "providers/eodhd_us.py", "ibkr_link.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "ibkr_trade.py", "providers/binance.py", "providers/eodhd_us.py", "ibkr_link.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py", "company.py", "ibkr_link.py", "ibkr_watch.py", "depth_log.py")
 
 
