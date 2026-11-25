@@ -1,2 +1,2 @@
-rounds=
-# 2026-11-25: rounds 82, 99, 100 done. Empty = only run ann_lists + cn_brief.
+rounds=101
+# 2026-11-25: round 101 (related-party share of 5B spend). Empty = only run ann_lists + cn_brief.
