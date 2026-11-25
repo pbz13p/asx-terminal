@@ -810,7 +810,7 @@ async function odPost(b){var r=await fetch('/api/order',{method:'POST',headers:{
 function tickOf(p,m){return m==='us'?(p<1?0.0001:0.01):(p<0.1?0.001:p<2?0.005:0.01);}
 function snapPx(p,m){var t=tickOf(p,m);return +(Math.round(p/t)*t).toFixed(t<0.001?4:3);}
 async function openTicket(side,price){var code=st.sel,m=st.m;if(!code||(m!=='au'&&m!=='us'))return;side=side||'BUY';
- var last=IBQ&&IBQ.code===code&&IBQ.last?IBQ.last:(BARS.length?BARS[BARS.length-1].close:null),ccy=m==='us'?'美元':'澳元';
+ var last=IBQ&&IBQ.code===code&&IBQ.last?IBQ.last:(BARS.length&&st.sel===code?BARS[BARS.length-1].close:(Q[code]&&Q[code].last)||null),ccy=m==='us'?'美元':'澳元';
  popShow('<h3>💰 下单 · '+esc(code)+' <span class="mu" style="font-size:15px">'+(m==='us'?'美股':'澳股')+' · 限价单 · 当天有效</span></h3>'
   +'<div class="row"><button class="btn'+(side==='BUY'?' on':'')+'" id="tkbuy">买入</button><button class="btn'+(side==='SELL'?' on':'')+'" id="tksell">卖出</button><span class="mu">现价 '+(last!=null?pxr(last):'—')+'</span></div>'
   +'<label><span>数量（股）</span><input id="tkq" inputmode="numeric" style="width:160px"></label>'

@@ -33,8 +33,8 @@ def _lib():
 
 def _clean(x):
     import math
-    if isinstance(x, float):
-        return None if (math.isnan(x) or x < 0) else x
+    if isinstance(x, (int, float)) and not isinstance(x, bool):
+        return None if ((isinstance(x, float) and math.isnan(x)) or x < 0) else x
     if isinstance(x, dict):
         return {k: _clean(v) for k, v in x.items()}
     if isinstance(x, list):
