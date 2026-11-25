@@ -53,7 +53,10 @@ def log(entry):
 
 
 def _num(x):
-    return None if x is None or (isinstance(x, float) and (math.isnan(x) or x < 0 or x > 1e15)) else x
+    """IBKR sends -1 / NaN when there is no price (market closed, no data)."""
+    if not isinstance(x, (int, float)) or isinstance(x, bool) or (isinstance(x, float) and math.isnan(x)) or x <= 0 or x > 1e15:
+        return None
+    return x
 
 
 def _float(x):
