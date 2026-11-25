@@ -224,7 +224,7 @@ function DNC(a){var cn=st.m==='cn';return a==null?(cn?'#19FF9C':'#FF2E74'):(cn?'
 // 加密实时（Frank 2026-11-25）：浏览器直连币安合约 K 线推送，最新一根和价格每秒跳；只在加密市场用
 var CXWS=null,CXK=null,CXT=0;
 function cxLive(){var want=st.m==='cx'&&st.sel?(st.sel+'|'+(CXI[st.tf]?st.tf:'1d')):null;if(want===CXK)return;CXK=want;if(CXWS){try{CXWS.onclose=null;CXWS.close();}catch(e){}CXWS=null;}if(!want)return;
- var iv=want.split('|')[1],code=st.sel;try{CXWS=new WebSocket('wss://fstream.binance.com/ws/'+code.toLowerCase()+'usdt@kline_'+iv);}catch(e){return;}
+ var iv=want.split('|')[1],code=st.sel;try{CXWS=new WebSocket('wss://fstream.binance.com/market/ws/'+code.toLowerCase()+'usdt@kline_'+iv);}catch(e){return;}
  CXWS.onclose=function(){if(CXK===want){CXK=null;setTimeout(cxLive,3000);}};
  CXWS.onmessage=function(ev){if(st.m!=='cx'||st.sel!==code||!BARS.length)return;var k=JSON.parse(ev.data).k;if(!k)return;var now=Date.now();if(now-CXT<400&&!k.x)return;CXT=now;
   var o=+k.o,h=+k.h,l=+k.l,c=+k.c,v=+k.v,intra=!!CXI[st.tf],per=st.per||'d',last=BARS[BARS.length-1];
