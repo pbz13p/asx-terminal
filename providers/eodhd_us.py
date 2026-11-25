@@ -198,4 +198,13 @@ class UsProvider(EodhdProvider):
                 if len(out) >= 60:
                     break
             return out
-        return self._cached(f"us:ann:{code}", 1800, load)
+        try:
+            return self._cached(f"us:ann:{code}", 1800, load)
+        except DataUnavailable:
+            # SEC refuses requests without a contact (SEC_CONTACT in .env); meanwhile show EODHD's news for the ticker
+            return self._cached(f"us:news:{code}", 1800, lambda: self._news(code))
+
+    def _news(self, code):
+        rows = self._get("news", s=sym(code), limit=40) or []
+        return [{"date": (r.get("date") or "")[:10], "headline": r.get("title") or "", "sensitive": False,
+                 "ids": r.get("link") or "", "pdf": r.get("link") or ""} for r in rows if r.get("title")]
