@@ -1,5 +1,34 @@
 [
  {
+  "id": "20261125-nq-futures-tariffs-16",
+  "time": "2026-11-25 23:20",
+  "title": "纳指期货-2.5%：路透称美国将对16个贸易伙伴加关税，英伟达盘前-5%；今晚PCE",
+  "what": "11月25日美东约5:44（墨尔本21:44）：纳指100期货-2.55%、标普期货-1.54%、道指期货-0.82%，VIX约29（+10%）；英伟达盘前约-5%，美光、AMD、Marvell跌超5%。路透援引知情人士称，美国准备对16个主要贸易伙伴（包括中国、印度、日本、欧盟）加征关税，依据是今年3月启动的“产业产能过剩”301调查，部分替代2月被最高法院判无效的关税；税率、生效时间未公布，政府未正式确认，中方暂无回应。金价约$3,559（-0.9%），WTI约$81.4，美10年期约4.90%，比特币约$5.89万。",
+  "why": "在昨天WSJ报道基础上，路透给出了更具体的范围；叠加市场继续怀疑AI投资回报（英伟达周二已跌近6%）。12月加息25bp概率约97%-98%。",
+  "impact": "若美股收盘跌幅接近期货，明天ASX科技、锂矿小盘和A股半导体、出口链继续承压；澳洲在不在名单里还不清楚（待核）。今晚墨尔本00:30公布美国10月PCE（预期同比3.8%、核心3.2%）和三季度GDP，周四美股感恩节休市。",
+  "tags": [
+   "中美",
+   "美股",
+   "宏观",
+   "A股",
+   "澳股"
+  ],
+  "sources": [
+   {
+    "name": "TipRanks",
+    "url": "https://www.tipranks.com/news/stock-market-today-nov-25-wall-street-braces-for-inflation-data-after-tech-led-selloff"
+   },
+   {
+    "name": "Yahoo Finance",
+    "url": "https://finance.yahoo.com/markets/live/stock-market-today-wednesday-november-25-dow-sp-500-nasdaq-pce-inflation-data-091428237.html"
+   },
+   {
+    "name": "White & Case（301调查背景）",
+    "url": "https://www.whitecase.com/insight-alert/ustr-initiates-section-301-investigations-16-us-trade-partners-targeting-industrial"
+   }
+  ]
+ },
+ {
   "id": "20261125-ashare-close-chinext-4.2",
   "time": "2026-11-25 19:20",
   "title": "A股收盘大跌：创业板-4.19%、科创50-5.12%，沪指跌破3500，超4500股下跌",
