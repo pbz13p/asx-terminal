@@ -90,7 +90,7 @@ def check(order):
         price = float(order.get("price"))
     except (TypeError, ValueError):
         raise ValueError("数量和价格要填数字") from None
-    if qty <= 0 or qty > 10_000_000:
+    if qty <= 0 or qty > 1_000_000_000:   # penny stocks trade in the tens of millions
         raise ValueError("数量不正确")
     if not price > 0:
         raise ValueError("限价要大于 0")
