@@ -1,5 +1,33 @@
 [
  {
+  "id": "20261125-au-cpi-4.9",
+  "time": "2026-11-25 13:20",
+  "title": "澳洲10月CPI超预期：通胀4.9%，核心3.8%，澳储行加息风险回来",
+  "what": "11月25日11:30 ABS公布：10月CPI同比4.9%（预期4.7%，9月4.3%），环比+0.5%（预期0.4%）；截尾均值3.8%（预期3.6%，前值3.6%），加权中位数3.4%持平。住房+6.4%（电费+25.2%，联邦电费补贴到期），交通+10.6%（10月汽油环比+6.3%）。",
+  "why": "电费补贴到期、国际油价上涨；澳储行11月预测通胀峰值4.5%，已被超出。现金利率4.85%，今年累计加息125个基点。",
+  "impact": "12月8日澳储行加息概率上升（市场仍以按兵不动为主），短端利率和澳元走高（澳元兑美元一周高）；ASX 200盘中约-0.6%（约8,675，待核），地产、可选消费、科技小盘估值承压，小盘融资环境更紧。今晚美国PCE、GDP。",
+  "tags": [
+   "宏观",
+   "央行",
+   "澳股",
+   "汇率"
+  ],
+  "sources": [
+   {
+    "name": "ABS",
+    "url": "https://www.abs.gov.au/media-centre/media-releases/cpi-rose-49-year-october-2026"
+   },
+   {
+    "name": "investingLive",
+    "url": "https://investinglive.com/central-banks/australia-trimmed-mean-cpi-jumps-to-3-8-in-october-keeping-further-rba-hike-risk-alive/"
+   },
+   {
+    "name": "Investing.com",
+    "url": "https://au.investing.com/news/economic-indicators/australia-cpi-inflation-rises-above-forecasts-in-oct-4794497"
+   }
+  ]
+ },
+ {
   "id": "20261125-overnight",
   "time": "2026-11-25 07:20",
   "title": "隔夜市场：英伟达回吐约7%，纳指约-2%、芯片股-7%，道指小涨；ASX恐低开",
