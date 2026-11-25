@@ -221,10 +221,12 @@ function maApplyEdit(){var k=+$('maed').dataset.k,m=MACFG[k];var n=Math.round(+$
 /* price-move colours: ASX green up / red down; A-shares the other way round (red up, green down), as Chinese traders expect */
 function UPC(a){var cn=st.m==='cn';return a==null?(cn?'#FF2E74':'#19FF9C'):(cn?'rgba(255,46,116,'+a+')':'rgba(25,255,156,'+a+')');}
 function DNC(a){var cn=st.m==='cn';return a==null?(cn?'#19FF9C':'#FF2E74'):(cn?'rgba(25,255,156,'+a+')':'rgba(255,46,116,'+a+')');}
+// K-line colour like TradingView: close>open up, close<open down; close==open -> vs previous close; unchanged -> same as previous bar
+function barUps(b){var r=[],last=true;for(var i=0;i<b.length;i++){var x=b[i],pc=i?b[i-1].close:x.open,u=x.close>x.open?true:x.close<x.open?false:x.close>pc?true:x.close<pc?false:last;r.push(u);last=u;}return r;}
 function draw(){
  var b=BARS,c=b.map(function(x){return x.close;}),lp=c.length?c[c.length-1]:1,pr=lp<0.1?4:lp<2?3:2,pf={type:'price',precision:pr,minMove:Math.pow(10,-pr)};
  if(MAPER!==(st.per||'d'))MACFG=loadMa(st.per||'d');cs.applyOptions({priceFormat:pf,upColor:UPC(),downColor:DNC(),wickUpColor:UPC(),wickDownColor:DNC()});document.body.classList.toggle('cn',st.m==='cn');if($('cpb'))$('cpb').style.display=st.m==='au'?'':'none';syncMaSeries(pf);
- cs.setData(b);vs.setData(b.map(function(x){return {time:x.time,value:x.v,color:x.close>=x.open?UPC(.28):DNC(.28)};}));
+ var UPS=barUps(b);cs.setData(b.map(function(x,i){var c=UPS[i]?UPC():DNC();return {time:x.time,open:x.open,high:x.high,low:x.low,close:x.close,color:c,wickColor:c,borderColor:c};}));vs.setData(b.map(function(x,i){return {time:x.time,value:x.v,color:UPS[i]?UPC(.28):DNC(.28)};}));
  MAV=MACFG.map(function(m){return maCalc(m,c);});MACFG.forEach(function(m,k){var v=MAV[k];mas[k].setData(m.on?b.map(function(x,i){return v[i]==null?{time:x.time}:{time:x.time,value:v[i]};}):[]);});
  var mb=sma(c,20);bol.forEach(function(sr,k){sr.setData(BOLL?b.map(function(x,i){if(mb[i]==null)return null;var sd=0;for(var j=i-19;j<=i;j++)sd+=Math.pow(c[j]-mb[i],2);sd=Math.sqrt(sd/20);return {time:x.time,value:mb[i]+(k-1)*2*sd};}).filter(Boolean):[]);});
  setMarks();
@@ -242,7 +244,7 @@ function draw(){
    var so=sub.addLineSeries({color:'#22E4F5',lineWidth:1.4,priceLineVisible:false,priceFormat:{type:'volume'}});so.setData(b.map(function(x,i){return {time:x.time,value:ob[i]};}));subs.push(so);}
  if(st.sub==='atr'){var at=[],a=null;for(var i=0;i<b.length;i++){var tr=i?Math.max(b[i].high-b[i].low,Math.abs(b[i].high-c[i-1]),Math.abs(b[i].low-c[i-1])):b[i].high-b[i].low;a=i<14?(a==null?tr:a+(tr-a)/(i+1)):a+(tr-a)/14;at.push(i>=13?a:null);}
    var sa=sub.addLineSeries({color:'#FFD43B',lineWidth:1.4,priceLineVisible:false,priceFormat:pf});sa.setData(b.map(function(x,i){return at[i]==null?{time:x.time}:{time:x.time,value:at[i]};}));subs.push(sa);}
- if(st.sub==='val'){var sv=sub.addHistogramSeries({priceLineVisible:false,lastValueVisible:true,priceFormat:{type:'volume'}});sv.setData(b.map(function(x){return {time:x.time,value:x.close*x.v,color:x.close>=x.open?UPC(.6):DNC(.6)};}));subs.push(sv);}
+ if(st.sub==='val'){var sv=sub.addHistogramSeries({priceLineVisible:false,lastValueVisible:true,priceFormat:{type:'volume'}});var U2=barUps(b);sv.setData(b.map(function(x,i){return {time:x.time,value:x.close*x.v,color:U2[i]?UPC(.6):DNC(.6)};}));subs.push(sv);}
  subLabel();
  legend();setTimeout(paintOv,0);
 }
