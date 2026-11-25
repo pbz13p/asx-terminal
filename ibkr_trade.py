@@ -104,6 +104,7 @@ def check(order):
 def _connect(ib_async, placing=False):
     """Preview, account view and cancel may use the live TWS; placing a new order needs trade_live (or a paper TWS)."""
     ib = ib_async.IB()
+    ib.RequestTimeout = 20          # never hang the terminal on a TWS request (a hung call held the lock on 2026-11-25)
     live_ok = bool(settings().get("trade_live")) or not placing
     for port in (LIVE_PORTS if live_ok else ()) + PAPER_PORTS:
         try:
@@ -127,7 +128,9 @@ def _contract(ib_async, o):
 
 def _run(fn, placing=False):
     from ibkr_link import _lib
-    with _lock:
+    if not _lock.acquire(timeout=45):
+        raise RuntimeError("盈透正忙（上一笔请求还没结束），过一会儿再试")
+    try:
         asyncio.set_event_loop(asyncio.new_event_loop())
         ib_async = _lib()
         ib, port = _connect(ib_async, placing)
@@ -135,6 +138,8 @@ def _run(fn, placing=False):
             return fn(ib_async, ib, port)
         finally:
             ib.disconnect()
+    finally:
+        _lock.release()
 
 
 def _token(o):
