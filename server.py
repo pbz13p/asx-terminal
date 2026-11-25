@@ -268,7 +268,8 @@ class Handler(SimpleHTTPRequestHandler):
                 elif act == "settings":
                     kw = {}
                     if "max_order_value" in body:
-                        kw["max_order_value"] = max(10.0, min(1e6, float(body["max_order_value"])))
+                        v = float(body["max_order_value"] or 0)
+                        kw["max_order_value"] = 0.0 if v <= 0 else min(1e8, v)
                     if "max_orders_day" in body:
                         kw["max_orders_day"] = max(1, min(200, int(body["max_orders_day"])))
                     if "trade_live" in body:

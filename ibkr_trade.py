@@ -4,7 +4,8 @@ Safety rules (fixed with Frank 2026-11-25):
   * Limit orders only (no market orders), day orders, regular hours; ASX (AUD) and US (USD, SMART routing).
   * Every order is previewed first: IBKR's own what-if check (commission, cash after), current bid/ask, how many ticks
     away, warnings. The ticket returns a one-time token; placing needs that token within 120 s and the exact same order.
-  * Caps from local/ibkr_settings.json: max_order_value (default 1,000 in the order's currency) and max_orders_day (20).
+  * Caps from local/ibkr_settings.json: max_order_value (0 = none; Frank 2026-11-25 set none -- the account's cash is
+    the limit) and max_orders_day (20).
   * Live trading is OFF until Frank turns it on in ⚙ 设置 (trade_live = true); until then only a paper TWS / Gateway
     (ports 7497 / 4002) accepts orders. TWS must also have "Read-Only API" unticked -- that switch is Frank's.
   * Every preview / order / cancel is appended to local/orders_log.json (on this PC only, never in git).
@@ -97,8 +98,9 @@ def check(order):
     if abs(round(price / t) * t - price) > t / 1000:
         raise ValueError(f"价格要按最小价位 {t:g} 的整数倍填")
     value = qty * price
-    cap = float(settings().get("max_order_value") or 1000)
-    if value > cap + 1e-9:
+    cap = settings().get("max_order_value", 1000)
+    cap = float(cap) if cap not in (None, "") else 0.0          # 0 = no cap (Frank 2026-11-25: 账户里的钱就是上限)
+    if cap > 0 and value > cap + 1e-9:
         raise ValueError(f"这笔 {value:,.2f} 超过单笔上限 {cap:,.0f}（在 ⚙ 设置里改）")
     return {"mkt": mkt, "code": code, "side": side, "qty": qty, "price": round(price, 6), "value": round(value, 2),
             "ccy": "USD" if mkt == "us" else "AUD"}
@@ -268,5 +270,5 @@ def overview():
                    "status": tr.orderStatus.status, "filled": tr.orderStatus.filled}
                   for tr in ib.openTrades() if tr.orderStatus.status not in ("Cancelled", "Filled", "Inactive")]
         return {"paper": port in PAPER_PORTS, "port": port, "summary": summ, "positions": pos, "orders": orders,
-                "live_on": bool(settings().get("trade_live")), "max_order_value": float(settings().get("max_order_value") or 1000)}
+                "live_on": bool(settings().get("trade_live")), "max_order_value": float(settings().get("max_order_value", 1000) or 0)}
     return _run(go)
