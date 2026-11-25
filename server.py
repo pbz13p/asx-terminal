@@ -45,6 +45,8 @@ provider = get_provider()
 CODE = re.compile(r"^[A-Z0-9]{1,6}$")
 CN_CODE = re.compile(r"^\d{6}$")
 _cnp = None
+_usp = None
+US_CODE = re.compile(r"^[A-Z][A-Z0-9.\-]{0,9}$")
 _cxp = None
 _cmp = None
 CM_CODE = re.compile(r"^[A-Z0-9]{2,12}$")
@@ -556,6 +558,36 @@ class Handler(SimpleHTTPRequestHandler):
             return out
         raise ValueError("A 股模式暂不支持这个功能")
 
+    def route_us(self, name, q):
+        """US mode (?m=us, Frank 2026-11-25): NYSE / NASDAQ stocks and ETFs from EODHD, filings from SEC EDGAR."""
+        from providers.eodhd_us import UsProvider
+        global _usp
+        if _usp is None:
+            _usp = UsProvider()
+        if name == "market":
+            return _usp.market()
+        if name == "indices":
+            return _usp.indices()
+        if name == "quotes":
+            codes = [c for c in q.get("codes", "").split(",") if c]
+            if not codes or len(codes) > 60 or not all(US_CODE.match(c) for c in codes):
+                raise ValueError("美股代码不正确，例如 NVDA")
+            return _usp.quotes(codes)
+        code = q.get("code", "")
+        if not US_CODE.match(code):
+            raise ValueError("美股代码不正确，例如 NVDA")
+        if name == "candles":
+            if q.get("tf") not in TF:
+                raise ValueError("周期不正确")
+            return _usp.candles(code, q["tf"])
+        if name == "insight":
+            return _usp.insight(code)
+        if name == "ann":
+            return _usp.announcements(code)
+        if name == "profile":
+            return {"code": code, "lists": [], "watch": None, "vol": None}
+        raise ValueError("美股模式暂不支持这个功能")
+
     def route_cx(self, name, q):
         """Crypto mode (?m=cx): Binance USDT perpetuals, real time from this PC."""
         from providers.binance import BinanceProvider
@@ -622,6 +654,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self.route_cm(name, q)
         if q.get("m") == "cn" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
             return self.route_cn(name, q)
+        if q.get("m") == "us" and name in ("market", "indices", "quotes", "candles", "insight", "ann", "profile"):
+            return self.route_us(name, q)
         if name == "eodstatus" and not self._users() and self.client_address[0] == "127.0.0.1":   # own PC: why EODHD refuses
             key = getattr(provider, "key", "") or ""
             out = {"key_len": len(key), "key_tail": key[-4:]}
@@ -775,9 +809,10 @@ class Handler(SimpleHTTPRequestHandler):
         if name == "ibq":   # 盈透 quote for the right panel (paper = delayed until live data is subscribed)
             import ibkr_link
             c = (q.get("code") or "").upper()
-            if not CODE.match(c):
+            us = q.get("m") == "us"
+            if not (US_CODE if us else CODE).match(c):
                 raise ValueError("股票代码不正确")
-            return ibkr_link.quote(c)
+            return ibkr_link.quote(c, "us" if us else "au")
         if name in ("ibwatch", "ibdepth"):   # own-PC only: alert list + watcher status, or the live 5-level book
             if self._users() or self.client_address[0] != "127.0.0.1":
                 raise ValueError("not available")
@@ -849,7 +884,7 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "providers/binance.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "providers/binance.py", "providers/eodhd_us.py", "ibkr_link.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py", "company.py", "ibkr_link.py", "ibkr_watch.py", "depth_log.py")
 
 

@@ -398,7 +398,10 @@ def _day(ts, tz):
     except Exception:
         from datetime import timedelta
         u = datetime.fromtimestamp(int(ts), timezone.utc)
-        off = 8 if tz == "Asia/Shanghai" else (11 if u.month in (10, 11, 12, 1, 2, 3) else 10)
+        if tz == "America/New_York":
+            off = -4 if 4 <= u.month <= 10 else -5      # rough DST (Mar/Nov edges off by an hour; trading is mid-day)
+        else:
+            off = 8 if tz == "Asia/Shanghai" else (11 if u.month in (10, 11, 12, 1, 2, 3) else 10)
         return (u + timedelta(hours=off)).date().isoformat()
 
 

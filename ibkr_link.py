@@ -91,20 +91,21 @@ def _status(code):
 _qcache = {}
 
 
-def quote(code):
+def quote(code, mkt="au"):
     """Fast quote for the terminal's right panel: connect, one ASX quote, disconnect. Cached 20 s per code."""
-    hit = _qcache.get(code)
+    key = f"{mkt}:{code}"
+    hit = _qcache.get(key)
     if hit and time.time() - hit[0] < 20:
         return hit[1]
     try:
-        out = _clean(_quote(code))
+        out = _clean(_quote(code, mkt))
     except Exception as e:
         out = {"connected": False, "error": f"{type(e).__name__}: {str(e)[:200]}"}
-    _qcache[code] = (time.time(), out)
+    _qcache[key] = (time.time(), out)
     return out
 
 
-def _quote(code):
+def _quote(code, mkt="au"):
     with _lock:
         asyncio.set_event_loop(asyncio.new_event_loop())
         ib_async = _lib()
@@ -131,7 +132,8 @@ def _quote(code):
             return {"connected": False, "error": "IB Gateway 没打开或没登录", "detail": "; ".join(errs)[:400]}
         try:
             ib.reqMarketDataType(3)        # live if subscribed, otherwise delayed (free)
-            c = ib_async.Stock(code, "ASX", "AUD")
+            # US: SMART routing in USD; the free US feed (Cboe One + IEX) is live for every IBKR client
+            c = ib_async.Stock(code.replace("-", " "), "SMART", "USD") if mkt == "us" else ib_async.Stock(code, "ASX", "AUD")
             if not ib.qualifyContracts(c):
                 return {"connected": True, "port": port, "paper": port in (4002, 7497), "error": "盈透找不到这只股票"}
             t = ib.reqMktData(c, "", False, False)
