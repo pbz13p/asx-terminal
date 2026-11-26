@@ -1,5 +1,61 @@
 [
  {
+  "id": "20261126-hormuz-mines-irgc",
+  "time": "2026-11-26 23:20",
+  "title": "伊朗革命卫队称2艘油轮在霍尔木兹触雷起火，其中1艘超大油轮；未获独立证实",
+  "what": "11月26日（路透迪拜电）伊朗革命卫队称两艘油轮走“未经许可的航线”穿越霍尔木兹海峡时，在阿曼哈萨布港以北触雷爆炸起火，其中一艘载原油超200万桶（塔斯尼姆通讯社）；船名、船旗、伤亡均未公布，阿曼、船东、UKMTO暂未证实。UKMTO另报周四迪拜以西约50海里一艘油轮附近有不明弹药爆炸。布伦特约$94–95（周三+3.5%收$94.61），WTI约$84.4。",
+  "why": "伊朗要求美国解除对伊朗港口的海上封锁才恢复正常通航；此前胡塞称袭击沙特Ras Tanura炼厂。OPEC+ 11月29日开会。",
+  "impact": "若证实触雷、航运保险和绕航成本上升，油价可能冲击$100；澳股能源（Woodside、Santos、Karoon）受益，航空运输承压；油价推高通胀，美联储、澳储行加息压力更大；A股石油、油运受益。未证实前按传言看。",
+  "tags": [
+   "油价",
+   "宏观",
+   "澳股",
+   "A股"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/ThePrint",
+    "url": "https://theprint.in/world/irans-revolutionary-guards-say-two-oil-tankers-hit-sea-mines-near-omans-khasab/3109878/"
+   },
+   {
+    "name": "Shipping Herald",
+    "url": "https://www.shippingherald.com/iran-says-ships-hit-mines-in-hormuz-warns-vessels-to-coordinate-passage/"
+   },
+   {
+    "name": "The National",
+    "url": "https://www.thenationalnews.com/business/energy/2026/11/26/oil-rebounds-to-95-per-barrel-after-saudi-refinery-attack/"
+   }
+  ]
+ },
+ {
+  "id": "20261126-global-rebound-asx-miners",
+  "time": "2026-11-26 23:20",
+  "title": "全球股市反弹：欧洲Stoxx 600 +1.7%，ASX收涨0.8%、矿业+3.9%；A股平收",
+  "what": "11月26日：ASX 200收8,763.8（+0.8%），矿业+3.9%（3周最好，BHP、力拓约+3.5%），能源+2.7%（Woodside+3.3%）；澳洲三季度私人资本开支+12.2%（预期4.4%，数据中心带动）。A股上证+0.01%收3476.88，创业板+0.29%，科创50 -1.36%，成交1.32万亿，1683涨/3375跌，贵金属、油服、煤炭领涨。MSCI亚太+0.9%，台韩科技股涨超2%；欧洲Stoxx 600 +1.7%（伦敦早盘）；美股期货+0.5%，美股感恩节休市；铜从11个月低点反弹超2%，金价约$3,572。",
+  "why": "美股周三盘中纳指一度-4%后收窄，抄底资金进场；关税方案离生效还有约两个月；油价、铜价反弹带动资源股。",
+  "impact": "澳股资源股领涨、科技小盘仍弱；资本开支大超预期加上CPI 4.9%，澳储行12月加息风险上升。A股科技仍弱、资金在资源和红利。周五美股半天，看芯片股能否站稳。",
+  "tags": [
+   "澳股",
+   "A股",
+   "宏观",
+   "美股"
+  ],
+  "sources": [
+   {
+    "name": "Reuters/Business Recorder",
+    "url": "https://www.brecorder.com/news/40450833/australia-shares-end-higher-as-investors-return-to-battered-mining-stocks"
+   },
+   {
+    "name": "Bloomberg/swissinfo",
+    "url": "https://www.swissinfo.ch/eng/global-stocks-climb-as-ai-trade-mounts-a-comeback:-markets-wrap/92439307"
+   },
+   {
+    "name": "21财经",
+    "url": "https://m.21jingji.com/article/20261126/herald/496dcf8fa76f10c3591a5385179784d9.html"
+   }
+  ]
+ },
+ {
   "id": "20261126-sp-nvda-creditwatch",
   "time": "2026-11-26 13:20",
   "title": "标普把英伟达AA评级列入负面观察，约3个月内可能降一级",
