@@ -223,17 +223,27 @@ class IBFeed:
             self.ib.errorEvent += self._on_error
         if self.ib.isConnected():          # socket up but Gateway lost IB's servers (1100): wait for 1101/1102
             return self.farm_ok
+        why = []
         for p in PORTS:
             try:
                 self.ib.connect(HOST, p, clientId=CLIENT_ID, timeout=10, readonly=True)
                 self.port, self.farm_ok, self.tickers = p, True, {}
                 self.ib.reqMarketDataType(1)
+                self.last_error = None
                 return True
-            except Exception:
+            except Exception as e:
+                why.append(f"{p}: {type(e).__name__} {str(e)[:60]}")
                 try:
                     self.ib.disconnect()
                 except Exception:
                     pass
+        # 2026-11-27: depth snapshots never ran 11/24-26 although TWS was up at times. A failed connect can leave the
+        # IB object half-open, so every later retry fails too. Start from a fresh object next time, and keep the reason.
+        try:
+            self.ib.errorEvent -= self._on_error
+        except Exception:
+            pass
+        self.ib, self.last_error = None, "; ".join(why)[:400]
         return False
 
     def _on_error(self, reqId, code, msg, *a):
@@ -330,7 +340,8 @@ class Watcher:
         if not ok and time.time() - self._last_connect >= 30:
             self._last_connect = time.time()
             ok = self.feed.connect()
-        self.status.update(connected=ok, port=getattr(self.feed, "port", None), checked=now.strftime("%H:%M:%S"))
+        self.status.update(connected=ok, port=getattr(self.feed, "port", None), checked=now.strftime("%H:%M:%S"),
+                           last_error=getattr(self.feed, "last_error", None))
         ev = self.outage.update(ok, time.time(), in_watch_window(now))
         if ev == "down":
             self._push("盈透断线", f"IB Gateway 断开已超过 {OUTAGE_MIN} 分钟（{now:%H:%M}）。常见原因：手机或网页登录了盈透。"
