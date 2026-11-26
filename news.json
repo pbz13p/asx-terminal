@@ -1,5 +1,33 @@
 [
  {
+  "id": "20261126-sp-nvda-creditwatch",
+  "time": "2026-11-26 13:20",
+  "title": "标普把英伟达AA评级列入负面观察，约3个月内可能降一级",
+  "what": "11月25日（美东下午，墨尔本26日早上）标普把英伟达AA发行人评级及高级无担保债评级列入负面信用观察，称约3个月内可能下调，预计最多一级到AA-（仍是投资级）；将与董事会和管理层面谈。英伟达周三收跌约3.9%（约$149.3）。同日亚洲芯片股反弹：日经约+1.6%、Kospi约+1.9%（早盘数，待核）；韩国央行加息25个基点到3.25%（5比2，市场预期不一）。",
+  "why": "标普称英伟达管理和治理有明显缺陷、董事会没有补救措施：董事任期和独立性、治理跟不上规模、中国敞口和关键人风险；黄仁勋离职又突然复职没有消除担忧。",
+  "impact": "不影响英伟达偿债能力，但给AI龙头再添治理疑虑，SEC会计调查也没结束，AI/芯片股反弹更难持续；A股半导体、光模块和澳股科技小盘情绪仍受压。美股周四感恩节休市、周五半天。",
+  "tags": [
+   "公司",
+   "美股",
+   "A股",
+   "澳股"
+  ],
+  "sources": [
+   {
+    "name": "Business Insider/Yahoo",
+    "url": "https://uk.finance.yahoo.com/news/p-global-warns-nvidia-credit-205320758.html"
+   },
+   {
+    "name": "Seeking Alpha",
+    "url": "https://seekingalpha.com/news/4676682-nvidias-aa-credit-rating-placed-on-credit-watch-negative-by-sp-global"
+   },
+   {
+    "name": "Aju Press（韩国央行）",
+    "url": "https://www.ajupress.com/view/20261126074732923"
+   }
+  ]
+ },
+ {
   "id": "20261126-oil-houthi-ras-tanura",
   "time": "2026-11-26 11:20",
   "title": "油价大涨：胡塞称袭击沙特最大炼厂，布伦特+3.7%至约$94.8",
