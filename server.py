@@ -851,6 +851,28 @@ class Handler(SimpleHTTPRequestHandler):
             if not (US_CODE if us else CODE).match(c):
                 raise ValueError("股票代码不正确")
             return ibkr_link.quote(c, "us" if us else "au")
+        if name == "ibflow":   # own-PC only: live order book (10 levels) + course of sales through TWS (Frank 2026-11-27)
+            if self._users() or self.client_address[0] != "127.0.0.1":
+                raise ValueError("not available")
+            import ibkr_watch as IW
+            us = q.get("m") == "us"
+            c = (q.get("code") or "").upper()
+            if not (US_CODE if us else CODE).match(c):
+                raise ValueError("股票代码不正确")
+            if IW.WATCHER is None:
+                raise DataUnavailable("盈透后台没启动")
+            if not IW.WATCHER.status.get("connected"):
+                raise DataUnavailable("盈透没连上：TWS 没开，或 TWS 的 API 没打开（File → Global Configuration → API → Settings → 勾 Enable ActiveX and Socket Clients，端口 7496）")
+            try:
+                since = int(q.get("since") or 0)
+            except ValueError:
+                since = 0
+            if since == 0:
+                IW.log_usage(c, "订单流")
+            try:
+                return IW.WATCHER.request("flow", (c, "us" if us else "au", since), timeout=15)
+            except Exception as e:
+                raise DataUnavailable(str(e)[:160] or "没拿到订单流") from None
         if name in ("ibwatch", "ibdepth"):   # own-PC only: alert list + watcher status, or the live 5-level book
             if self._users() or self.client_address[0] != "127.0.0.1":
                 raise ValueError("not available")

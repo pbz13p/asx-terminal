@@ -23,6 +23,7 @@ import os
 import queue
 import threading
 import time
+from datetime import datetime
 import urllib.request
 from concurrent.futures import Future
 from pathlib import Path
@@ -317,6 +318,99 @@ class IBFeed:
         return books, errs
 
 
+    # ------------------------------------------------------------ order flow (Frank 2026-11-27: 盘口 + 成交明细)
+    FLOW_ROWS = 10
+
+    def _flow_contract(self, code, mkt):
+        ib_async = self._lib()
+        c = ib_async.Stock(code, "SMART", "USD", primaryExchange="") if mkt == "us" else ib_async.Stock(code, "ASX", "AUD")
+        return c if self.ib.qualifyContracts(c) else None
+
+    def flow_close(self):
+        f = getattr(self, "flow", None)
+        self.flow = None
+        if not f or not (self.ib and self.ib.isConnected()):
+            return
+        for fn, arg in ((self.ib.cancelMktDepth, (f["c"],)), (self.ib.cancelTickByTickData, (f["c"], "AllLast")),
+                        (self.ib.cancelMktData, (f["c"],))):
+            try:
+                fn(*arg, **({"isSmartDepth": f["smart"]} if fn == self.ib.cancelMktDepth else {}))
+            except Exception:
+                pass
+
+    def _flow_side(self, f, px):
+        """quote rule (at/above ask = buyer lifted the offer), else tick rule against the previous trade."""
+        bid, ask = f["md"].bid, f["md"].ask
+        ok = lambda x: x is not None and x == x and x > 0
+        if ok(ask) and px >= ask:
+            side = 1
+        elif ok(bid) and px <= bid:
+            side = -1
+        elif f["last_px"] is not None and px != f["last_px"]:
+            side = 1 if px > f["last_px"] else -1
+        else:
+            side = f["last_side"]
+        f["last_px"], f["last_side"] = px, side
+        return side
+
+    def _flow_add(self, f, t, px, size, live=True):
+        side = self._flow_side(f, px) if live else 0
+        f["seq"] += 1
+        f["trades"].append({"i": f["seq"], "t": t.astimezone().strftime("%H:%M:%S") if hasattr(t, "astimezone") else str(t)[-8:],
+                            "p": px, "s": size, "v": round(px * size, 2), "side": side})
+        if len(f["trades"]) > 400:
+            del f["trades"][:-400]
+        if side > 0:
+            f["buy"] += size
+        elif side < 0:
+            f["sell"] += size
+
+    def flow_open(self, code, mkt):
+        self.flow_close()
+        c = self._flow_contract(code, mkt)
+        if c is None:
+            raise RuntimeError("盈透找不到这只股票")
+        smart = mkt == "us"
+        f = {"key": (code, mkt), "c": c, "smart": smart, "seq": 0, "trades": [], "buy": 0.0, "sell": 0.0,
+             "last_px": None, "last_side": 0, "errors": [], "t0": time.time()}
+        f["md"] = self.ib.reqMktData(c, "", False, False)
+        f["dom"] = self.ib.reqMktDepth(c, numRows=self.FLOW_ROWS, isSmartDepth=smart)
+        try:   # the last ~200 trades so the list is not empty when it opens
+            hist = self.ib.reqHistoricalTicks(c, "", datetime.now(), 200, "TRADES", useRth=False)
+            for h in hist or []:
+                self._flow_add(f, h.time, float(h.price), float(h.size), live=False)
+            prev = None
+            for tr in f["trades"]:     # tick rule for the history (no quotes kept for those)
+                tr["side"] = 0 if prev is None else (1 if tr["p"] > prev else -1 if tr["p"] < prev else 0)
+                prev = tr["p"]
+        except Exception as e:
+            f["errors"].append(f"历史成交：{type(e).__name__} {str(e)[:80]}")
+        f["tbt"] = self.ib.reqTickByTickData(c, "AllLast", 0, False)
+
+        def on_tbt(tk, f=f):
+            for x in tk.tickByTicks or []:
+                try:
+                    self._flow_add(f, x.time, float(x.price), float(x.size))
+                except Exception:
+                    pass
+        f["tbt"].updateEvent += on_tbt
+        self.flow = f
+        return f
+
+    def flow_read(self, since):
+        f = self.flow
+        ok = lambda x: x if x is not None and x == x and x > 0 else None
+        dom, md = f["dom"], f["md"]
+        bids = [(x.price, x.size, getattr(x, "marketMaker", "")) for x in dom.domBids[:self.FLOW_ROWS]]
+        asks = [(x.price, x.size, getattr(x, "marketMaker", "")) for x in dom.domAsks[:self.FLOW_ROWS]]
+        recent = [e for e in self.errors if e[0] >= f["t0"] and e[2] in (309, 310, 354, 10089, 10090, 10167, 10092, 200, 162, 10189)]
+        return {"code": f["key"][0], "m": f["key"][1], "bids": bids, "asks": asks,
+                "trades": [t for t in f["trades"] if t["i"] > since][-200:], "seq": f["seq"],
+                "last": ok(md.last), "bid": ok(md.bid), "ask": ok(md.ask), "volume": ok(md.volume),
+                "buy": f["buy"], "sell": f["sell"],
+                "notes": f["errors"] + [f"盈透 {e[2]}：{e[3][:90]}" for e in recent[-3:]]}
+
+
 class Watcher:
     def __init__(self, feed=None, clock=None, list_source=None, push=None, key=None):
         self.feed = feed or IBFeed()
@@ -349,6 +443,8 @@ class Watcher:
         elif ev == "restored":
             self._push("盈透已恢复", f"{now:%H:%M} 已重新连上 IB Gateway。", "default", "white_check_mark")
         self._serve_requests(ok)
+        if getattr(self.feed, "flow", None) and (not ok or time.time() - getattr(self, "flow_seen", 0) > 20):
+            self.feed.flow_close()        # page closed or moved on: free the depth slot
         if not ok:
             for s in DL.missed_slots(now, self.done.setdefault(day, set())):
                 DL.log_missing(DEPTH_DIR, day, s, "盈透断线 / Gateway 没登录")
@@ -401,7 +497,17 @@ class Watcher:
             try:
                 if not ok:
                     raise RuntimeError("盈透没连上（Gateway 没开、没登录，或被手机登录踢掉了）")
-                if kind == "depth":
+                if kind == "flow":
+                    code, mkt, since = arg
+                    self.flow_seen = time.time()
+                    if not getattr(self.feed, "flow", None) or self.feed.flow["key"] != (code, mkt):
+                        self.feed.flow_open(code, mkt)
+                        self.feed.sleep(1.5)
+                    fut.set_result(self.feed.flow_read(since))
+                elif kind == "flow_close":
+                    self.feed.flow_close()
+                    fut.set_result({"closed": True})
+                elif kind == "depth":
                     books, errs = self.feed.depth_batch([arg], wait=3.0)
                     if arg in books:
                         fut.set_result(DL.summarise_book(*books[arg]))

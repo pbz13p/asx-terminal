@@ -103,6 +103,8 @@ td.w{white-space:normal;min-width:260px}
 .pop input{height:30px;background:var(--p2);border:1px solid var(--ln2);border-radius:6px;padding:0 8px;color:var(--ink);width:160px;font-size:15.5px}.pop .row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .pop table{width:100%;border-collapse:collapse;margin-top:8px}.pop td{padding:4px 6px;border-bottom:1px solid var(--ln)}.pop .x{cursor:pointer;color:#FF5C8A}
 .cmenu{position:fixed;z-index:61;background:#0A0F24;border:1px solid var(--c);border-radius:8px;display:none;padding:4px 0;font-size:15.5px}.cmenu div{padding:7px 16px;cursor:pointer;color:var(--ink)}.cmenu div:hover{background:#13204A}
+#flow table{width:100%;border-collapse:collapse;font-size:15px}#flow td{padding:1px 5px;white-space:nowrap}#fbook td{position:relative}#fbook .bar{position:absolute;top:1px;bottom:1px;opacity:.22;z-index:0}#fbook td span{position:relative;z-index:1}
+#fsum{margin:6px 0;font-size:15px;color:#E6ECFF}#fsum .tw{display:flex;height:8px;border-radius:4px;overflow:hidden;margin:4px 0}#fcos{max-height:330px;overflow-y:auto;border-top:1px solid var(--ln)}#fcos tr.big td{font-weight:700;background:rgba(255,212,59,.10)}#fcos td{color:#E6ECFF}
 #book table{width:100%;border-collapse:collapse;font-size:15px;margin:4px 0 8px}#book td{padding:2px 6px}#book .bq{color:#19FF9C}#book .aq{color:#FF5C8A}
 </style>
 </head>
@@ -140,7 +142,8 @@ td.w{white-space:normal;min-width:260px}
   <aside class="r" id="right">
     <div class="sec"><h3>概况</h3><div class="big num" id="rpx">—</div><div id="rname" class="mu"></div><div class="chips num" id="rchg"></div></div>
     <div class="sec"><h3>关键数据</h3><div class="kv num" id="rkv"></div></div>
-    <div class="sec" id="ribs"><h3>盈透 <span class="mu" style="font-size:15px" id="ribt"></span></h3><div style="display:flex;gap:8px;margin:2px 0 8px"><button class="tf" id="bookb" style="white-space:nowrap" title="买卖各 5 档，每 3 秒刷新（盈透实时盘口）">📊 实时盘口</button><button class="tf" id="alb" style="white-space:nowrap" title="到价提醒：到价推送到手机">🔔 到价提醒</button><button class="tf" id="tkb" style="white-space:nowrap;color:#FFD23F;border-color:rgba(255,210,63,.6)" title="通过你的盈透 TWS 下限价单（先预览、再确认）">💰 下单</button></div><div id="book"></div><div class="kv num" id="rib"></div><div class="mu" id="ribn" style="font-size:15px;margin-top:6px;color:#C9D2F5"></div></div><div class="sec"><h3>我们的研究</h3><div id="rres"></div></div>
+    <div class="sec" id="flow"><h3>订单流 <span class="mu" style="font-size:15px" id="flowt"></span><button class="tf" id="flowb" style="float:right;padding:1px 8px" title="盘口（买卖各 10 档）+ 成交明细（逐笔成交，主动买绿、主动卖红）">关</button></h3><div id="fbook"></div><div id="fsum"></div><div id="fcos"></div></div>
+    <div class="sec" id="ribs"><h3>盈透 <span class="mu" style="font-size:15px" id="ribt"></span></h3><div style="display:flex;gap:8px;margin:2px 0 8px"><button class="tf" id="bookb" style="white-space:nowrap;display:none" title="买卖各 5 档，每 3 秒刷新（盈透实时盘口）">📊 实时盘口</button><button class="tf" id="alb" style="white-space:nowrap" title="到价提醒：到价推送到手机">🔔 到价提醒</button><button class="tf" id="tkb" style="white-space:nowrap;color:#FFD23F;border-color:rgba(255,210,63,.6)" title="通过你的盈透 TWS 下限价单（先预览、再确认）">💰 下单</button></div><div id="book"></div><div class="kv num" id="rib"></div><div class="mu" id="ribn" style="font-size:15px;margin-top:6px;color:#C9D2F5"></div></div><div class="sec"><h3>我们的研究</h3><div id="rres"></div></div>
     <div class="sec"><h3>最新公告 <span class="mu" style="font-size:15px" id="annhint">· 点一下，中文直接弹出</span></h3><div id="rann"></div></div>
   </aside>
 </main>
@@ -883,6 +886,49 @@ async function bookPoll(first){var b=BOOK;if(!b)return;if(st.sel!==b.code||Date.
  if(BOOK===b)b.t=setTimeout(function(){bookPoll(false);},3000);}
 $('tkb').onclick=function(){openTicket('BUY');};
 $('bookb').onclick=function(){if(BOOK){bookStop();return;}if(!st.sel||st.m!=='au')return;BOOK={code:st.sel,start:Date.now()};$('bookb').classList.add('on');$('book').innerHTML='<p class="mu">读取盘口…</p>';bookPoll(true);};
+
+/* ---------- 订单流：盘口 10 档 + 成交明细（Frank 2026-11-27）。澳股/美股走盈透 TWS，加密走币安公开推送，A 股和商品没有数据源 ---------- */
+var FL=null,FLK='-';
+function flowOn(){return lsg('nt_flow','1')==='1';}
+function flowStop(){if(!FL)return;clearTimeout(FL.t);(FL.ws||[]).forEach(function(w){try{w.onclose=null;w.close();}catch(e){}});FL=null;}
+function flowKey(){return flowOn()&&st.sel&&!document.hidden?st.m+'|'+st.sel:null;}
+function flowStart(){var k=flowKey();if(FL&&FL.k===k)return;flowStop();FLK=k;var box=$('flow');$('flowb').textContent=flowOn()?'关':'开';
+ if(!st.sel){box.style.display='none';return;}box.style.display='';
+ if(!flowOn()){$('flowt').textContent='· 已关';$('fbook').innerHTML='';$('fsum').innerHTML='';$('fcos').innerHTML='';return;}
+ if(!k)return;
+ if(st.m==='cn'||st.m==='cm'){$('flowt').textContent='';$('fbook').innerHTML='<p class="mu">'+(st.m==='cn'?'A 股暂时没有盘口和逐笔成交的数据源（盈透账户没开 A 股行情）。':'商品没有盘口和逐笔成交数据。')+'</p>';$('fsum').innerHTML='';$('fcos').innerHTML='';return;}
+ FL={k:k,m:st.m,code:st.sel,since:0,trades:[],bids:[],asks:[],buy:0,sell:0,nb:0,ns:0,ws:[],dirty:true};
+ $('flowt').textContent=st.m==='cx'?'· 币安实时':'· 盈透实时';$('fbook').innerHTML='<p class="mu">读取中…</p>';$('fsum').innerHTML='';$('fcos').innerHTML='';
+ if(st.m==='cx')flowCx();else flowPoll();
+ flowPaint(FL);}
+function flowAdd(f,list){list.forEach(function(t){f.trades.push(t);if(t.side>0){f.buy+=t.s;f.nb++;}else if(t.side<0){f.sell+=t.s;f.ns++;}});if(f.trades.length>400)f.trades.splice(0,f.trades.length-400);f.dirty=true;}
+function flowCx(){var f=FL,sym=f.code.toLowerCase()+'usdt';
+ var d=new WebSocket('wss://fstream.binance.com/public/ws/'+sym+'@depth20@100ms');d.onmessage=function(e){var j=JSON.parse(e.data);f.bids=(j.b||[]).slice(0,10).map(function(x){return [+x[0],+x[1]];});f.asks=(j.a||[]).slice(0,10).map(function(x){return [+x[0],+x[1]];});f.dirty=true;};
+ var a=new WebSocket('wss://fstream.binance.com/market/ws/'+sym+'@aggTrade');a.onmessage=function(e){var j=JSON.parse(e.data),p=+j.p,q=+j.q;flowAdd(f,[{t:new Date(j.T).toTimeString().slice(0,8),p:p,s:q,v:p*q,side:j.m?-1:1}]);};
+ [d,a].forEach(function(w){w.onclose=function(){if(FL===f){FL=null;FLK='-';setTimeout(flowStart,3000);}};});f.ws=[d,a];}
+async function flowPoll(){var f=FL;if(!f)return;
+ try{var d=await api('ibflow?code='+encodeURIComponent(f.code)+(f.m==='us'?'&m=us':'')+'&since='+f.since);if(FL!==f)return;
+  f.bids=d.bids;f.asks=d.asks;if(f.since===0){f.trades=[];f.buy=0;f.sell=0;f.nb=0;f.ns=0;}flowAdd(f,d.trades);f.since=d.seq;f.last=d.last;f.notes=d.notes;f.err=null;f.dirty=true;}
+ catch(e){if(FL!==f)return;f.err=e.message;f.dirty=true;}
+ if(FL===f)f.t=setTimeout(flowPoll,f.err?5000:1000);}
+function flowPaint(f){if(!f||FL!==f)return;setTimeout(function(){requestAnimationFrame(function(){flowPaint(f);});},250);if(!f.dirty)return;f.dirty=false;
+ if(f.err&&!f.bids.length&&!f.trades.length){$('fbook').innerHTML='<p class="y">'+esc(f.err)+'</p>';$('fsum').innerHTML='';$('fcos').innerHTML='';return;}
+ var B=f.bids||[],A=f.asks||[],mx=0;B.concat(A).forEach(function(x){if(x[1]>mx)mx=x[1];});mx=mx||1;
+ var fq=function(q){return q>=1e6?(q/1e6).toFixed(2)+'M':q>=1e4?Math.round(q/1e3)+'K':q>=100?Math.round(q).toLocaleString():(+q).toFixed(q<1?3:1).replace(/\.?0+$/,'');};
+ var rows='';for(var i=0;i<10;i++){var x=B[i],y=A[i];if(!x&&!y)break;
+  rows+='<tr><td style="text-align:right">'+(x?'<div class="bar" style="right:0;width:'+(100*x[1]/mx)+'%;background:'+UPC()+'"></div><span>'+fq(x[1])+'</span>':'')+'</td><td class="up" style="text-align:right"><span>'+(x?pxr(x[0]):'')+'</span></td>'
+   +'<td class="dn"><span>'+(y?pxr(y[0]):'')+'</span></td><td>'+(y?'<div class="bar" style="left:0;width:'+(100*y[1]/mx)+'%;background:'+DNC()+'"></div><span>'+fq(y[1])+'</span>':'')+'</td></tr>';}
+ var sb=B.reduce(function(a,x){return a+x[1];},0),sa=A.reduce(function(a,x){return a+x[1];},0),sp=B[0]&&A[0]?A[0][0]-B[0][0]:null,mid=B[0]&&A[0]?(A[0][0]+B[0][0])/2:null;
+ $('fbook').innerHTML=rows?'<table class="num"><tr class="mu"><td style="text-align:right">买量</td><td style="text-align:right">买价</td><td>卖价</td><td>卖量</td></tr>'+rows+'</table><div class="mu" style="color:#C9D2F5;font-size:15px">价差 '+(sp!=null?pxr(sp)+'（'+(100*sp/mid).toFixed(2)+'%）':'—')+' · 买盘/卖盘 '+(sa?(sb/sa).toFixed(2):'—')+(f.notes&&f.notes.length?'<br><span class="y">'+esc(f.notes.join('；'))+'</span>':'')+'</div>'
+  :'<p class="mu">'+(f.m==='cx'?'等币安推送…':'没有盘口（可能没开市，或 ASX 盘口没订阅：'+esc((f.notes||[]).join('；')||'盈透没返回')+'）')+'</p>';
+ var tot=f.buy+f.sell,pb=tot?100*f.buy/tot:50;
+ $('fsum').innerHTML=tot?'主动买 <b class="up">'+fq(f.buy)+'</b>（'+f.nb+' 笔） · 主动卖 <b class="dn">'+fq(f.sell)+'</b>（'+f.ns+' 笔）<div class="tw"><div style="width:'+pb+'%;background:'+UPC()+'"></div><div style="flex:1;background:'+DNC()+'"></div></div>':'';
+ var T=f.trades.slice(-80).reverse(),vs=f.trades.map(function(t){return t.v;}).sort(function(a,b){return a-b;}),big=vs.length>=20?vs[Math.floor(vs.length*0.95)]:Infinity;
+ $('fcos').innerHTML=T.length?'<table class="num"><tr class="mu"><td>时间</td><td>价格</td><td style="text-align:right">数量</td><td style="text-align:right">金额</td></tr>'+T.map(function(t){var c=t.side>0?'up':t.side<0?'dn':'';return '<tr'+(t.v>=big?' class="big" title="大单（前 5%）"':'')+'><td class="mu">'+esc(t.t)+'</td><td class="'+c+'">'+pxr(t.p)+'</td><td class="'+c+'" style="text-align:right">'+fq(t.s)+'</td><td style="text-align:right">'+fq(t.v)+'</td></tr>';}).join('')+'</table>'
+  :'<p class="mu">'+(f.m==='cx'?'等成交…':'还没有成交（没开市或这只股票今天没人交易）')+'</p>';}
+$('flowb').onclick=function(){lss('nt_flow',flowOn()?'0':'1');FLK='-';flowStart();};
+document.addEventListener('visibilitychange',function(){FLK='-';flowStart();});
+setInterval(function(){if(flowKey()!==FLK)flowStart();},700);
 </script>
 </body>
 </html>
