@@ -1001,7 +1001,10 @@ def restart():
         pass
     flags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0) if os.name == "nt" else 0
     try:
-        subprocess.Popen([sys.executable] + sys.argv, cwd=str(ROOT), env=env, creationflags=flags)
+        (ROOT / "local").mkdir(exist_ok=True)   # 2026-11-26: a restarted copy died silently once; keep its errors
+        err = open(ROOT / "local" / "restart_err.log", "a", encoding="utf-8")
+        err.write(f"--- restart {time.strftime('%Y-%m-%d %H:%M:%S')}\n"); err.flush()
+        subprocess.Popen([sys.executable] + sys.argv, cwd=str(ROOT), env=env, creationflags=flags, stderr=err)
     except Exception:
         os.execve(sys.executable, [sys.executable] + sys.argv, env)
     os._exit(0)
