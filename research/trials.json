@@ -1,0 +1,14 @@
+{
+ "note": "Trial registry (validate.py / CLAUDE.md): each round's number of configurations tried, written BEFORE its gates run. Started 2026-11-26 with round 103; earlier rounds record their counts in their own file headers.",
+ "rounds": [
+  {
+   "round": 103,
+   "file": "study103.py",
+   "registered": "2026-11-26",
+   "trials": 12,
+   "grid": "exits X1/X2/X3/X4 x liquidity tiers A$10k/20k/50k",
+   "main": "X2 x A$20k",
+   "controls": "C1 底部观察 random x20, C2 AXSO buy-and-hold"
+  }
+ ]
+}
