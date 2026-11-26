@@ -716,7 +716,7 @@ class Handler(SimpleHTTPRequestHandler):
         if name == "quick":   # own-PC only: decrypted quick-study results, so Claude can read them without holding the key
             f = q.get("f", "")
             br = q.get("branch", "quick-results")
-            if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"(study\d*_results|study\d*_reading|yc_notes|ann_inventory)\.json", f) \
+            if self._users() or self.client_address[0] != "127.0.0.1" or not re.fullmatch(r"(study\d*_results|study\d*_reading|yc_notes|ann_inventory|track_au_\w+)\.json", f) \
                     or br not in ("quick-results", "results", "cn-results"):
                 raise ValueError("not available")
             data = fetch_result(f, branch=br)
