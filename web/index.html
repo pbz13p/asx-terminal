@@ -515,7 +515,8 @@ function renderRC(){var TK=(RC.track||{})[st.m==='cn'?'cn':'au'],TL=TK&&TK.lists
  $('rcc').innerHTML=L.map(function(c){var k=V[c.verdict]||'mid';
   return '<div class="cd '+k+'"><h4>'+esc(c.title)+(c.tier?'<span class="vd t-'+esc(c.tier)+'" title="'+esc(c.tier_note||'')+'">'+esc(c.tier_label)+'</span>':'<span class="vd '+k+'">'+esc(c.verdict)+'</span>')+'<span style="font:400 16px var(--mono);margin-left:auto;color:#C3CCEE">'+esc(c.market)+' · 第 '+esc(c.round)+' 轮</span></h4>'+
   '<div class="rl">'+esc(c.rule)+'</div><div class="us">👉 '+esc(c.use)+'</div>'+
-  ((c.numbers||[]).length?'<div class="nums num">'+c.numbers.map(function(n){return '<span>'+esc(n[0])+'<b>'+esc(n[1])+'</b></span>';}).join('')+'</div>':'')+
+  ((c.numbers||[]).length?'<div class="nums num">'+c.numbers.map(function(n){return typeof n==='string'?'<span><b>'+esc(n)+'</b></span>':'<span>'+esc(n[0])+'<b>'+esc(n[1])+'</b></span>';}).join('')+'</div>':'')+
+  (c.table&&c.table.length>1?'<div style="overflow-x:auto;margin-top:8px"><table class="num" style="font-size:15px"><tr>'+c.table[0].map(function(h){return '<th>'+esc(h)+'</th>';}).join('')+'</tr>'+c.table.slice(1).map(function(r){return '<tr>'+r.map(function(x){return '<td>'+esc(x)+'</td>';}).join('')+'</tr>';}).join('')+'</table></div>':'')+
   (c.tier_note?'<div class="ev">📏 '+esc(c.tier_note)+'</div>':'')+(c.hits?'<div class="ft">今日命中 '+c.hits.length+' 只'+(c.hits.length?'，点代码看图：':'')+'</div><div class="hits">'+c.hits.slice(0,40).map(function(h){return '<button data-c="'+esc(h.code)+'" title="'+esc(h.note||'')+'">'+esc(h.code)+'</button>';}).join('')+'</div>':'')+'</div>';}).join('')||'<div class="empty">没有</div>';}
 var NW=null,nwf='全部',NWSEEN='';
 function nwHtml(x){var nw=NWSEEN&&String(x.time)>NWSEEN;return '<div class="nwi'+(nw?' new':'')+'"><div class="t">'+(nw?'🆕 ':'')+esc(x.time||'')+(x.tags||[]).map(function(t){return '<span>'+esc(t)+'</span>';}).join('')+'</div><h3>'+esc(x.title)+'</h3>'+
