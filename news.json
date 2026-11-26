@@ -1,5 +1,30 @@
 [
  {
+  "id": "20261127-overnight",
+  "time": "2026-11-27 07:20",
+  "title": "隔夜市场：美股感恩节休市，欧洲大涨约1.8%，布伦特升破$96",
+  "what": "11月26日美股感恩节休市（周五开半天，墨尔本周六05:00收）；标普期货+0.54%。欧洲收盘：Stoxx 600 +1.83%，DAX +2.14%，富时100 +1.77%，CAC +1.71%。布伦特格林尼治14:25约$96.25（+1.7%），WTI约$84.8（周四无官方结算）；黄金约$3,600（空头回补）；澳元待核。",
+  "why": "美国对14个经济体的关税方案被认为没想象中狠、债券收益率回落，资金抄底；伊朗革命卫队称两艘油轮在霍尔木兹触雷（未获独立证实），叠加胡塞称袭击沙特Ras Tanura炼厂。",
+  "impact": "ASX昨收8,763.8（+0.8%），今天外围偏暖、油价走高，能源股（Woodside、Santos）有支撑，矿业可能延续反弹，科技小盘看芯片股周五表现；A股外围压力减轻，石油、油运受益。OPEC+ 11月29日开会。",
+  "tags": [
+   "隔夜市场"
+  ],
+  "sources": [
+   {
+    "name": "investingLive",
+    "url": "https://investinglive.com/stocks/european-stocks-surge-s-p-500-futures-finish-higher-in-thanksgiving-trading/"
+   },
+   {
+    "name": "FinanceFeeds",
+    "url": "https://financefeeds.com/brent-crude-rises-above-96-as-middle-east-conflict-threatens-global-oil-flows/"
+   },
+   {
+    "name": "FX Leaders",
+    "url": "https://www.fxleaders.com/news/2026/11/26/gold-price-forecast-xau-usd-tests-3600-on-thanksgiving-short-covering/"
+   }
+  ]
+ },
+ {
   "id": "20261126-hormuz-mines-irgc",
   "time": "2026-11-26 23:20",
   "title": "伊朗革命卫队称2艘油轮在霍尔木兹触雷起火，其中1艘超大油轮；未获独立证实",
