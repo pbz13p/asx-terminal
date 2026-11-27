@@ -66,6 +66,6 @@ if __name__ == "__main__":
         same = all(abs(mine[k] - theirs[k]) <= 0.01 for k in ("stop", "liq", "mean")) and mine["n"] == theirs["n"]
         out.append({"cell": f"{sym} {side} {L}x stop {sp}% {d}d", "independent": mine,
                     "table": {k: theirs[k] for k in ("n", "stop", "liq", "mean")}, "match": same})
-        print(out[-1], flush=True)
+        print("checked", out[-1]["cell"], flush=True)
     if os.environ.get("CRYPTO_CHECK_OUT"):
         Path(os.environ["CRYPTO_CHECK_OUT"]).write_text(json.dumps(out, ensure_ascii=False))

@@ -257,7 +257,7 @@ def main():
                             for s in SYMS for e in EV[s][-5:]]
     res["hyperliquid_check"] = hl_check(F_by)
     Path(out_path).write_text(json.dumps(res, ensure_ascii=False))
-    print(json.dumps(res["main"], ensure_ascii=False), flush=True)
+    print("round 104 main config done (results only in the encrypted file)", flush=True)
     # liquidation table + independent check (acceptance)
     rt = crypto_risk.build()
     Path("data/crypto_risk.json").write_text(json.dumps(rt, ensure_ascii=False))
@@ -273,7 +273,7 @@ def main():
                     "match": mine["n"] == theirs["n"] and all(abs(mine[k] - theirs[k]) <= 0.01 for k in ("stop", "liq", "mean"))})
     res["risk_table_check"] = chk
     Path(out_path).write_text(json.dumps(res, ensure_ascii=False))
-    print("risk check:", [c["match"] for c in chk], flush=True)
+    print("risk table check done", flush=True)
 
 
 if __name__ == "__main__":
