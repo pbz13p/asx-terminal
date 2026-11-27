@@ -52,6 +52,8 @@ jobs:
           path: data/holders
           key: holders-${{ github.run_id }}
           restore-keys: holders-
+      - uses: actions/cache/restore@v4      # round 105: US full price history (us-history.yml)
+        with: {path: data/us_hist, key: ushist-none, restore-keys: ushist-}
       - uses: actions/cache/restore@v4      # round 87: Binance perps (crypto.yml keeps it up to date)
         with: {path: data/crypto, key: crypto-none, restore-keys: crypto-}
       - uses: actions/cache@v4
