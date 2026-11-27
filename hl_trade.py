@@ -227,7 +227,7 @@ def preview(order):
         warn.append("止损价在爆仓价外面，会先爆仓：把止损距离缩小，或者降杠杆")
     if not o["stop"]:
         warn.append("没设止损：跌到爆仓价会被强平，保证金全没")
-    out = {**o, "qty": sz, "net": (c or {}).get("net", "mainnet"), "mid": mid, "notional": round(notional, 2), "margin": round(margin, 2),
+    out = {**o, "qty": sz, "connected": bool(c), "net": (c or {}).get("net", "mainnet"), "mid": mid, "notional": round(notional, 2), "margin": round(margin, 2),
            "liq": _px(liq, int(a["szDecimals"])), "stop_px": _px(stop_px, int(a["szDecimals"])) if stop_px else None,
            "loss_at_stop": round(loss, 2) if loss else None, "fees": round(fees, 2), "account": round(acct, 2),
            "free": round(free, 2) if free is not None else None, "max_lev_coin": a["maxLeverage"], "warnings": warn}
