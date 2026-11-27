@@ -9,6 +9,15 @@
    "grid": "exits X1/X2/X3/X4 x liquidity tiers A$10k/20k/50k",
    "main": "X2 x A$20k",
    "controls": "C1 底部观察 random x20, C2 AXSO buy-and-hold"
+  },
+  {
+   "round": 104,
+   "file": "study104.py",
+   "registered": "2026-11-27",
+   "trials": 18,
+   "grid": "events E1 (funding rank 30d >=95%/<=5%) / E2 (+ open interest +20% in 7d) x hold 1/3/7 days x leverage 1/3/5",
+   "main": "E1, BTC+ETH, both sides, hold 3 days, 1x, out-of-sample 2024+",
+   "controls": "200 shuffles of event times within the same period; gates: mean>0, clustered t>2, beats 95% of shuffles"
   }
  ]
 }
