@@ -960,7 +960,7 @@ async function openTicketCx(side){var code=st.sel;side=side||'BUY';var B=lsg('nt
   +'<label><span>数量（个 '+esc(code)+'）</span><input id="cxq" inputmode="decimal" style="width:160px" placeholder="如 0.001"></label>'
   +'<label id="cxlevw"><span>杠杆（倍）</span><input id="cxl" inputmode="numeric" style="width:160px" value="'+esc(lsg('nt_cxlev','3'))+'"></label>'
   +'<label><span>止损距离（美元，超过 3 倍必填）</span><input id="cxs" inputmode="decimal" style="width:160px" placeholder="如 1500 = 反向 1500 美元就平仓"></label>'
-  +'<label><span>打算持有</span><select id="cxh" style="width:160px"><option value="1">1 天</option><option value="3">3 天</option><option value="7" selected>7 天</option><option value="30">30 天</option></select></label>'
+  +'<label><span>打算持有</span><select id="cxh" style="width:160px;background:#0B1224;color:#E6ECFF;border:1px solid var(--ln2);border-radius:6px;padding:4px 6px;font-size:15px"><option value="1">1 天</option><option value="3">3 天</option><option value="7" selected>7 天</option><option value="30">30 天</option></select></label>'
   +'<div id="cxv" class="y" style="margin:4px 0 8px"></div>'
   +'<div class="row"><button class="btn on" id="cxpv">预览</button><button class="btn" id="popx">关闭</button><span id="cxmsg" class="dn"></span></div>'
   +'<div id="cxprev"></div><h3 style="font-size:16px;margin-top:14px"><span id="cxat">账户</span> · 持仓 <button class="btn" id="cxref" style="font-size:14px">刷新</button></h3><div id="cxacc" class="mu">读取中…</div>');
