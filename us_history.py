@@ -6,7 +6,7 @@ breakout) on a much bigger market with survivorship-free data; the 🇺🇸 美�
 
 Source: EODHD (already paid; the only primary source for US daily bars, CLAUDE.md). One API call per symbol for the
 full history; delisted symbols from exchange-symbol-list/US?delisted=1. OTC / pink sheets are left out (thin, not
-tradable at IBKR for Frank's size). Calls are capped per UTC day (US_MAX_CALLS, default 40,000) so the ASX and A-share
+tradable at IBKR for Frank's size). Calls are capped per UTC day (US_MAX_CALLS, default 80,000 of the plan's 100,000) so the ASX and A-share
 jobs keep their share of the daily EODHD allowance; unfinished symbols carry over to the next run.
 After a symbol has its full history, us_daily.py's whole-market snapshot keeps it current (no extra calls).
 Output: data/us_hist/<CODE>.json.gz  rows [date, open, high, low, close, adjusted_close, volume]; summary in
@@ -27,7 +27,7 @@ KEY = os.environ.get("EODHD_API_KEY", "")
 OUT = Path("data/us_hist")
 EXCH = {"NYSE", "NASDAQ", "NYSE ARCA", "NYSE MKT", "AMEX", "BATS", "NYSE American"}
 TYPES = {"Common Stock", "ETF"}
-MAX_CALLS = int(os.environ.get("US_MAX_CALLS", "40000"))
+MAX_CALLS = int(os.environ.get("US_MAX_CALLS", "80000"))
 BUDGET = float(os.environ.get("US_MINUTES", "320")) * 60
 
 
