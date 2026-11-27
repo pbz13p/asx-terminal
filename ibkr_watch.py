@@ -379,10 +379,15 @@ class IBFeed:
             hist = self.ib.reqHistoricalTicks(c, "", datetime.now(), 200, "TRADES", useRth=False)
             for h in hist or []:
                 self._flow_add(f, h.time, float(h.price), float(h.size), live=False)
-            prev = None
-            for tr in f["trades"]:     # tick rule for the history (no quotes kept for those)
-                tr["side"] = 0 if prev is None else (1 if tr["p"] > prev else -1 if tr["p"] < prev else 0)
+            prev, side = None, 0
+            for tr in f["trades"]:     # tick rule for the history (no quotes kept): same price keeps the last direction
+                if prev is not None and tr["p"] != prev:
+                    side = 1 if tr["p"] > prev else -1
+                tr["side"] = side
                 prev = tr["p"]
+            f["last_px"], f["last_side"] = prev, side
+            f["buy"] = sum(t["s"] for t in f["trades"] if t["side"] > 0)
+            f["sell"] = sum(t["s"] for t in f["trades"] if t["side"] < 0)
         except Exception as e:
             f["errors"].append(f"历史成交：{type(e).__name__} {str(e)[:80]}")
         f["tbt"] = self.ib.reqTickByTickData(c, "AllLast", 0, False)
