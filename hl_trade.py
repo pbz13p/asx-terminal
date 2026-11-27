@@ -140,7 +140,7 @@ def risk_line(code, side, lev, stop_dist, px, hold_days, margin):
            "mean": cell["mean"], "win": cell["win"], "worst": cell["worst"], "worst_when": cell.get("worst_when"),
            "from": meta["from"], "red": cell["liq"] >= 5}
     txt = (f"按 {meta['from'][:4]} 年起历史（{code} {('做多' if side == 'BUY' else '做空')} {L} 倍、"
-           f"{'止损约 ' + str(sp) + '%' if sp else '不设止损'}、持有 {days} 天）：{cell['stop']}% 先碰止损，{cell['liq']}% 先爆仓；"
+           f"{'止损约 ' + str(sp) + '%' if sp else '不设止损'}、持有 {days} 天）：" + (f"{cell['stop']}% 先碰止损，" if sp else "") + f"{cell['liq']}% 先爆仓；"
            f"到期平均 {cell['mean']:+.1f}%（占保证金），赚钱的占 {cell['win']}%")
     if L != lev:
         txt += f"（表里没有 {lev} 倍，按 {L} 倍算）"
