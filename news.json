@@ -1,5 +1,33 @@
 [
  {
+  "id": "20261127-jazan-refinery-hit",
+  "time": "2026-11-27 13:15",
+  "title": "沙特证实红海Jazan炼厂被击中：1死、部分停产，布伦特约$96、近3周高",
+  "what": "沙特能源部称11月26日（墨尔本26日晚）一枚飞弹击中阿美日加工40万桶的Jazan炼厂并起火，1名尼泊尔工人死亡、数人受伤，部分装置暂停，损失评估中；联军称是胡塞所为，并称已摧毁荷台达的发射平台。布伦特周四收在11月6日以来最高，格林尼治11月27日01:40约$96.2，WTI约$85.4（较周三+2%）。",
+  "why": "胡塞本周接连袭击沙特能源设施（Ras Tanura、吉达和Jazan港），这是沙特首次官方证实炼厂受损并有人员伤亡；伊朗另称霍尔木兹有油轮触雷（未获独立证实）。",
+  "impact": "油价风险溢价继续上升，ANZ称布伦特可能破$100；澳股能源（Woodside、Santos）受支撑，航空运输承压；油价推高通胀，澳储行12月8日、美联储12月加息压力更大；A股石油、油运受益。OPEC+ 11月29日开会，据报一季度产量目标大概率不变。",
+  "tags": [
+   "油价",
+   "宏观",
+   "澳股",
+   "A股"
+  ],
+  "sources": [
+   {
+    "name": "Bloomberg/TMGM",
+    "url": "https://www.tmgm.com/en-eu/analysis/market-news/article/saudi-energy-ministry-says-strike-on-jazan-refinery-halts-some-operations-202611262349"
+   },
+   {
+    "name": "Bradenton Gazette",
+    "url": "https://bradentongazette.com/article/attack-on-saudi-s-jazan-refinery-kills-one-person-disrupts-operations/"
+   },
+   {
+    "name": "PiQ Markets",
+    "url": "https://piqmarkets.com/story/brent-holds-near-month-high-after-strike-halts-jazan-refinery-operations"
+   }
+  ]
+ },
+ {
   "id": "20261127-overnight",
   "time": "2026-11-27 07:20",
   "title": "隔夜市场：美股感恩节休市，欧洲大涨约1.8%，布伦特升破$96",
