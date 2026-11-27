@@ -93,7 +93,66 @@ def _px(p, sz_dec):
     return round(p, max(0, 6 - sz_dec))
 
 
-def check(order):
+_RISK = {"t": 0, "tab": None}
+
+
+def risk_table():
+    """Round 104 liquidation table (crypto_risk.py, weekly, encrypted on the quick-results branch)."""
+    if _RISK["tab"] is not None and time.time() - _RISK["t"] < 6 * 3600:
+        return _RISK["tab"]
+    import urllib.request
+    import os
+    tab = None
+    try:
+        with urllib.request.urlopen("https://raw.githubusercontent.com/pbz13p/asx-terminal/quick-results/crypto_risk.json.enc", timeout=20) as r:
+            raw = r.read()
+        if os.environ.get("ASX_DATA_KEY"):
+            import securedata
+            tab = json.loads(securedata.decrypt(raw))
+    except Exception:
+        tab = None
+    _RISK.update(t=time.time(), tab=tab)
+    return tab
+
+
+def risk_line(code, side, lev, stop_dist, px, hold_days, margin):
+    """'按 2019 年起历史 …' for the preview. Buckets: leverage 1/2/3/5 (4 -> 5, more conservative), stop 2/5/10% or none."""
+    tab = risk_table()
+    sym = code.upper() + "USDT"
+    if not tab:
+        return {"text": "历史爆仓概率表还没生成（第 104 轮跑完后自动出现）"}
+    if sym not in tab.get("symbols", {}):
+        return {"text": f"历史爆仓概率表只有 BTC、ETH；{code} 没有"}
+    levs = [L for L in (1, 2, 3, 5) if L >= lev]
+    if not levs:
+        return {"text": f"{lev} 倍超出历史表（最多 5 倍）"}
+    L = levs[0]
+    sp = 0
+    if stop_dist and px:
+        pct = stop_dist / px * 100
+        sp = min((2, 5, 10), key=lambda b: abs(b - pct))
+    days = hold_days if hold_days in (1, 3, 7, 30) else 7
+    cell = tab["symbols"][sym]["table"].get(f"{'long' if side == 'BUY' else 'short'}|{L}|{sp}|{days}")
+    if not cell:
+        return {"text": "历史表里没有这个组合"}
+    meta = tab["symbols"][sym]["meta"]
+    out = {"lev_used": L, "stop_used": sp, "days": days, "stop_pct": cell["stop"], "liq_pct": cell["liq"],
+           "mean": cell["mean"], "win": cell["win"], "worst": cell["worst"], "worst_when": cell.get("worst_when"),
+           "from": meta["from"], "red": cell["liq"] >= 5}
+    txt = (f"按 {meta['from'][:4]} 年起历史（{code} {('做多' if side == 'BUY' else '做空')} {L} 倍、"
+           f"{'止损约 ' + str(sp) + '%' if sp else '不设止损'}、持有 {days} 天）：{cell['stop']}% 先碰止损，{cell['liq']}% 先爆仓；"
+           f"到期平均 {cell['mean']:+.1f}%（占保证金），赚钱的占 {cell['win']}%")
+    if L != lev:
+        txt += f"（表里没有 {lev} 倍，按 {L} 倍算）"
+    if not sp and lev > 3:
+        worst_money = margin * cell["worst"] / 100 if margin else None
+        txt += f"。历史最坏一次：亏保证金的 {abs(cell['worst']):.0f}%" + (f"（这笔就是 {abs(worst_money):,.0f} 美元）" if worst_money else "") + \
+               (f"，发生在 {cell.get('worst_when')}" if cell.get("worst_when") else "")
+    out["text"] = txt
+    return out
+
+
+def check(order, strict=True):
     o = {"code": str(order.get("code", "")).upper().replace("USDT", "").replace("-PERP", "")}
     if not o["code"].isalnum() or len(o["code"]) > 12:
         raise ValueError("代码不正确")
@@ -118,7 +177,9 @@ def check(order):
     if o["stop"] is not None and o["stop"] <= 0:
         raise ValueError("止损距离要大于 0")
     if o["lev"] > 3 and not o["stop"]:
-        raise ValueError("杠杆超过 3 倍必须填止损距离")
+        if strict:
+            raise ValueError("杠杆超过 3 倍必须填止损距离")
+        o["blocked"] = "杠杆超过 3 倍必须设止损：这笔不能下单，下面只给你看历史风险"
     return o
 
 
@@ -129,8 +190,13 @@ def _tok(o):
 
 
 def preview(order):
-    o = check(order)
-    info, _, c = _clients()
+    o = check(order, strict=False)
+    try:
+        info, _, c = _clients()
+    except RuntimeError as e:                # not connected yet: public prices + history only, no order possible
+        Exchange, Info, constants, eth_account = _lib()
+        info, c = Info(constants.MAINNET_API_URL, skip_ws=True, timeout=20), None
+        o["blocked"] = "；".join(x for x in (o.get("blocked"), str(e)) if x)
     a = _asset(info, o["code"])
     mid = float(info.all_mids().get(o["code"]) or 0)
     if not mid:
@@ -140,9 +206,9 @@ def preview(order):
     sz = round(o["qty"], int(a["szDecimals"]))
     if sz <= 0:
         raise ValueError(f"数量太小：{o['code']} 最小单位是 {10 ** -int(a['szDecimals'])}")
-    st = info.user_state(c["address"])
+    st = info.user_state(c["address"]) if c else {}
     acct = float((st.get("marginSummary") or {}).get("accountValue") or 0)
-    free = float(st.get("withdrawable") or 0)
+    free = float(st.get("withdrawable") or 0) if c else None
     notional = sz * mid
     margin = notional / o["lev"]
     mm = 1 / (2 * float(a["maxLeverage"]))                 # maintenance margin rate = half of max-leverage margin
@@ -153,19 +219,24 @@ def preview(order):
     loss = sz * o["stop"] + fees if o["stop"] else None
     lim = limits()
     warn = []
-    if acct and margin > lim["max_frac"] * acct:
-        raise ValueError(f"这笔要用保证金 {margin:,.0f} 美元，超过账户的 {lim['max_frac']:.0%}（{lim['max_frac'] * acct:,.0f}）；少买点或在 ⚙ 设置里改")
-    if margin > free:
-        raise ValueError(f"可用资金只有 {free:,.2f} 美元，这笔要 {margin:,.2f}")
+    if c and acct and margin > lim["max_frac"] * acct:
+        o.setdefault("blocked", f"这笔要用保证金 {margin:,.0f} 美元，超过账户的 {lim['max_frac']:.0%}（{lim['max_frac'] * acct:,.0f}）；少买点或在 ⚙ 设置里改")
+    if c and margin > free:
+        o.setdefault("blocked", f"可用资金只有 {free:,.2f} 美元，这笔要 {margin:,.2f}")
     if stop_px is not None and ((long and stop_px <= liq) or (not long and stop_px >= liq)):
         warn.append("止损价在爆仓价外面，会先爆仓：把止损距离缩小，或者降杠杆")
     if not o["stop"]:
         warn.append("没设止损：跌到爆仓价会被强平，保证金全没")
-    out = {**o, "qty": sz, "net": c.get("net", "mainnet"), "mid": mid, "notional": round(notional, 2), "margin": round(margin, 2),
+    out = {**o, "qty": sz, "net": (c or {}).get("net", "mainnet"), "mid": mid, "notional": round(notional, 2), "margin": round(margin, 2),
            "liq": _px(liq, int(a["szDecimals"])), "stop_px": _px(stop_px, int(a["szDecimals"])) if stop_px else None,
            "loss_at_stop": round(loss, 2) if loss else None, "fees": round(fees, 2), "account": round(acct, 2),
-           "free": round(free, 2), "max_lev_coin": a["maxLeverage"], "warnings": warn}
-    out["token"] = _tok({k: out[k] for k in ("code", "side", "qty", "lev", "stop")})
+           "free": round(free, 2) if free is not None else None, "max_lev_coin": a["maxLeverage"], "warnings": warn}
+    try:
+        hd = int(order.get("hold") or 7)
+    except (TypeError, ValueError):
+        hd = 7
+    out["risk"] = risk_line(o["code"], o["side"], o["lev"], o["stop"], mid, hd, margin)
+    out["token"] = None if o.get("blocked") else _tok({k: out[k] for k in ("code", "side", "qty", "lev", "stop")})
     T.log({"action": "preview", "broker": "HL", **{k: out[k] for k in ("code", "side", "qty", "lev", "stop", "net", "notional")}})
     return out
 

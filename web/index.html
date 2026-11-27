@@ -960,6 +960,7 @@ async function openTicketCx(side){var code=st.sel;side=side||'BUY';var B=lsg('nt
   +'<label><span>数量（个 '+esc(code)+'）</span><input id="cxq" inputmode="decimal" style="width:160px" placeholder="如 0.001"></label>'
   +'<label id="cxlevw"><span>杠杆（倍）</span><input id="cxl" inputmode="numeric" style="width:160px" value="'+esc(lsg('nt_cxlev','3'))+'"></label>'
   +'<label><span>止损距离（美元，超过 3 倍必填）</span><input id="cxs" inputmode="decimal" style="width:160px" placeholder="如 1500 = 反向 1500 美元就平仓"></label>'
+  +'<label><span>打算持有</span><select id="cxh" style="width:160px"><option value="1">1 天</option><option value="3">3 天</option><option value="7" selected>7 天</option><option value="30">30 天</option></select></label>'
   +'<div id="cxv" class="y" style="margin:4px 0 8px"></div>'
   +'<div class="row"><button class="btn on" id="cxpv">预览</button><button class="btn" id="popx">关闭</button><span id="cxmsg" class="dn"></span></div>'
   +'<div id="cxprev"></div><h3 style="font-size:16px;margin-top:14px"><span id="cxat">账户</span> · 持仓 <button class="btn" id="cxref" style="font-size:14px">刷新</button></h3><div id="cxacc" class="mu">读取中…</div>');
@@ -972,7 +973,7 @@ async function openTicketCx(side){var code=st.sel;side=side||'BUY';var B=lsg('nt
  $('cxsell').onclick=function(){S.side='SELL';$('cxsell').classList.add('on');$('cxbuy').classList.remove('on');$('cxprev').innerHTML='';};
  $('cxref').onclick=function(){cxAcc(B);};
  $('cxpv').onclick=async function(){$('cxmsg').textContent='';$('cxprev').innerHTML='<p class="mu">询价中…</p>';lss('nt_cxlev',$('cxl').value.trim());
-  var o={mkt:B==='hl'?'hl':'cx',code:code,side:S.side,qty:$('cxq').value.trim(),stop:$('cxs').value.trim(),lev:$('cxl').value.trim()};
+  var o={mkt:B==='hl'?'hl':'cx',code:code,side:S.side,qty:$('cxq').value.trim(),stop:$('cxs').value.trim(),lev:$('cxl').value.trim(),hold:$('cxh').value};
   try{var r=await odPost({action:'preview',order:o}),h;
    if(B==='hl'){h='<b style="font-size:18px">'+(r.net==='testnet'?'【Hyperliquid 测试网】':'<span class="dn">【Hyperliquid 真钱】</span>')+(r.side==='BUY'?'做多 ':'做空 ')+r.qty+' 个 '+esc(r.code)+' · '+r.lev+' 倍 · 现价约 '+f(r.mid)+'</b>'
      +'<div>合约价值 '+f(r.notional)+' 美元 · 占用保证金 <b>'+f(r.margin)+'</b> 美元（逐仓，最多亏这么多）· 手续费约 '+f(r.fees)+'</div>'
@@ -982,8 +983,10 @@ async function openTicketCx(side){var code=st.sel;side=side||'BUY';var B=lsg('nt
      +'<div>'+esc(r.name)+' · 买价 '+f(r.bid)+' · 卖价 '+f(r.ask)+'</div><div>合约价值 '+f(r.notional)+' '+esc(r.ccy)+' · 保证金 <b>'+f(r.margin)+'</b>'+(r.leverage?' · 杠杆 '+r.leverage+' 倍':'')+'</div>'
      +(r.loss_at_stop!=null?'<div>碰到止损亏约 <b class="dn">'+f(r.loss_at_stop)+' '+esc(r.ccy)+'</b></div>':'');}
    $('cxprev').innerHTML='<div style="border:1px solid '+(r.side==='BUY'?'var(--up)':'var(--dn)')+';border-radius:8px;padding:10px;margin-top:8px">'+h
+    +(r.risk&&r.risk.text?'<div style="margin-top:6px;padding:6px 8px;border-radius:6px;'+(r.risk.red?'background:rgba(255,46,116,.14);border:1px solid var(--dn);color:#FF8FB3':'background:rgba(0,229,255,.06);border:1px solid var(--ln2);color:#C9D2F5')+'">📊 '+(r.risk.red?'<b>历史爆仓概率 ≥5%</b> · ':'')+esc(r.risk.text)+'</div>':'')
     +(r.warnings&&r.warnings.length?'<div class="y">⚠ '+r.warnings.map(esc).join('<br>⚠ ')+'</div>':'')
-    +'<div class="row" style="margin-top:8px"><button class="btn on" id="cxgo" style="font-weight:700">确认下单</button><span class="mu">2 分钟内有效，改了要重新预览</span></div></div>';
+    +(r.blocked?'<div class="dn" style="margin-top:8px;font-weight:700">⛔ '+esc(r.blocked)+'</div></div>':'<div class="row" style="margin-top:8px"><button class="btn on" id="cxgo" style="font-weight:700">确认下单</button><span class="mu">2 分钟内有效，改了要重新预览</span></div></div>');
+   if(r.blocked)return;
    $('cxgo').onclick=async function(){$('cxgo').disabled=true;try{var x=await odPost({action:'place',order:o,token:r.token});
      $('cxprev').innerHTML='<p class="up">已成交 ✓ '+(B==='hl'?'均价 '+f(x.avg)+(x.stop_set?' · 止损单已挂在 '+f(x.stop_set):''):esc(x.status)+(x.level?' · 成交价 '+f(x.level):''))+'</p>';cxAcc(B);}
     catch(e){$('cxprev').innerHTML='<p class="dn">'+esc(e.message)+'</p>';cxAcc(B);}};}

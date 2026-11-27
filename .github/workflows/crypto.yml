@@ -8,7 +8,7 @@ on:
     branches: [main]
     paths: ['crypto_download.py', '.github/workflows/crypto.yml']
 permissions:
-  contents: read
+  contents: write
   actions: write
 concurrency: crypto-data
 jobs:
@@ -35,3 +35,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: if [ "$(cat crypto_left.txt 2>/dev/null || echo 0)" -gt 0 ]; then gh workflow run crypto.yml --ref main -R ${{ github.repository }}; fi
+      - name: Weekly liquidation table for the order preview (round 104; Mondays or by hand)
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%u)" != "1" ]; then echo "not Monday"; exit 0; fi
+          pip install -q numpy cryptography
+          mkdir -p out && CRYPTO_RISK_OUT=out/crypto_risk.json python crypto_risk.py
+          python securedata.py encrypt-dir out
+          cd out && git init -q -b quick-results && git config user.name "asx-study-bot" && git config user.email "actions@users.noreply.github.com"
+          git fetch -q "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" quick-results && git reset -q FETCH_HEAD || true
+          git add -- $(ls *.enc) && git commit -q -m "Crypto liquidation table $(date -u +%F)" && git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" HEAD:quick-results

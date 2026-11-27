@@ -199,6 +199,12 @@ def preview(order):
            "margin": round(margin, 2) if margin else None, "leverage": round(1 / mf, 1) if mf else None,
            "loss_at_stop": round(loss_at_stop, 2) if loss_at_stop else None, "status": snap.get("marketStatus"),
            "warnings": warn, "token": T._token(o), "value": round(notional, 2)}
+    try:
+        import hl_trade
+        hd = int(order.get("hold") or 7)
+        out["risk"] = hl_trade.risk_line(o["code"], o["side"], round(1 / mf) if mf else 2, o["stop"], px, hd, margin)
+    except Exception:
+        pass
     T.log({"action": "preview", "broker": "IG", **{k: out[k] for k in ("code", "side", "qty", "stop", "env", "notional")}})
     return out
 
