@@ -308,9 +308,23 @@ def save_limits(max_lev=None, max_frac=None, confirm=""):
     return limits()
 
 
+_PRE = {"state": None}
+
+
+def _preinstall():
+    try:
+        _lib()
+        _PRE["state"] = "ok"
+    except Exception as e:
+        _PRE["state"] = "装组件失败：" + str(e)[:150]
+
+
 def creds_status():
+    if _PRE["state"] is None:          # install the SDK in the background the first time ⚙ 设置 opens
+        _PRE["state"] = "installing"
+        threading.Thread(target=_preinstall, daemon=True).start()
     try:
         c = creds()
-        return {"set": True, "net": c.get("net", "mainnet"), "address": c["address"][:6] + "…" + c["address"][-4:], **limits()}
+        return {"set": True, "net": c.get("net", "mainnet"), "address": c["address"][:6] + "…" + c["address"][-4:], "sdk": _PRE["state"], **limits()}
     except Exception:
-        return {"set": False, **limits()}
+        return {"set": False, "sdk": _PRE["state"], **limits()}
