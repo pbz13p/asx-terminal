@@ -1,5 +1,33 @@
 [
   {
+    "id": "20261127-metals-rebound-copper-gold",
+    "time": "2026-11-27 21:20",
+    "title": "金属集体反弹：铜涨约4%–5%创10个月最大涨幅，金价约+2.6%回到$3,660，白银+6.6%",
+    "what": "11月27日（周五）：LME铜盘中最多涨约4%–5%，站上$12,000、最高约$12,300/吨（周三曾跌到$11,682，11月仍累计跌约16%），为10个月来最大单日涨幅；周四镍+3.7%、锌+3.3%。现货金约$3,660（+2.6%，周三低点$3,427），白银+6.6%至$44.3。布伦特约$97，有望录得5周来首次周涨。欧洲Stoxx 600早盘+0.9%，矿业板块+3.5%。（金银数为Saxo格林尼治约04:00数，收盘待核）",
+    "why": "中国国常会承诺稳股市、全球科技股反弹，风险偏好回升；此前看空仓位拥挤，假期前空头回补；中东袭击沙特能源设施推高油价。",
+    "impact": "ASX今天已收盘（矿业已+3.9%于周四），下周一澳股铜矿、金矿、银矿、镍锌小盘有望继续反弹；A股有色、贵金属受益。但美联储12月加息几乎已定、美元偏强，本轮是超跌反弹，持续性看今晚美股半天交易和周日OPEC+会议。",
+    "tags": [
+      "黄金",
+      "澳股",
+      "A股",
+      "宏观"
+    ],
+    "sources": [
+      {
+        "name": "Saxo",
+        "url": "https://www.home.saxo/en-gb/content/articles/macro/market-quick-take---brent-tops-usd-97-and-asian-stocks-extend-rebound---27-november-2026-27112026"
+      },
+      {
+        "name": "Le Private Banker (Bloomberg)",
+        "url": "https://leprivatebanker.com/2026/11/27/copper-rebounds-from-an-11-month-low-as-tech-rally-and-short-covering-lift-industrial-metals/"
+      },
+      {
+        "name": "Reuters/WSAU",
+        "url": "https://wsau.com/2026/11/27/european-stocks-extend-recovery-as-tech-miners-advance/"
+      }
+    ]
+  },
+  {
     "id": "20261127-ashare-close-star50-15pct",
     "time": "2026-11-27 19:20",
     "title": "A股收盘历史级暴涨：科创50 +15.07%、创业板+11.61%，沪指重回3600，成交2万亿；澳股周涨约2.8%",
