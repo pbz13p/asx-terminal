@@ -7,6 +7,7 @@ Source: Binance's public bulk-data site data.binance.vision (no login, no key): 
 and funding-rate history, one zip per month (daily zips for the current month). Each file is fetched once and kept in
 data/crypto/raw; data/crypto/<SYMBOL>_1h.json and <SYMBOL>_funding.json are rebuilt from them.
 """
+import calendar
 import csv
 import io
 import json
@@ -129,6 +130,52 @@ def rows(kind, sym):
     return [out[k] for k in sorted(out)]
 
 
+METRIC_SYMS = ("BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT", "DOGEUSDT")
+METRIC_START = date(2021, 12, 1)
+
+
+def fetch_metrics(sym):
+    """Open interest + long/short ratios (5-minute file per day, published from 2021-12). Round 104 crowding test.
+    Kept hourly: [t, open_interest, open_interest_value_usdt, top_trader_ls_ratio, all_ls_ratio, taker_buy_sell_ratio]."""
+    folder = RAW / "metrics" / sym
+    folder.mkdir(parents=True, exist_ok=True)
+    todo, d = [], METRIC_START
+    while d < date.today():
+        name = f"{sym}-metrics-{d.isoformat()}.zip"
+        if not (folder / name).exists() and not (folder / (name + ".none")).exists():
+            todo.append(name)
+        d += timedelta(days=1)
+
+    def one(name):
+        body = get(f"{BASE}/daily/metrics/{sym}/{name}")
+        if body is None:
+            (folder / (name + ".none")).write_text("")
+            return 0
+        (folder / name).write_bytes(body)
+        return 1
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        new = sum(ex.map(one, todo))
+    out = {}
+    for f in sorted(folder.glob("*.zip")):
+        try:
+            z = zipfile.ZipFile(f)
+        except zipfile.BadZipFile:
+            continue
+        for n in z.namelist():
+            for r in csv.reader(io.TextIOWrapper(z.open(n), encoding="utf-8")):
+                if not r or not r[0][:1].isdigit() or len(r) < 8:
+                    continue
+                ts = calendar.timegm(time.strptime(r[0][:19], "%Y-%m-%d %H:%M:%S")) if "-" in r[0] else int(r[0]) // 1000
+                if ts % 3600:
+                    continue
+                f2 = lambda x: float(x) if x not in ("", None) else None
+                out[ts] = [ts, f2(r[2]), f2(r[3]), f2(r[5]), f2(r[6]), f2(r[7])]
+    rows = [out[k] for k in sorted(out)]
+    (DATA / f"{sym}_metrics.json").write_text(json.dumps(rows))
+    return len(rows), new
+
+
 def main():
     DATA.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
@@ -149,9 +196,18 @@ def main():
         summary[sym] = {"hours": len(K), "first": time.strftime("%Y-%m-%d", time.gmtime(K[0][0])) if K else None,
                         "last": time.strftime("%Y-%m-%d %H:00", time.gmtime(K[-1][0])) if K else None,
                         "funding_points": len(F), "files_new": k_new + f_new}
+    for sym in METRIC_SYMS:
+        if time.time() - t0 > BUDGET:
+            break
+        try:
+            n_rows, n_new = fetch_metrics(sym)
+            summary.setdefault("_metrics", {})[sym] = {"hours": n_rows, "files_new": n_new}
+            print(f"[crypto] metrics {sym}: {n_rows} hours, {n_new} new files", flush=True)
+        except Exception as e:
+            print(f"[crypto] metrics {sym} failed: {type(e).__name__} {e}", flush=True)
     sf.write_text(json.dumps(summary, indent=1))
     Path("crypto_left.txt").write_text(str(left))
-    done = [v for v in summary.values() if v["hours"]]
+    done = [v for k, v in summary.items() if not k.startswith("_") and v.get("hours")]
     print("[crypto] symbols with data", len(done), "left for next run", left, "minutes", round((time.time() - t0) / 60), flush=True)
 
 

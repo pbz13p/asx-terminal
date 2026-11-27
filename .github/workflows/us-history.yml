@@ -1,0 +1,55 @@
+name: us-history
+# US stocks: full daily history for every NYSE/NASDAQ/AMEX/ARCA/BATS common stock and ETF, delisted included
+# (us_history.py, Frank 2026-11-27). Capped calls per day; re-runs itself until done; daily after that is a no-op.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '50 3 * * *'
+  push:
+    branches: [main]
+    paths: ['us_history.py', '.github/workflows/us-history.yml']
+permissions:
+  contents: write
+  actions: write
+concurrency: us-history
+jobs:
+  us:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/cache/restore@v4
+        with: {path: data/us_hist, key: ushist-none, restore-keys: ushist-}
+      - name: Cache evicted? Restore from the encrypted release copy
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -f data/us_hist/_summary.json ]; then echo "cache ok"; exit 0; fi
+          mkdir -p rel && gh release download us-hist-data -p 'us_hist.tar.gz.enc.part*' -D rel -R ${{ github.repository }} || { echo "no release copy yet"; exit 0; }
+          mkdir -p data && cat rel/us_hist.tar.gz.enc.part* | openssl enc -d -aes-256-cbc -pbkdf2 -pass env:ASX_DATA_KEY | tar xz -C data
+          rm -rf rel; ls data/us_hist | wc -l
+      - name: Download
+        env:
+          EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+        run: python us_history.py
+      - uses: actions/cache/save@v4
+        if: always()
+        with: {path: data/us_hist, key: 'ushist-${{ github.run_id }}'}
+      - name: Not finished -- run again
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: if [ "$(cat us_left.txt 2>/dev/null || echo 0)" -gt 0 ]; then gh workflow run us-history.yml --ref main -R ${{ github.repository }}; fi
+      - name: Encrypted copy to a release (the Actions cache has a 10 GB limit and may evict this)
+        if: always()
+        env:
+          ASX_DATA_KEY: ${{ secrets.ASX_DATA_KEY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          [ -f data/us_hist/_summary.json ] || exit 0
+          mkdir -p bk && tar czf - -C data us_hist | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:ASX_DATA_KEY | split -b 1900m -d - bk/us_hist.tar.gz.enc.part
+          gh release view us-hist-data -R ${{ github.repository }} >/dev/null 2>&1 || gh release create us-hist-data -R ${{ github.repository }} --title "US price history (encrypted)" --notes "us_history.py. cat parts | openssl enc -d -aes-256-cbc -pbkdf2 -pass env:ASX_DATA_KEY | tar xz"
+          gh release upload us-hist-data bk/* --clobber -R ${{ github.repository }}

@@ -172,6 +172,9 @@ jobs:
       - name: Restore round 100 shareholder tables
         uses: actions/cache/restore@v4
         with: {path: data/holders, key: holders-none, restore-keys: holders-}
+      - name: Restore US full price history (us_history.py)
+        uses: actions/cache/restore@v4
+        with: {path: data/us_hist, key: ushist-none, restore-keys: ushist-}
       - name: Sizes
         run: du -sh data/* 2>/dev/null || true
       - name: Encrypted copy to the data-backup release (Sundays, or when run by hand)
@@ -181,7 +184,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%u)" != "7" ]; then echo "not Sunday: caches refreshed only"; exit 0; fi
           mkdir -p bk
-          for d in eod ann cn cn_ann us_daily crypto commodities ai cn_lhb cn_fin cn_val cn_ann_text cn_ann_big cn_ann_ocr cn_emb emb81; do
+          for d in eod ann cn cn_ann us_daily us_hist crypto commodities ai cn_lhb cn_fin cn_val cn_ann_text cn_ann_big cn_ann_ocr cn_emb emb81; do
             [ -d "data/$d" ] || continue
             tar czf - -C data "$d" | openssl enc -aes-256-cbc -pbkdf2 -salt -pass env:ASX_DATA_KEY | split -b 1900m -d - "bk/$d.tar.gz.enc.part"
           done
