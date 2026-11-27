@@ -1,5 +1,34 @@
 [
   {
+    "id": "20261128-overnight",
+    "time": "2026-11-28 07:20",
+    "title": "隔夜市场：美股半天大涨，纳指+2.31%，道指周涨5.5%创2022年10月来最佳一周",
+    "what": "11月27日（周五，感恩节后半天交易）：道指+1.18%收50,774.94，标普+1.60%收7,297.49，纳指+2.31%收24,129.50；费城半导体指数约+4.7%。本周道指+5.46%、标普+5.60%、纳指+6.68%。英伟达+0.8%；Anthropic +11%收$91.88；美光、闪迪等存储股涨7%–16%。布伦特约$95–96、WTI约$83–85（各来源口径不一，收盘待核）；金价约$3,644（+2.2%，待核）；澳元约0.665。",
+    "why": "本月大跌的科技、芯片股抄底回补，A股国常会稳市带动全球风险偏好回升；假期成交清淡放大涨幅。市场仍几乎认定美联储12月加息，下周看就业数据。",
+    "impact": "ASX周六周日休市，下周一（11月30日）澳股科技、锂矿、铜金小盘有望延续反弹；A股半导体情绪延续，但周五已历史级暴涨，追高风险大。周日OPEC+开会，据路透消息原则上维持2027年一季度产量不变，若属实油价影响有限；中东袭击仍托底油价。",
+    "tags": [
+      "隔夜市场"
+    ],
+    "sources": [
+      {
+        "name": "JBizNews",
+        "url": "https://jbiznews.com/u-s-stocks-close-sharply-higher-in-shortened-black-friday-session-and-post-big-weekly-gains-dow-jones-industrial-average-up-1-18-sp-500-up-1-60-nasdaq-composite-up-2-31/"
+      },
+      {
+        "name": "StockTitan",
+        "url": "https://www.stocktitan.net/articles/stock-market-today-live-november-27-2026"
+      },
+      {
+        "name": "FinanceFeeds（油价/OPEC+）",
+        "url": "https://financefeeds.com/brent-crude-oil-price-96-30-friday-opec-plus-set-to-hold-q1-output-sunday-bull-100-bear-92-57/"
+      },
+      {
+        "name": "Trading Economics",
+        "url": "https://tradingeconomics.com/commodity/crude-oil"
+      }
+    ]
+  },
+  {
     "id": "20261127-us-futures-nq-2.4pct",
     "time": "2026-11-27 23:20",
     "title": "美股期货大涨：纳指100期货约+2.4%、标普+1.7%，WTI +2.6%至约$85.8；今晚半天交易",
