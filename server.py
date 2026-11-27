@@ -257,6 +257,18 @@ class Handler(SimpleHTTPRequestHandler):
                 n = int(self.headers.get("Content-Length") or 0)
                 body = json.loads(self.rfile.read(min(n, 20000)) or b"{}")
                 act = body.get("action")
+                hl = body.get("broker") == "hl" or (body.get("order") or {}).get("mkt") == "hl"
+                if hl or act in ("hl_save", "hl_status", "hl_limits"):   # crypto perps through Hyperliquid (hl_trade.py)
+                    import hl_trade as H
+                    data = (H.preview(body.get("order") or {}) if act == "preview" else
+                            H.place(body.get("order") or {}, body.get("token")) if act == "place" else
+                            H.close(str(body.get("id", ""))) if act == "close" else
+                            H.overview() if act == "overview" else
+                            H.save_creds(body.get("address"), body.get("key"), body.get("net")) if act == "hl_save" else
+                            H.save_limits(body.get("max_lev"), body.get("max_frac"), body.get("confirm") or "") if act == "hl_limits" else
+                            H.creds_status())
+                    self.send_json({"ok": True, "data": data})
+                    return
                 ig = body.get("broker") == "ig" or (body.get("order") or {}).get("mkt") == "cx"
                 if act in ("ig_save", "ig_status"):
                     import ig_trade as G
@@ -955,7 +967,7 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "ibkr_trade.py", "ig_trade.py", "providers/binance.py", "providers/eodhd_us.py", "ibkr_link.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "ibkr_trade.py", "ig_trade.py", "hl_trade.py", "providers/binance.py", "providers/eodhd_us.py", "ibkr_link.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py", "company.py", "ibkr_link.py", "ibkr_watch.py", "depth_log.py")
 
 
