@@ -257,7 +257,18 @@ class Handler(SimpleHTTPRequestHandler):
                 n = int(self.headers.get("Content-Length") or 0)
                 body = json.loads(self.rfile.read(min(n, 20000)) or b"{}")
                 act = body.get("action")
-                if act == "preview":
+                ig = body.get("broker") == "ig" or (body.get("order") or {}).get("mkt") == "cx"
+                if act in ("ig_save", "ig_status"):
+                    import ig_trade as G
+                    data = G.save_creds(body.get("key"), body.get("user"), body.get("pw"), body.get("mode")) if act == "ig_save" else G.creds_status()
+                    self.send_json({"ok": True, "data": data})
+                    return
+                if ig and act in ("preview", "place", "overview", "close"):   # crypto through IG (ig_trade.py)
+                    import ig_trade as G
+                    data = (G.preview(body.get("order") or {}) if act == "preview" else
+                            G.place(body.get("order") or {}, body.get("token")) if act == "place" else
+                            G.close(str(body.get("id", ""))) if act == "close" else G.overview())
+                elif act == "preview":
                     data = T.preview(body.get("order") or {})
                 elif act == "place":
                     data = T.place(body.get("order") or {}, body.get("token"))
@@ -944,7 +955,7 @@ class Handler(SimpleHTTPRequestHandler):
         raise ValueError("未知接口")
 
 
-CODE_FILES = ("server.py", "ibkr_trade.py", "providers/binance.py", "providers/eodhd_us.py", "ibkr_link.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
+CODE_FILES = ("server.py", "ibkr_trade.py", "ig_trade.py", "providers/binance.py", "providers/eodhd_us.py", "ibkr_link.py", "providers/commodities.py", "aichat.py", "providers/eodhd_cn.py", "securedata.py", "annsvc.py", "study67.py", "insight.py", "research.py", "update.py", "providers/eodhd.py", "providers/base.py",
               "providers/ibkr.py", "providers/__init__.py", "company.py", "ibkr_link.py", "ibkr_watch.py", "depth_log.py")
 
 
