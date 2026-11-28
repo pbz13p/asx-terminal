@@ -1,0 +1,30 @@
+{
+  "week_end": "2026-11-27",
+  "written": "2026-11-28",
+  "summary": "ASX 200 反弹一周涨 2.80%（+241.0 点，收 8,833.6），小盘指数涨 3.35%，跑赢大盘。黄金股 +10.75%、原材料 +7.56%、能源 +4.80% 领涨（上周跌最多的这次涨最多），只有公用事业 -0.62%、必需消费 -0.71% 下跌。大盘股 WiseTech（WTC）一周 +19.8%（周五一天 +15%，股东大会 + 经营更新）。澳洲 10 月 CPI 年率 4.9%，通胀压力还在，12 月 8 日 RBA 议息。上周波动率预测第一次打分：5 天预测 196 只，误差在 ±25% 内的 57.7%，比简单法准的 60.2%，方向对 75.0%。",
+  "past": [
+    {"date": "2026-11-25", "region": "澳洲", "event": "10 月 CPI（月度）", "result": "年率 4.9%（多家报道一致；指数 104.91，前值 104.34，月环比约 +0.55%）；市场预期值待核"},
+    {"date": "2026-11-25", "region": "美国", "event": "10 月 PCE", "result": "总体年率 3.8%（前值 3.7%），核心 3.3%（与前月持平，预期 3.2%，二手来源），总体和核心月率都是 +0.3%"},
+    {"date": "2026-11-25", "region": "美国", "event": "三季度 GDP 第二次估算", "result": "年化 4.3%，比初值 3.4% 上修 0.9 个百分点"},
+    {"date": "本周", "region": "美国", "event": "美联储官员讲话", "result": "纽约联储 Williams：通胀仍然太高，可能还要加息"},
+    {"date": "2026-11-26", "region": "美国", "event": "感恩节休市", "result": "美股周四不开盘"},
+    {"date": "本周", "region": "大宗", "event": "油价、金价", "result": "布伦特 +5.32% 到 97.41 美元；金价 +2.26% 到 3,641 美元/盎司；铜 +1.30%（smallcaps 周报，截至周中）"}
+  ],
+  "next": [
+    {"date": "2026-11-30", "region": "澳洲", "event": "10 月家庭支出指标", "note": ""},
+    {"date": "2026-12-01", "region": "澳洲", "event": "三季度国际收支", "note": ""},
+    {"date": "2026-12-02", "region": "澳洲", "event": "三季度 GDP（国民账户）", "note": "RBA 开会前最后一份重要数据"},
+    {"date": "2026-12-03", "region": "澳洲", "event": "10 月商品贸易", "note": ""},
+    {"date": "2026-12-04", "region": "美国", "event": "11 月非农就业", "note": "按惯例第一个周五公布，日期待核"},
+    {"date": "2026-12-08", "region": "澳洲", "event": "RBA 议息（14:30 公布）", "note": "现金利率 4.85%；市场定价待核"},
+    {"date": "2026-12-09", "region": "美国", "event": "美联储 12 月会议（8–9 日）", "note": "11-20 报道 CME 期货约 99% 概率加息 25 个基点"}
+  ],
+  "sources": [
+    "https://smallcaps.com.au/article/weekly-wrap-2026-11-27-99d1d520-fdfe-49b7-88fb-49376942ae5c",
+    "https://sharetrader.com.au/news/2026-11-27-wisetech-jumps-15-per-cent-as-asx-200-gains-2-8-per-cent-for-the-week",
+    "https://www.newsquawk.com/headlines/australian-cpi-oct-10491-prev-10434",
+    "https://www.fibre2fashion.com/news/retail-industry/australia-s-cpi-inflation-rises-to-4-9-in-october-2026-315283-newsdetails.htm",
+    "https://www.bydfi.com/market-intelligence/article/us-october-2026-pce-inflation-results-q3-gdp-revision-fed-rate-outlook-1/1936",
+    "GitHub Actions market-study run 46043383287（[track] 行，2026-11-27 17:57 UTC）"
+  ]
+}
